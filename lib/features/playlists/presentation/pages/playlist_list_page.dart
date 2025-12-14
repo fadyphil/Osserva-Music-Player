@@ -14,71 +14,75 @@ class PlaylistListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => serviceLocator<PlaylistBloc>()..add(const PlaylistEvent.loadPlaylists()),
-      child: Scaffold(
-        backgroundColor: AppPallete.backgroundColor,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          title: const Text('Playlists'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => _showCreatePlaylistDialog(context),
+      child: Builder(
+        builder: (context) {
+          return Scaffold(
+            backgroundColor: AppPallete.backgroundColor,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              title: const Text('Playlists'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () => _showCreatePlaylistDialog(context),
+                ),
+              ],
             ),
-          ],
-        ),
-        body: BlocBuilder<PlaylistBloc, PlaylistState>(
-          builder: (context, state) {
-            return state.map(
-              initial: (_) => const SizedBox.shrink(),
-              loading: (_) => const Center(child: CircularProgressIndicator()),
-              failure: (f) => Center(child: Text('Error: ${f.message}')),
-              loaded: (data) {
-                if (data.playlists.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'No playlists yet.\nTap + to create one.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white54),
-                    ),
-                  );
-                }
-                return ListView.builder(
-                  itemCount: data.playlists.length,
-                  itemBuilder: (context, index) {
-                    final playlist = data.playlists[index];
-                    return ListTile(
-                      leading: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[900],
-                          borderRadius: BorderRadius.circular(8),
-                          image: playlist.imagePath != null
-                              ? DecorationImage(
-                                  image: NetworkImage(playlist.imagePath!), // Assuming URL or File
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
+            body: BlocBuilder<PlaylistBloc, PlaylistState>(
+              builder: (context, state) {
+                return state.map(
+                  initial: (_) => const SizedBox.shrink(),
+                  loading: (_) => const Center(child: CircularProgressIndicator()),
+                  failure: (f) => Center(child: Text('Error: ${f.message}')),
+                  loaded: (data) {
+                    if (data.playlists.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'No playlists yet.\nTap + to create one.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white54),
                         ),
-                        child: playlist.imagePath == null
-                            ? const Icon(Icons.music_note, color: Colors.white54)
-                            : null,
-                      ),
-                      title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
-                      subtitle: Text(
-                        '${playlist.totalSongs} songs',
-                        style: const TextStyle(color: Colors.white54),
-                      ),
-                      onTap: () {
-                        context.router.push(PlaylistDetailRoute(playlist: playlist));
+                      );
+                    }
+                    return ListView.builder(
+                      itemCount: data.playlists.length,
+                      itemBuilder: (context, index) {
+                        final playlist = data.playlists[index];
+                        return ListTile(
+                          leading: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: BorderRadius.circular(8),
+                              image: playlist.imagePath != null
+                                  ? DecorationImage(
+                                      image: NetworkImage(playlist.imagePath!), // Assuming URL or File
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            child: playlist.imagePath == null
+                                ? const Icon(Icons.music_note, color: Colors.white54)
+                                : null,
+                          ),
+                          title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
+                          subtitle: Text(
+                            '${playlist.totalSongs} songs',
+                            style: const TextStyle(color: Colors.white54),
+                          ),
+                          onTap: () {
+                            context.router.push(PlaylistDetailRoute(playlist: playlist));
+                          },
+                        );
                       },
                     );
                   },
                 );
               },
-            );
-          },
-        ),
+            ),
+          );
+        }
       ),
     );
   }
