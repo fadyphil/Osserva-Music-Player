@@ -140,9 +140,14 @@ class MusicPlayerHandler extends BaseAudioHandler
       // 5. Update AudioService Queue (For UI to see)
       queue.add(items);
       mediaItem.add(items[initialIndex]);
-    } catch (e) {
-      log("Error setting queue: $e");
-      // TODO: Add robust error handling (e.g., broadcasting error state)
+    } catch (e, stackTrace) {
+      log("Error setting queue: $e", stackTrace: stackTrace);
+
+      // Broadcast error to UI
+      playbackState.add(playbackState.value.copyWith(
+        processingState: AudioProcessingState.error,
+        errorMessage: e.toString(),
+      ));
     }
   }
 
