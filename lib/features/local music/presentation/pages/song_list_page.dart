@@ -6,6 +6,8 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:music_player/core/router/app_router.dart'; // Import AppRouter
+import 'package:music_player/features/local%20music/presentation/widgets/song_list_tile.dart'; // Import SongListTile
 import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
 import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -459,7 +461,7 @@ class _SongListSliverItems extends StatelessWidget {
     return SliverList(
       delegate: SliverChildBuilderDelegate((context, index) {
         final song = songs[index];
-        return _SongListTile(
+        return SongListTile( // Use public widget
           key: ValueKey(song.id),
           song: song,
           index: index,
@@ -467,168 +469,6 @@ class _SongListSliverItems extends StatelessWidget {
         );
       }, childCount: songs.length),
     );
-  }
-}
-
-class _SongListTile extends StatelessWidget {
-  final SongEntity song;
-  final int index;
-  final List<SongEntity> songList;
-
-  const _SongListTile({
-    super.key,
-    required this.song,
-    required this.index,
-    required this.songList,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return RepaintBoundary(
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                context.read<MusicPlayerBloc>().add(
-                  MusicPlayerEvent.initMusicQueue(
-                    songs: songList,
-                    currentIndex: index,
-                  ),
-                );
-              },
-              splashColor: AppPallete.primaryGreen.withValues(alpha: 0.1),
-              highlightColor: Colors.white.withValues(alpha: 0.05),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Row(
-                  children: [
-                    // Artwork
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: AppPallete.cardColor,
-                        borderRadius: BorderRadius.circular(4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: QueryArtworkWidget(
-                        id: song.id,
-                        type: ArtworkType.AUDIO,
-                        nullArtworkWidget: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Colors.grey[800]!, Colors.grey[900]!],
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.music_note_rounded,
-                            color: Colors.white30,
-                          ),
-                        ),
-                        artworkFit: BoxFit.cover,
-                        artworkHeight: 52,
-                        artworkWidth: 52,
-                        artworkBorder: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    // Text Info
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            song.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: AppPallete.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              if (song.artist.length >
-                                  20) // Mock explicit logic
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 4,
-                                    vertical: 2,
-                                  ),
-                                  margin: const EdgeInsets.only(right: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white24,
-                                    borderRadius: BorderRadius.circular(3),
-                                  ),
-                                  child: const Text(
-                                    "E",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              Flexible(
-                                child: Text(
-                                  song.artist == '<unknown>'
-                                      ? 'Unknown Artist'
-                                      : song.artist,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: AppPallete.grey,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Action Menu
-                    IconButton(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                      },
-                      icon: const Icon(
-                        Icons.more_vert_rounded,
-                        color: AppPallete.grey,
-                        size: 20,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        )
-        .animate(target: 1)
-        .fadeIn(duration: 300.ms, curve: Curves.easeOut)
-        .slideY(
-          begin: 0.2,
-          end: 0,
-          duration: 400.ms,
-          curve: Curves.easeOutBack, // Physics-based spring feel
-        );
   }
 }
 
@@ -779,36 +619,49 @@ class _SongListSliverAppBar extends StatelessWidget {
                             ),
                             const SizedBox(height: 24),
                             // Action Row
-                            Row(
-                              children: [
-                                _ActionButton(
-                                  icon: Icons.download_done_rounded,
-                                  label: "Synced",
-                                  onTap: () {},
-                                ),
-                                const SizedBox(width: 12),
-                                _ActionButton(
-                                  icon: Icons.sort_rounded,
-                                  label: currentSortOption.label,
-                                  isActive: true,
-                                  onTap: () {
-                                    showModalBottomSheet(
-                                      context: context,
-                                      backgroundColor:
-                                          AppPallete.backgroundColor,
-                                      shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(24),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  _ActionButton(
+                                    icon: Icons.playlist_play_rounded,
+                                    label: "Playlists",
+                                    onTap: () {
+                                      context.router.push(const PlaylistListRoute());
+                                    },
+                                  ),
+                                  const SizedBox(width: 12),
+                                  _ActionButton(
+                                    icon: Icons.favorite_rounded,
+                                    label: "Favorites",
+                                    onTap: () {
+                                      context.router.push(const FavoritesRoute());
+                                    },
+                                  ),
+                                  const SizedBox(width: 12),
+                                  _ActionButton(
+                                    icon: Icons.sort_rounded,
+                                    label: currentSortOption.label,
+                                    isActive: true,
+                                    onTap: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        backgroundColor:
+                                            AppPallete.backgroundColor,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(24),
+                                          ),
                                         ),
-                                      ),
-                                      builder: (context) => _SortBottomSheet(
-                                        currentOption: currentSortOption,
-                                        onOptionSelected: onSortOptionSelected,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
+                                        builder: (context) => _SortBottomSheet(
+                                          currentOption: currentSortOption,
+                                          onOptionSelected: onSortOptionSelected,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
                             const SizedBox(height: 16),
                           ],

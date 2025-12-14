@@ -250,6 +250,7 @@ Future<void> initDependencies() async {
       getPlaylists: serviceLocator(),
       createPlaylist: serviceLocator(),
       deletePlaylist: serviceLocator(),
+      addSongToPlaylist: serviceLocator(),
     ),
   );
 

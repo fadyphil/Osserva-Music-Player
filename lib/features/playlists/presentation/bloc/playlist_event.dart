@@ -9,4 +9,8 @@ class PlaylistEvent with _$PlaylistEvent {
     String? imagePath,
   }) = _CreatePlaylist;
   const factory PlaylistEvent.deletePlaylist(int playlistId) = _DeletePlaylist;
+  const factory PlaylistEvent.addSongToPlaylist({
+    required int playlistId,
+    required SongEntity song,
+  }) = _AddSongToPlaylist;
 }
