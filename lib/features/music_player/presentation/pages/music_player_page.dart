@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
@@ -7,6 +8,7 @@ import '../bloc/music_player_bloc.dart';
 import '../bloc/music_player_event.dart';
 import '../bloc/music_player_state.dart';
 
+@RoutePage()
 class MusicPlayerPage extends StatelessWidget {
   const MusicPlayerPage({super.key});
 
@@ -275,30 +277,40 @@ class _PlayerControls extends StatelessWidget {
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                 IconButton(
+                IconButton(
                   icon: Icon(
                     Icons.shuffle,
-                    color: state.isShuffling ? AppPallete.primaryGreen : AppPallete.grey,
+                    color: state.isShuffling
+                        ? AppPallete.primaryGreen
+                        : AppPallete.grey,
                   ),
                   onPressed: () {
-                     context.read<MusicPlayerBloc>().add(const MusicPlayerEvent.toggleShuffle());
+                    context.read<MusicPlayerBloc>().add(
+                      const MusicPlayerEvent.toggleShuffle(),
+                    );
                   },
                 ),
                 IconButton(
                   icon: Icon(
-                    state.loopMode == 0 
-                      ? Icons.repeat 
-                      : (state.loopMode == 2 ? Icons.repeat_one : Icons.repeat),
-                    color: state.loopMode > 0 ? AppPallete.primaryGreen : AppPallete.grey,
+                    state.loopMode == 0
+                        ? Icons.repeat
+                        : (state.loopMode == 2
+                              ? Icons.repeat_one
+                              : Icons.repeat),
+                    color: state.loopMode > 0
+                        ? AppPallete.primaryGreen
+                        : AppPallete.grey,
                   ),
                   onPressed: () {
-                     context.read<MusicPlayerBloc>().add(const MusicPlayerEvent.cycleLoopMode());
+                    context.read<MusicPlayerBloc>().add(
+                      const MusicPlayerEvent.cycleLoopMode(),
+                    );
                   },
                 ),
               ],
             );
           },
-        )
+        ),
       ],
     );
   }

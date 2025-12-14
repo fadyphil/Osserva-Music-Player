@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../../domain/entities/analytics_enums.dart';
@@ -46,7 +48,9 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
             time_of_day TEXT
           )
         ''');
-        await db.execute('CREATE INDEX idx_timestamp ON $_tableName (timestamp)');
+        await db.execute(
+          'CREATE INDEX idx_timestamp ON $_tableName (timestamp)',
+        );
       },
     );
   }
@@ -65,7 +69,7 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     // I defined columns as INTEGER.
     // I need to ensure toJson handles this, OR manually map.
     // Manual map is safer for SQLite specifics.
-    
+
     await database.insert(_tableName, {
       'song_id': log.songId,
       'title': log.songTitle,
@@ -100,7 +104,8 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     final database = await db;
     final threshold = _getTimestampThreshold(timeFrame);
 
-    final result = await database.rawQuery('''
+    final result = await database.rawQuery(
+      '''
       SELECT 
         CAST(song_id AS TEXT) as id, 
         title as label, 
@@ -111,9 +116,13 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
       GROUP BY song_id 
       ORDER BY value DESC 
       LIMIT ?
-    ''', [threshold, limit]);
+    ''',
+      [threshold, limit],
+    );
 
-    return result.map((e) => TopItem.fromJson(e).copyWith(type: 'song')).toList();
+    return result
+        .map((e) => TopItem.fromJson(e).copyWith(type: 'song'))
+        .toList();
   }
 
   @override
@@ -121,7 +130,8 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     final database = await db;
     final threshold = _getTimestampThreshold(timeFrame);
 
-    final result = await database.rawQuery('''
+    final result = await database.rawQuery(
+      '''
       SELECT 
         artist as id,
         artist as label, 
@@ -131,9 +141,13 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
       GROUP BY artist 
       ORDER BY value DESC 
       LIMIT ?
-    ''', [threshold, limit]);
+    ''',
+      [threshold, limit],
+    );
 
-    return result.map((e) => TopItem.fromJson(e).copyWith(type: 'artist')).toList();
+    return result
+        .map((e) => TopItem.fromJson(e).copyWith(type: 'artist'))
+        .toList();
   }
 
   @override
@@ -141,7 +155,8 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     final database = await db;
     final threshold = _getTimestampThreshold(timeFrame);
 
-    final result = await database.rawQuery('''
+    final result = await database.rawQuery(
+      '''
       SELECT 
         album as id,
         album as label, 
@@ -152,9 +167,13 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
       GROUP BY album 
       ORDER BY value DESC 
       LIMIT ?
-    ''', [threshold, limit]);
+    ''',
+      [threshold, limit],
+    );
 
-    return result.map((e) => TopItem.fromJson(e).copyWith(type: 'album')).toList();
+    return result
+        .map((e) => TopItem.fromJson(e).copyWith(type: 'album'))
+        .toList();
   }
 
   @override
@@ -162,7 +181,8 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     final database = await db;
     final threshold = _getTimestampThreshold(timeFrame);
 
-    final result = await database.rawQuery('''
+    final result = await database.rawQuery(
+      '''
       SELECT 
         genre as id,
         genre as label, 
@@ -172,9 +192,13 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
       GROUP BY genre 
       ORDER BY value DESC 
       LIMIT ?
-    ''', [threshold, limit]);
+    ''',
+      [threshold, limit],
+    );
 
-    return result.map((e) => TopItem.fromJson(e).copyWith(type: 'genre')).toList();
+    return result
+        .map((e) => TopItem.fromJson(e).copyWith(type: 'genre'))
+        .toList();
   }
 
   @override
@@ -183,23 +207,29 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     final threshold = _getTimestampThreshold(timeFrame);
 
     // 1. Total Time (Seconds) and Count
-    final generalData = await database.rawQuery('''
+    final generalData = await database.rawQuery(
+      '''
       SELECT 
         COALESCE(SUM(duration_listened), 0) as total_duration, 
         COUNT(*) as total_count 
       FROM $_tableName 
       WHERE timestamp > ?
-    ''', [threshold]);
+    ''',
+      [threshold],
+    );
 
     // 2. Time of Day Distribution
-    final timeDistribution = await database.rawQuery('''
+    final timeDistribution = await database.rawQuery(
+      '''
       SELECT 
         time_of_day, 
         COUNT(*) as count 
       FROM $_tableName 
       WHERE timestamp > ? 
       GROUP BY time_of_day
-    ''', [threshold]);
+    ''',
+      [threshold],
+    );
 
     Map<String, int> distributionMap = {};
     for (var row in timeDistribution) {
@@ -207,7 +237,7 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
         distributionMap[row['time_of_day'] as String] = row['count'] as int;
       }
     }
-    
+
     final row = generalData.first;
     // Note: total_duration from SQL is Seconds, UI expects Minutes
     final totalSeconds = row['total_duration'] as int? ?? 0;
@@ -224,28 +254,21 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     // This is a placeholder for a specific analytics event.
     // In a real app, this might insert into a separate 'events' table
     // or send to Firebase/Mixpanel.
-    print('Analytics: Onboarding Completed');
+    log('Analytics: Onboarding Completed');
   }
 
-    @override
+  @override
+  Future<void> clearAllData() async {
+    final database = await db;
 
-    Future<void> clearAllData() async {
+    await database.delete(_tableName);
+  }
 
-      final database = await db;
+  @override
+  Future<Map<int, int>> getAllSongPlayCounts() async {
+    final database = await db;
 
-      await database.delete(_tableName);
-
-    }
-
-  
-
-    @override
-
-    Future<Map<int, int>> getAllSongPlayCounts() async {
-
-      final database = await db;
-
-      final result = await database.rawQuery('''
+    final result = await database.rawQuery('''
 
         SELECT 
 
@@ -259,24 +282,14 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
 
       ''');
 
-  
+    final Map<int, int> counts = {};
 
-      final Map<int, int> counts = {};
-
-      for (final row in result) {
-
-        if (row['song_id'] != null) {
-
-          counts[row['song_id'] as int] = row['count'] as int;
-
-        }
-
+    for (final row in result) {
+      if (row['song_id'] != null) {
+        counts[row['song_id'] as int] = row['count'] as int;
       }
-
-      return counts;
-
     }
 
+    return counts;
   }
-
-  
+}

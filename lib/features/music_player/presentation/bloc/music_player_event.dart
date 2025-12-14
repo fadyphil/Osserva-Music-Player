@@ -18,7 +18,7 @@ class MusicPlayerEvent with _$MusicPlayerEvent {
   const factory MusicPlayerEvent.seek(Duration position) = _Seek;
   const factory MusicPlayerEvent.playPreviousSong() = _PreviousSong;
   const factory MusicPlayerEvent.playNextSong() = _NextSong;
-  
+
   const factory MusicPlayerEvent.toggleShuffle() = _ToggleShuffle;
   const factory MusicPlayerEvent.cycleLoopMode() = _CycleLoopMode;
 
@@ -37,4 +37,9 @@ class MusicPlayerEvent with _$MusicPlayerEvent {
       _UpdateCurrentSong;
 
   const factory MusicPlayerEvent.songFinished() = _SongFinished;
+
+  // Queue Management
+  const factory MusicPlayerEvent.addToQueue(SongEntity song) = _AddToQueue;
+  const factory MusicPlayerEvent.addToPlaylist(SongEntity song) =
+      _AddToPlaylist;
 }

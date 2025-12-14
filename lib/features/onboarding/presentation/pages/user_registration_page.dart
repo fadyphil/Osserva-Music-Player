@@ -1,19 +1,19 @@
 import 'dart:io';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:music_player/core/di/init_dependencies.dart';
 import 'package:music_player/core/theme/app_pallete.dart';
 import '../cubit/user_registration_cubit.dart';
 import '../cubit/user_registration_state.dart';
 
+@RoutePage()
 class UserRegistrationPage extends StatefulWidget {
   final VoidCallback onRegistrationComplete;
 
-  const UserRegistrationPage({
-    super.key,
-    required this.onRegistrationComplete,
-  });
+  const UserRegistrationPage({super.key, required this.onRegistrationComplete});
 
   @override
   State<UserRegistrationPage> createState() => _UserRegistrationPageState();
@@ -42,13 +42,13 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
       parent: _animationController,
       curve: Curves.easeIn,
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.2),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutBack,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutBack,
+          ),
+        );
 
     _animationController.forward();
   }
@@ -74,189 +74,218 @@ class _UserRegistrationPageState extends State<UserRegistrationPage>
     } catch (e) {
       // Handle permission errors silently or show snackbar
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking image: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppPallete.backgroundColor,
-      body: SafeArea(
-        child: BlocConsumer<UserRegistrationCubit, UserRegistrationState>(
-          listener: (context, state) {
-            state.maybeWhen(
-              success: () {
-                HapticFeedback.mediumImpact();
-                widget.onRegistrationComplete();
-              },
-              failure: (msg) {
-                HapticFeedback.vibrate();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(msg)),
-                );
-              },
-              orElse: () {},
-            );
-          },
-          builder: (context, state) {
-            final isLoading = state.maybeWhen(
-              loading: () => true,
-              orElse: () => false,
-            );
+    return BlocProvider(
+      create: (_) => serviceLocator<UserRegistrationCubit>(),
+      child: Scaffold(
+        backgroundColor: AppPallete.backgroundColor,
+        body: SafeArea(
+          child: BlocConsumer<UserRegistrationCubit, UserRegistrationState>(
+            listener: (context, state) {
+              state.maybeWhen(
+                success: () {
+                  HapticFeedback.mediumImpact();
+                  widget.onRegistrationComplete();
+                },
+                failure: (msg) {
+                  HapticFeedback.vibrate();
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(msg)));
+                },
+                orElse: () {},
+              );
+            },
+            builder: (context, state) {
+              final isLoading = state.maybeWhen(
+                loading: () => true,
+                orElse: () => false,
+              );
 
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Form(
-                        key: _formKey,
-                        child: FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: SlideTransition(
-                            position: _slideAnimation,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "IDENTITY",
-                                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: -1.0,
-                                        color: Colors.white,
-                                      ),
-                                ),
-                                const SizedBox(height: 8),
-                                const Text(
-                                  "Create your auditory profile",
-                                  style: TextStyle(
-                                    color: Colors.white54,
-                                    fontFamily: 'monospace',
-                                    letterSpacing: 2.0,
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Form(
+                          key: _formKey,
+                          child: FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: SlideTransition(
+                              position: _slideAnimation,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "IDENTITY",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .displayMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: -1.0,
+                                          color: Colors.white,
+                                        ),
                                   ),
-                                ),
-                                const SizedBox(height: 48),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    "Create your auditory profile",
+                                    style: TextStyle(
+                                      color: Colors.white54,
+                                      fontFamily: 'monospace',
+                                      letterSpacing: 2.0,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 48),
 
-                                // Avatar Picker
-                                GestureDetector(
-                                  onTap: _pickImage,
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 300),
-                                    width: 120,
-                                    height: 120,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white10,
-                                      image: _avatarPath != null
-                                          ? DecorationImage(
-                                              image: FileImage(File(_avatarPath!)),
-                                              fit: BoxFit.cover,
+                                  // Avatar Picker
+                                  GestureDetector(
+                                    onTap: _pickImage,
+                                    child: AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                      width: 120,
+                                      height: 120,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white10,
+                                        image: _avatarPath != null
+                                            ? DecorationImage(
+                                                image: FileImage(
+                                                  File(_avatarPath!),
+                                                ),
+                                                fit: BoxFit.cover,
+                                              )
+                                            : null,
+                                        border: Border.all(
+                                          color: AppPallete.primaryGreen
+                                              .withValues(alpha: 0.5),
+                                          width: 2,
+                                        ),
+                                        boxShadow: _avatarPath != null
+                                            ? [
+                                                BoxShadow(
+                                                  color: AppPallete.primaryGreen
+                                                      .withValues(alpha: 0.3),
+                                                  blurRadius: 20,
+                                                  spreadRadius: 5,
+                                                ),
+                                              ]
+                                            : [],
+                                      ),
+                                      child: _avatarPath == null
+                                          ? const Icon(
+                                              Icons.add_a_photo_outlined,
+                                              color: Colors.white54,
+                                              size: 40,
                                             )
                                           : null,
-                                      border: Border.all(
-                                        color: AppPallete.primaryGreen.withValues(alpha: 0.5),
-                                        width: 2,
-                                      ),
-                                      boxShadow: _avatarPath != null
-                                          ? [
-                                              BoxShadow(
-                                                color: AppPallete.primaryGreen.withValues(alpha: 0.3),
-                                                blurRadius: 20,
-                                                spreadRadius: 5,
-                                              )
-                                            ]
-                                          : [],
                                     ),
-                                    child: _avatarPath == null
-                                        ? const Icon(
-                                            Icons.add_a_photo_outlined,
-                                            color: Colors.white54,
-                                            size: 40,
-                                          )
+                                  ),
+                                  const SizedBox(height: 40),
+
+                                  // Inputs
+                                  _AnimatedInput(
+                                    controller: _nameController,
+                                    label: "CODENAME",
+                                    hint: "Enter your username",
+                                    icon: Icons.person_outline,
+                                    validator: (val) => val!.isEmpty
+                                        ? "Identity required"
                                         : null,
                                   ),
-                                ),
-                                const SizedBox(height: 40),
-
-                                // Inputs
-                                _AnimatedInput(
-                                  controller: _nameController,
-                                  label: "CODENAME",
-                                  hint: "Enter your username",
-                                  icon: Icons.person_outline,
-                                  validator: (val) =>
-                                      val!.isEmpty ? "Identity required" : null,
-                                ),
-                                const SizedBox(height: 24),
-                                _AnimatedInput(
-                                  controller: _emailController,
-                                  label: "FREQUENCY",
-                                  hint: "Enter your email",
-                                  icon: Icons.alternate_email,
-                                  keyboardType: TextInputType.emailAddress,
-                                  validator: (val) {
-                                    if (val!.isEmpty) return "Frequency required";
-                                    if (!val.contains('@')) return "Invalid frequency format";
-                                    return null;
-                                  },
-                                ),
-
-                                const SizedBox(height: 60),
-
-                                // Submit Button
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 56,
-                                  child: ElevatedButton(
-                                    onPressed: isLoading
-                                        ? null
-                                        : () {
-                                            if (_formKey.currentState!.validate()) {
-                                              context.read<UserRegistrationCubit>().submitForm(
-                                                    name: _nameController.text,
-                                                    email: _emailController.text,
-                                                    avatarPath: _avatarPath,
-                                                  );
-                                            }
-                                          },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppPallete.primaryGreen,
-                                      foregroundColor: Colors.black,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      elevation: 0,
-                                    ),
-                                    child: isLoading
-                                        ? const CircularProgressIndicator(color: Colors.black)
-                                        : const Text(
-                                            "INITIALIZE",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              letterSpacing: 1.5,
-                                            ),
-                                          ),
+                                  const SizedBox(height: 24),
+                                  _AnimatedInput(
+                                    controller: _emailController,
+                                    label: "FREQUENCY",
+                                    hint: "Enter your email",
+                                    icon: Icons.alternate_email,
+                                    keyboardType: TextInputType.emailAddress,
+                                    validator: (val) {
+                                      if (val!.isEmpty) {
+                                        return "Frequency required";
+                                      }
+                                      if (!val.contains('@')) {
+                                        return "Invalid frequency format";
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                ),
-                              ],
+
+                                  const SizedBox(height: 60),
+
+                                  // Submit Button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 56,
+                                    child: ElevatedButton(
+                                      onPressed: isLoading
+                                          ? null
+                                          : () {
+                                              if (_formKey.currentState!
+                                                  .validate()) {
+                                                context
+                                                    .read<
+                                                      UserRegistrationCubit
+                                                    >()
+                                                    .submitForm(
+                                                      name:
+                                                          _nameController.text,
+                                                      email:
+                                                          _emailController.text,
+                                                      avatarPath: _avatarPath,
+                                                    );
+                                              }
+                                            },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            AppPallete.primaryGreen,
+                                        foregroundColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: isLoading
+                                          ? const CircularProgressIndicator(
+                                              color: Colors.black,
+                                            )
+                                          : const Text(
+                                              "INITIALIZE",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 1.5,
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
-            );
-          },
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -298,7 +327,9 @@ class _AnimatedInputState extends State<_AnimatedInput> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: _isFocused ? Colors.white.withValues(alpha: 0.05) : Colors.transparent,
+          color: _isFocused
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: _isFocused ? AppPallete.primaryGreen : Colors.white24,

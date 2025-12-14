@@ -3,7 +3,8 @@ import 'package:music_player/features/local%20music/domain/entities/song_entity.
 abstract class AudioPlayerRepository {
   // Actions
   Future<void> setQueue(List<SongEntity> songs, int initialIndex);
-  
+  Future<void> addQueueItem(SongEntity song);
+
   // Legacy / Single Song
   Future<void> playSong(
     String path,
@@ -12,14 +13,14 @@ abstract class AudioPlayerRepository {
     String songId,
     String albumId,
   );
-  
+
   Future<void> pause();
   Future<void> resume();
   Future<void> seek(Duration position);
   Future<void> stop();
   Future<void> skipToNext();
   Future<void> skipToPrevious();
-  
+
   Future<void> setShuffleMode(bool enabled);
   Future<void> setRepeatMode(int mode); // 0: Off, 1: All, 2: One
   // Actually, UI usually cycles: Off -> All -> One -> Off
@@ -32,5 +33,6 @@ abstract class AudioPlayerRepository {
   Stream<Duration> get positionStream;
   Stream<Duration> get durationStream;
   Stream<void> get playerCompleteStream; // Listen to queue end or song end?
-  Stream<SongEntity?> get currentSongStream; // New: Listen to current song updates from OS
+  Stream<SongEntity?>
+  get currentSongStream; // New: Listen to current song updates from OS
 }

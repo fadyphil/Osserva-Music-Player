@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
+import 'package:auto_route/auto_route.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Architecture Imports
 import '../../../../core/di/init_dependencies.dart';
@@ -32,6 +34,7 @@ enum SortOption {
   const SortOption(this.label);
 }
 
+@RoutePage()
 class SongListPage extends StatefulWidget {
   const SongListPage({super.key});
 
@@ -45,13 +48,29 @@ class _SongListPageState extends State<SongListPage>
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   String _searchQuery = '';
-  SortOption _currentSort = SortOption.titleAz;
+  SortOption _currentSort = SortOption.dateAdded;
   bool _isSearching = false;
+  static const String _sortPrefKey = 'local_songs_sort_option';
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _loadSortPreference();
+  }
+
+  Future<void> _loadSortPreference() async {
+    final prefs = serviceLocator<SharedPreferences>();
+    final savedIndex = prefs.getInt(_sortPrefKey);
+    if (savedIndex != null &&
+        savedIndex >= 0 &&
+        savedIndex < SortOption.values.length) {
+      if (mounted) {
+        setState(() {
+          _currentSort = SortOption.values[savedIndex];
+        });
+      }
+    }
     _initData();
   }
 
@@ -67,7 +86,7 @@ class _SongListPageState extends State<SongListPage>
     setState(() {
       _isSearching = true;
     });
-    
+
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
       if (mounted) {
@@ -84,10 +103,16 @@ class _SongListPageState extends State<SongListPage>
       _currentSort = option;
     });
     Navigator.pop(context);
+    try {
+      final prefs = serviceLocator<SharedPreferences>();
+      prefs.setInt(_sortPrefKey, SortOption.values.indexOf(option));
+    } catch (e) {
+      debugPrint("Error saving sort preference: $e");
+    }
   }
 
   List<SongEntity> _getFilteredAndSortedSongs(
-    List<SongEntity> songs, 
+    List<SongEntity> songs,
     Map<int, int> playCounts,
   ) {
     // 1. Filter
@@ -105,17 +130,23 @@ class _SongListPageState extends State<SongListPage>
     // 2. Sort
     switch (_currentSort) {
       case SortOption.titleAz:
-        filtered.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+        filtered.sort(
+          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+        );
         break;
       case SortOption.titleZa:
-        filtered.sort((a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()));
+        filtered.sort(
+          (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()),
+        );
         break;
       case SortOption.artistAz:
-        filtered.sort((a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()));
+        filtered.sort(
+          (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
+        );
         break;
       case SortOption.dateAdded:
         // ID is a decent proxy for date added in MediaStore
-        filtered.sort((a, b) => b.id.compareTo(a.id)); 
+        filtered.sort((a, b) => b.id.compareTo(a.id));
         break;
       case SortOption.duration:
         filtered.sort((a, b) => b.duration.compareTo(a.duration));
@@ -220,8 +251,11 @@ class _SongListPageState extends State<SongListPage>
                       ),
                     ),
                     loaded: (songs, playCounts) {
-                      final processedSongs = _getFilteredAndSortedSongs(songs, playCounts);
-                      
+                      final processedSongs = _getFilteredAndSortedSongs(
+                        songs,
+                        playCounts,
+                      );
+
                       return _SliverSongLayout(
                         songs: processedSongs,
                         totalSongs: songs.length,
@@ -359,9 +393,9 @@ class _EmptySongState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              isFiltered 
-                ? "Try adjusting your search query."
-                : "Add some audio files to your device\nto see them here.",
+              isFiltered
+                  ? "Try adjusting your search query."
+                  : "Add some audio files to your device\nto see them here.",
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white38),
             ),
@@ -405,9 +439,9 @@ class _SliverSongLayout extends StatelessWidget {
           currentSortOption: currentSortOption,
           isSearching: isSearching,
         ),
-         if (songs.isEmpty)
-           const _EmptySongState(isFiltered: true)
-         else
+        if (songs.isEmpty)
+          const _EmptySongState(isFiltered: true)
+        else
           _SongListSliverItems(songs: songs),
         const SliverToBoxAdapter(child: SizedBox(height: 180)),
       ],
@@ -427,8 +461,8 @@ class _SongListSliverItems extends StatelessWidget {
         final song = songs[index];
         return _SongListTile(
           key: ValueKey(song.id),
-          song: song, 
-          index: index, 
+          song: song,
+          index: index,
           songList: songs,
         );
       }, childCount: songs.length),
@@ -451,146 +485,150 @@ class _SongListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            context.read<MusicPlayerBloc>().add(
-              MusicPlayerEvent.initMusicQueue(
-                songs: songList,
-                currentIndex: index,
-              ),
-            );
-          },
-          splashColor: AppPallete.primaryGreen.withValues(alpha: 0.1),
-          highlightColor: Colors.white.withValues(alpha: 0.05),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                // Artwork
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: AppPallete.cardColor,
-                    borderRadius: BorderRadius.circular(4),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                context.read<MusicPlayerBloc>().add(
+                  MusicPlayerEvent.initMusicQueue(
+                    songs: songList,
+                    currentIndex: index,
                   ),
-                  child: QueryArtworkWidget(
-                    id: song.id,
-                    type: ArtworkType.AUDIO,
-                    nullArtworkWidget: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Colors.grey[800]!, Colors.grey[900]!],
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.music_note_rounded,
-                        color: Colors.white30,
-                      ),
-                    ),
-                    artworkFit: BoxFit.cover,
-                    artworkHeight: 52,
-                    artworkWidth: 52,
-                    artworkBorder: BorderRadius.circular(4),
-                  ),
+                );
+              },
+              splashColor: AppPallete.primaryGreen.withValues(alpha: 0.1),
+              highlightColor: Colors.white.withValues(alpha: 0.05),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
-                const SizedBox(width: 16),
-                // Text Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        song.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppPallete.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          if (song.artist.length > 20) // Mock explicit logic
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 2,
-                              ),
-                              margin: const EdgeInsets.only(right: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.white24,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                              child: const Text(
-                                "E",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          Flexible(
-                            child: Text(
-                              song.artist == '<unknown>'
-                                  ? 'Unknown Artist'
-                                  : song.artist,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: AppPallete.grey,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
+                child: Row(
+                  children: [
+                    // Artwork
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: AppPallete.cardColor,
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                      child: QueryArtworkWidget(
+                        id: song.id,
+                        type: ArtworkType.AUDIO,
+                        nullArtworkWidget: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Colors.grey[800]!, Colors.grey[900]!],
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.music_note_rounded,
+                            color: Colors.white30,
+                          ),
+                        ),
+                        artworkFit: BoxFit.cover,
+                        artworkHeight: 52,
+                        artworkWidth: 52,
+                        artworkBorder: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Text Info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            song.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppPallete.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              if (song.artist.length >
+                                  20) // Mock explicit logic
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 2,
+                                  ),
+                                  margin: const EdgeInsets.only(right: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white24,
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                  child: const Text(
+                                    "E",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              Flexible(
+                                child: Text(
+                                  song.artist == '<unknown>'
+                                      ? 'Unknown Artist'
+                                      : song.artist,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: AppPallete.grey,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Action Menu
+                    IconButton(
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                      },
+                      icon: const Icon(
+                        Icons.more_vert_rounded,
+                        color: AppPallete.grey,
+                        size: 20,
+                      ),
+                    ),
+                  ],
                 ),
-                // Action Menu
-                IconButton(
-                  onPressed: () {
-                    HapticFeedback.selectionClick();
-                  },
-                  icon: const Icon(
-                    Icons.more_vert_rounded,
-                    color: AppPallete.grey,
-                    size: 20,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    )
-    .animate(target: 1)
-    .fadeIn(duration: 300.ms, curve: Curves.easeOut)
-    .slideY(
-      begin: 0.2, 
-      end: 0, 
-      duration: 400.ms, 
-      curve: Curves.easeOutBack, // Physics-based spring feel
-    );
+        )
+        .animate(target: 1)
+        .fadeIn(duration: 300.ms, curve: Curves.easeOut)
+        .slideY(
+          begin: 0.2,
+          end: 0,
+          duration: 400.ms,
+          curve: Curves.easeOutBack, // Physics-based spring feel
+        );
   }
 }
 
@@ -669,11 +707,11 @@ class _SongListSliverAppBar extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 16),
-                             _SearchBar(
-                               controller: searchController,
-                               onChanged: onSearchChanged,
-                               isSearching: isSearching,
-                             ),
+                            _SearchBar(
+                              controller: searchController,
+                              onChanged: onSearchChanged,
+                              isSearching: isSearching,
+                            ),
                             const Spacer(),
                             // Dynamic Hero Content
                             Row(
@@ -756,9 +794,12 @@ class _SongListSliverAppBar extends StatelessWidget {
                                   onTap: () {
                                     showModalBottomSheet(
                                       context: context,
-                                      backgroundColor: AppPallete.backgroundColor,
+                                      backgroundColor:
+                                          AppPallete.backgroundColor,
                                       shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(24),
+                                        ),
                                       ),
                                       builder: (context) => _SortBottomSheet(
                                         currentOption: currentSortOption,
@@ -838,7 +879,9 @@ class _SortBottomSheet extends StatelessWidget {
                 onOptionSelected(option);
               },
               leading: Icon(
-                isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                isSelected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
                 color: isSelected ? AppPallete.primaryGreen : Colors.grey,
               ),
               title: Text(
@@ -888,7 +931,9 @@ class _SearchBar extends StatelessWidget {
             cursorColor: AppPallete.primaryGreen,
             decoration: InputDecoration(
               isDense: true,
-              contentPadding: const EdgeInsets.symmetric(vertical: 11), // Center vertically
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 11,
+              ), // Center vertically
               prefixIcon: Icon(
                 Icons.search,
                 color: Colors.white.withValues(alpha: 0.5),
@@ -907,14 +952,18 @@ class _SearchBar extends StatelessWidget {
                       ),
                     )
                   : controller.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.close, size: 18, color: Colors.white54),
-                          onPressed: () {
-                            controller.clear();
-                            onChanged('');
-                          },
-                        )
-                      : null,
+                  ? IconButton(
+                      icon: const Icon(
+                        Icons.close,
+                        size: 18,
+                        color: Colors.white54,
+                      ),
+                      onPressed: () {
+                        controller.clear();
+                        onChanged('');
+                      },
+                    )
+                  : null,
               hintText: "Find in songs...",
               hintStyle: TextStyle(
                 color: Colors.white.withValues(alpha: 0.5),
@@ -954,16 +1003,18 @@ class _ActionButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: isActive ? Colors.white.withValues(alpha: 0.1) : null,
-            border: Border.all(color: isActive ? AppPallete.primaryGreen : Colors.white24),
+            border: Border.all(
+              color: isActive ? AppPallete.primaryGreen : Colors.white24,
+            ),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                icon, 
-                color: isActive ? AppPallete.primaryGreen : Colors.white, 
-                size: 16
+                icon,
+                color: isActive ? AppPallete.primaryGreen : Colors.white,
+                size: 16,
               ),
               const SizedBox(width: 6),
               Text(

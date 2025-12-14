@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
+import 'package:music_player/core/router/app_router.dart';
 import 'package:music_player/core/theme/app_theme.dart';
 import 'package:music_player/core/usecases/usecase.dart';
 import 'package:music_player/core/di/init_dependencies.dart';
@@ -11,7 +13,6 @@ import 'package:music_player/features/music_player/presentation/bloc/music_playe
 import 'package:music_player/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:music_player/features/onboarding/domain/usecases/check_if_user_is_first_timer.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:music_player/features/splash/presentation/pages/splash_page.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart'; // Import this
 
 void main() async {
@@ -65,11 +66,18 @@ class _MyAppState extends State<MyApp> {
                 ..add(const ProfileEvent.loadProfile()),
         ),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         title: 'AudioGraphy',
         theme: AppTheme.darkThemeMode,
-        home: SplashPage(isFirstRun: widget.isFirstRun),
+        routerConfig: serviceLocator<AppRouter>().config(
+          deepLinkBuilder: (platformDeepLink) {
+            if (platformDeepLink.path == '/') {
+              return DeepLink([SplashRoute(isFirstRun: widget.isFirstRun)]);
+            }
+            return platformDeepLink;
+          },
+        ),
       ),
     );
   }

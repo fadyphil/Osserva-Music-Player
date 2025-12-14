@@ -1,6 +1,7 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:music_player/core/router/app_router.dart';
 import 'package:music_player/features/analytics/data/datasources/analytics_local_datasource.dart';
 import 'package:music_player/features/analytics/data/repositories/analytics_repository_impl.dart';
 import 'package:music_player/features/analytics/domain/repositories/analytics_repository.dart';
@@ -48,6 +49,8 @@ Future<void> initDependencies() async {
   // 1. External (Third Party Libraries)
   // =========================================================
   final sharedPreferences = await SharedPreferences.getInstance();
+  final appRouter = AppRouter();
+
   serviceLocator.registerLazySingleton(() => sharedPreferences);
 
   serviceLocator.registerLazySingleton(() => OnAudioQuery());
@@ -62,6 +65,7 @@ Future<void> initDependencies() async {
   );
 
   serviceLocator.registerSingleton<AudioHandler>(audioHandler);
+  serviceLocator.registerSingleton<AppRouter>(appRouter);
 
   // =========================================================
   // 2. Data Layer
@@ -89,10 +93,9 @@ Future<void> initDependencies() async {
   // =========================================================
   // 4. Presentation Layer (Bloc)
   // =========================================================
-  serviceLocator.registerFactory(() => LocalMusicBloc(
-        serviceLocator(),
-        serviceLocator(),
-      ));
+  serviceLocator.registerFactory(
+    () => LocalMusicBloc(serviceLocator(), serviceLocator()),
+  );
 
   // =========================================================
   // FEATURE: MUSIC PLAYER
@@ -102,9 +105,7 @@ Future<void> initDependencies() async {
     () => AudioPlayerRepositoryImpl(serviceLocator<AudioHandler>()),
   );
 
-  serviceLocator.registerLazySingleton(() => MusicPlayerBloc(
-        serviceLocator(),
-      ));
+  serviceLocator.registerLazySingleton(() => MusicPlayerBloc(serviceLocator()));
 
   // =========================================================
   // FEATURE: ANALYTICS
@@ -118,14 +119,16 @@ Future<void> initDependencies() async {
   );
 
   serviceLocator.registerLazySingleton(() => LogPlayback(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => GetAllSongPlayCounts(serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => GetAllSongPlayCounts(serviceLocator()),
+  );
   serviceLocator.registerLazySingleton(() => GetTopSongs(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetTopArtists(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetTopAlbums(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetTopGenres(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetGeneralStats(serviceLocator()));
   serviceLocator.registerLazySingleton(() => ClearAnalytics(serviceLocator()));
-  
+
   serviceLocator.registerLazySingleton(
     () => MusicAnalyticsService(serviceLocator(), serviceLocator()),
   );
@@ -152,9 +155,11 @@ Future<void> initDependencies() async {
   );
   serviceLocator.registerLazySingleton(() => CacheFirstTimer(serviceLocator()));
   serviceLocator.registerLazySingleton(
-      () => CheckIfUserIsFirstTimer(serviceLocator()));
+    () => CheckIfUserIsFirstTimer(serviceLocator()),
+  );
   serviceLocator.registerLazySingleton(
-      () => LogOnboardingComplete(serviceLocator()));
+    () => LogOnboardingComplete(serviceLocator()),
+  );
 
   serviceLocator.registerFactory(
     () => OnboardingCubit(cacheFirstTimer: serviceLocator()),
@@ -182,7 +187,9 @@ Future<void> initDependencies() async {
     () => ProfileRepositoryImpl(serviceLocator()),
   );
   serviceLocator.registerLazySingleton(() => GetUserProfile(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => UpdateUserProfile(serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => UpdateUserProfile(serviceLocator()),
+  );
   serviceLocator.registerLazySingleton(() => ClearCache(serviceLocator()));
 
   serviceLocator.registerFactory(

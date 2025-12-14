@@ -1,20 +1,17 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:music_player/core/router/app_router.dart';
 import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/home/presentation/pages/home_page.dart';
 import 'package:music_player/features/onboarding/presentation/cubit/onboarding_cubit.dart';
-import 'package:music_player/features/onboarding/presentation/cubit/user_registration_cubit.dart';
-import 'package:music_player/features/onboarding/presentation/pages/user_registration_page.dart';
 import 'package:music_player/features/onboarding/presentation/widgets/onboarding_content.dart';
 import 'package:music_player/core/di/init_dependencies.dart'; // Import serviceLocator
 
+@RoutePage()
 class OnboardingPage extends StatefulWidget {
   final VoidCallback? onDone;
-  
-  const OnboardingPage({
-    super.key,
-    this.onDone,
-  });
+
+  const OnboardingPage({super.key, this.onDone});
 
   @override
   State<OnboardingPage> createState() => _OnboardingPageState();
@@ -26,17 +23,20 @@ class _OnboardingPageState extends State<OnboardingPage> {
   final List<Map<String, dynamic>> _onboardingData = [
     {
       "title": "Welcome to Music Player",
-      "desc": "Experience your local music library like never before with our sleek and modern player.",
+      "desc":
+          "Experience your local music library like never before with our sleek and modern player.",
       "icon": Icons.music_note_rounded,
     },
     {
       "title": "Smart Analytics",
-      "desc": "Track your listening habits, favorite genres, and top artists with our built-in analytics.",
+      "desc":
+          "Track your listening habits, favorite genres, and top artists with our built-in analytics.",
       "icon": Icons.analytics_outlined,
     },
     {
       "title": "Seamless Playback",
-      "desc": "Enjoy uninterrupted playback with background support and intuitive controls.",
+      "desc":
+          "Enjoy uninterrupted playback with background support and intuitive controls.",
       "icon": Icons.play_circle_fill_rounded,
     },
   ];
@@ -53,25 +53,23 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   void _navigateToRegistration(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => BlocProvider(
-          create: (_) => serviceLocator<UserRegistrationCubit>(),
-          child: UserRegistrationPage(
-            onRegistrationComplete: () => _finishOnboarding(context),
-          ),
-        ),
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     builder: (context) => BlocProvider(
+    //       create: (_) => serviceLocator<UserRegistrationCubit>(),
+    //       child: UserRegistrationPage(
+    //         onRegistrationComplete: () => _finishOnboarding(context),
+    //       ),
+    //     ),
+    //   ),
+    // );
+    context.read<OnboardingCubit>().cacheFirstRun();
+    context.router.push(
+      UserRegistrationRoute(
+        onRegistrationComplete: () {
+          context.router.replace(const HomeRoute());
+        },
       ),
-    );
-  }
-
-  void _finishOnboarding(BuildContext context) {
-    if (widget.onDone != null) {
-      widget.onDone!();
-      return;
-    }
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const HomePage()),
     );
   }
 
@@ -126,7 +124,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
                   // Bottom Controls
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0,
+                      vertical: 32.0,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

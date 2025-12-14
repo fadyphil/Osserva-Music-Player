@@ -34,6 +34,22 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
   }
 
   @override
+  Future<void> addQueueItem(SongEntity song) async {
+    final item = MediaItem(
+      id: song.id.toString(),
+      album: song.album,
+      title: song.title,
+      artist: song.artist,
+      artUri: song.albumId != null
+          ? Uri.parse("content://media/external/audio/albumart/${song.albumId}")
+          : null,
+      duration: Duration(milliseconds: song.duration.toInt()),
+      extras: {'url': song.path},
+    );
+    await _handler.addQueueItem(item);
+  }
+
+  @override
   Future<void> playSong(
     String path,
     String title,

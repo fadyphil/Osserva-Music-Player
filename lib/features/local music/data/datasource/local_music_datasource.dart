@@ -63,16 +63,15 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
     final home = Platform.environment['HOME'];
     if (home == null) return [];
 
-    final dirsToScan = [
-      Directory('$home/Music'),
-      Directory('$home/Downloads'),
-    ];
+    final dirsToScan = [Directory('$home/Music'), Directory('$home/Downloads')];
 
     for (final dir in dirsToScan) {
       if (!await dir.exists()) continue;
       try {
-        await for (final file
-            in dir.list(recursive: true, followLinks: false)) {
+        await for (final file in dir.list(
+          recursive: true,
+          followLinks: false,
+        )) {
           if (file is File) {
             final path = file.path.toLowerCase();
             if (path.endsWith('.mp3') ||
@@ -80,16 +79,15 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
                 path.endsWith('.wav') ||
                 path.endsWith('.ogg') ||
                 path.endsWith('.flac')) {
-              
               final filename = file.path.split(Platform.pathSeparator).last;
-              
+
               // Heuristic: "Artist - Title.mp3"
               String title = filename;
               String artist = 'Unknown Artist';
-              final nameWithoutExt = filename.contains('.') 
+              final nameWithoutExt = filename.contains('.')
                   ? filename.substring(0, filename.lastIndexOf('.'))
                   : filename;
-                  
+
               if (nameWithoutExt.contains(' - ')) {
                 final parts = nameWithoutExt.split(' - ');
                 artist = parts[0].trim();
@@ -98,16 +96,18 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
                 title = nameWithoutExt;
               }
 
-              songs.add(SongEntity(
-                id: file.path.hashCode,
-                title: title,
-                artist: artist,
-                album: 'Unknown Album',
-                albumId: 0,
-                path: file.path,
-                duration: 0, // Duration unknown without metadata parser
-                size: await file.length(),
-              ));
+              songs.add(
+                SongEntity(
+                  id: file.path.hashCode,
+                  title: title,
+                  artist: artist,
+                  album: 'Unknown Album',
+                  albumId: 0,
+                  path: file.path,
+                  duration: 0, // Duration unknown without metadata parser
+                  size: await file.length(),
+                ),
+              );
             }
           }
         }

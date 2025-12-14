@@ -1,7 +1,8 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/features/music_player/presentation/pages/music_player_page.dart';
+import 'package:music_player/core/router/app_router.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../../../core/theme/app_pallete.dart';
 import '../bloc/music_player_bloc.dart';
@@ -41,8 +42,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
         if (_pageController.hasClients && !_isUserScrolling) {
           final currentPage = _pageController.page?.round() ?? 0;
           if (currentPage != state.currentIndex) {
-             _lastKnownIndex = state.currentIndex;
-             _pageController.jumpToPage(state.currentIndex);
+            _lastKnownIndex = state.currentIndex;
+            _pageController.jumpToPage(state.currentIndex);
           }
         }
       },
@@ -55,13 +56,14 @@ class _MiniPlayerState extends State<MiniPlayer> {
           if (song == null) return const SizedBox.shrink();
 
           // Sync controller if it's the first load or desynced
-          if (_pageController.hasClients && !_isUserScrolling &&
+          if (_pageController.hasClients &&
+              !_isUserScrolling &&
               (_pageController.page?.round() ?? 0) != state.currentIndex) {
-             WidgetsBinding.instance.addPostFrameCallback((_) {
-               if (_pageController.hasClients && !_isUserScrolling) {
-                 _pageController.jumpToPage(state.currentIndex);
-               }
-             });
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (_pageController.hasClients && !_isUserScrolling) {
+                _pageController.jumpToPage(state.currentIndex);
+              }
+            });
           }
 
           // Safe Queue Access
@@ -70,14 +72,15 @@ class _MiniPlayerState extends State<MiniPlayer> {
 
           return GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return const MusicPlayerPage();
-                  },
-                ),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) {
+              //       return const MusicPlayerPage();
+              //     },
+              //   ),
+              // );
+              context.router.push(MusicPlayerRoute());
             },
             child: Container(
               margin: const EdgeInsets.all(8),
@@ -122,7 +125,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         Expanded(
                           child: NotificationListener<UserScrollNotification>(
                             onNotification: (notification) {
-                              if (notification.direction == ScrollDirection.idle) {
+                              if (notification.direction ==
+                                  ScrollDirection.idle) {
                                 _isUserScrolling = false;
                               } else {
                                 _isUserScrolling = true;
@@ -134,16 +138,16 @@ class _MiniPlayerState extends State<MiniPlayer> {
                               itemCount: itemCount,
                               physics: const BouncingScrollPhysics(),
                               onPageChanged: (index) {
-                                  // Only trigger if meaningful change
-                                  if (index != _lastKnownIndex) {
-                                    _lastKnownIndex = index;
-                                    context.read<MusicPlayerBloc>().add(
-                                      MusicPlayerEvent.initMusicQueue(
-                                        songs: queue,
-                                        currentIndex: index,
-                                      ),
-                                    );
-                                  }
+                                // Only trigger if meaningful change
+                                if (index != _lastKnownIndex) {
+                                  _lastKnownIndex = index;
+                                  context.read<MusicPlayerBloc>().add(
+                                    MusicPlayerEvent.initMusicQueue(
+                                      songs: queue,
+                                      currentIndex: index,
+                                    ),
+                                  );
+                                }
                               },
                               itemBuilder: (context, index) {
                                 final itemSong = queue[index];
@@ -152,11 +156,14 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                     animation: _pageController,
                                     builder: (context, child) {
                                       double opacity = 1.0;
-                                      if (_pageController.position.haveDimensions) {
-                                         double page = _pageController.page ?? 0;
-                                         double dist = (page - index).abs();
-                                         // Smoother cubic fade
-                                         opacity = (1 - (dist * dist * dist)).clamp(0.0, 1.0);
+                                      if (_pageController
+                                          .position
+                                          .haveDimensions) {
+                                        double page = _pageController.page ?? 0;
+                                        double dist = (page - index).abs();
+                                        // Smoother cubic fade
+                                        opacity = (1 - (dist * dist * dist))
+                                            .clamp(0.0, 1.0);
                                       }
                                       return Opacity(
                                         opacity: opacity,
@@ -166,8 +173,10 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                     child: Align(
                                       alignment: Alignment.centerLeft,
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             itemSong.title,

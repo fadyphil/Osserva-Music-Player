@@ -9,15 +9,13 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
   final GetLocalSongsUseCase _getLocalSongsUseCase;
   final GetAllSongPlayCounts _getAllSongPlayCountsUseCase;
 
-  LocalMusicBloc(
-    this._getLocalSongsUseCase,
-    this._getAllSongPlayCountsUseCase,
-  ) : super(const LocalMusicState.initial()) {
+  LocalMusicBloc(this._getLocalSongsUseCase, this._getAllSongPlayCountsUseCase)
+    : super(const LocalMusicState.initial()) {
     on<LocalMusicEvent>((event, emit) async {
       await event.map(
         getLocalSongs: (_) async {
           emit(const LocalMusicState.loading());
-          
+
           final results = await Future.wait([
             _getLocalSongsUseCase(NoParams()),
             _getAllSongPlayCountsUseCase(NoParams()),
@@ -30,8 +28,8 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
             (failure) => emit(LocalMusicState.failure(failure)),
             (songs) {
               final Map<int, int> counts = countsResult.fold(
-                (l) => <int, int>{}, 
-                (r) => r
+                (l) => <int, int>{},
+                (r) => r,
               );
               emit(LocalMusicState.loaded(songs, playCounts: counts));
             },

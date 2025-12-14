@@ -17,7 +17,9 @@ import 'package:bloc_test/bloc_test.dart';
 
 // Mocks
 class MockMusicPlayerBloc extends Mock implements MusicPlayerBloc {}
+
 class MockMusicAnalyticsService extends Mock implements MusicAnalyticsService {}
+
 class MockOnboardingCubit extends MockCubit<int> implements OnboardingCubit {}
 
 void main() {
@@ -33,8 +35,10 @@ void main() {
     // Setup GetIt
     final getIt = GetIt.instance;
     getIt.registerLazySingleton<MusicPlayerBloc>(() => MockMusicPlayerBloc());
-    getIt.registerLazySingleton<MusicAnalyticsService>(() => MockMusicAnalyticsService());
-    
+    getIt.registerLazySingleton<MusicAnalyticsService>(
+      () => MockMusicAnalyticsService(),
+    );
+
     final mockOnboardingCubit = MockOnboardingCubit();
     when(() => mockOnboardingCubit.state).thenReturn(0);
     getIt.registerFactory<OnboardingCubit>(() => mockOnboardingCubit);

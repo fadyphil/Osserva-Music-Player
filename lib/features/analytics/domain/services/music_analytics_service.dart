@@ -24,14 +24,18 @@ class MusicAnalyticsService with WidgetsBindingObserver {
 
   void init() {
     WidgetsBinding.instance.addObserver(this);
-    _playerStateSubscription =
-        _audioRepository.isPlayingStream.listen(_onPlayerStateChanged);
-    _currentSongSubscription =
-        _audioRepository.currentSongStream.listen(_onSongChanged);
-    _durationSubscription =
-        _audioRepository.durationStream.listen(_onDurationChanged);
-    _completionSubscription =
-        _audioRepository.playerCompleteStream.listen((_) => _onSongCompleted());
+    _playerStateSubscription = _audioRepository.isPlayingStream.listen(
+      _onPlayerStateChanged,
+    );
+    _currentSongSubscription = _audioRepository.currentSongStream.listen(
+      _onSongChanged,
+    );
+    _durationSubscription = _audioRepository.durationStream.listen(
+      _onDurationChanged,
+    );
+    _completionSubscription = _audioRepository.playerCompleteStream.listen(
+      (_) => _onSongCompleted(),
+    );
   }
 
   void _onPlayerStateChanged(bool isPlaying) {
@@ -42,8 +46,9 @@ class MusicAnalyticsService with WidgetsBindingObserver {
     } else if (!isPlaying && _isPlaying) {
       // Paused/Stopped
       if (_playStartTime != null) {
-        _accumulatedMilliseconds +=
-            now.difference(_playStartTime!).inMilliseconds;
+        _accumulatedMilliseconds += now
+            .difference(_playStartTime!)
+            .inMilliseconds;
         _playStartTime = null;
       }
     }
@@ -64,10 +69,9 @@ class MusicAnalyticsService with WidgetsBindingObserver {
     // Reset for new song
     _currentSong = newSong;
     // Initial duration from metadata (assuming ms)
-    _currentSongDuration =
-        newSong != null
-            ? Duration(milliseconds: newSong.duration.toInt())
-            : Duration.zero;
+    _currentSongDuration = newSong != null
+        ? Duration(milliseconds: newSong.duration.toInt())
+        : Duration.zero;
 
     _accumulatedMilliseconds = 0;
     _playStartTime = _isPlaying ? DateTime.now() : null;
@@ -103,7 +107,7 @@ class MusicAnalyticsService with WidgetsBindingObserver {
         _onPlayerStateChanged(false); // Force pause logic to accumulate time
         _isPlaying = true; // Restore state just in case (though we are pausing)
       }
-      
+
       if (_currentSong != null && _accumulatedMilliseconds > 0) {
         _finalizeAndLog(_currentSong!, _currentSongDuration);
         _accumulatedMilliseconds = 0; // Prevent double counting if resumed
@@ -119,8 +123,9 @@ class MusicAnalyticsService with WidgetsBindingObserver {
     // Capture any ongoing session
     if (_isPlaying && _playStartTime != null) {
       final now = DateTime.now();
-      _accumulatedMilliseconds +=
-          now.difference(_playStartTime!).inMilliseconds;
+      _accumulatedMilliseconds += now
+          .difference(_playStartTime!)
+          .inMilliseconds;
       // Don't reset _playStartTime here; rely on caller
     }
 

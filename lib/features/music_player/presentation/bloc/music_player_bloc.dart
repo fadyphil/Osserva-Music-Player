@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
 import 'music_player_event.dart';
 import 'music_player_state.dart';
@@ -15,8 +16,7 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   StreamSubscription? _shuffleSubscription;
   StreamSubscription? _loopSubscription;
 
-  MusicPlayerBloc(this._audioRepository)
-    : super(const MusicPlayerState()) {
+  MusicPlayerBloc(this._audioRepository) : super(const MusicPlayerState()) {
     // 1. Setup Listeners
     _positionSubscription = _audioRepository.positionStream.listen((pos) {
       add(MusicPlayerEvent.updatePosition(pos));
@@ -143,6 +143,18 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
               currentIndex: index != -1 ? index : state.currentIndex,
             ),
           );
+        },
+        addToQueue: (e) async {
+          // Optimistic update
+          final updatedQueue = List<SongEntity>.from(state.queue)..add(e.song);
+          emit(state.copyWith(queue: updatedQueue));
+          await _audioRepository.addQueueItem(e.song);
+        },
+        addToPlaylist: (e) async {
+          // Placeholder for Playlist feature
+          // Ideally, this would open a dialog in UI, but the Bloc just handles logic.
+          // Since we don't have a playlist Repo yet, we do nothing or just emit a side-effect if needed.
+          // For now, no state change.
         },
       );
     });
