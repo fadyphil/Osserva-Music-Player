@@ -1,10 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:music_player/features/favorites/presentation/pages/favorites_page.dart';
 import 'package:music_player/features/home/presentation/pages/home_page.dart';
 import 'package:music_player/features/local%20music/presentation/pages/song_list_page.dart';
 import 'package:music_player/features/music_player/presentation/pages/music_player_page.dart';
 import 'package:music_player/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:music_player/features/onboarding/presentation/pages/user_registration_page.dart';
+import 'package:music_player/features/playlists/presentation/pages/playlist_detail_page.dart';
+import 'package:music_player/features/playlists/presentation/pages/playlist_list_page.dart';
 import 'package:music_player/features/profile/presentation/pages/profile_page.dart';
 import 'package:music_player/features/splash/presentation/pages/splash_page.dart';
 
@@ -40,9 +43,12 @@ class AppRouter extends RootStackRouter {
     ),
 
     AutoRoute(page: MusicPlayerRoute.page),
-    
+
     // Playlists
     AutoRoute(page: PlaylistListRoute.page),
     AutoRoute(page: PlaylistDetailRoute.page),
+
+    // Favorites
+    AutoRoute(page: FavoritesRoute.page),
   ];
 }

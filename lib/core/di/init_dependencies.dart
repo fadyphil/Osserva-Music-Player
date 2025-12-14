@@ -37,6 +37,13 @@ import 'package:music_player/features/profile/domain/usecases/get_user_profile.d
 import 'package:music_player/features/profile/domain/usecases/update_user_profile.dart';
 import 'package:music_player/features/profile/domain/usecases/clear_cache.dart';
 import 'package:music_player/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:music_player/features/favorites/data/datasources/favorites_local_datasource.dart';
+import 'package:music_player/features/favorites/data/repositories/favorites_repository_impl.dart';
+import 'package:music_player/features/favorites/domain/repositories/favorites_repository.dart';
+import 'package:music_player/features/favorites/domain/usecases/add_favorite.dart';
+import 'package:music_player/features/favorites/domain/usecases/get_favorite_songs.dart';
+import 'package:music_player/features/favorites/domain/usecases/remove_favorite.dart';
+import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
 import 'package:music_player/features/playlists/data/datasources/playlist_local_datasource.dart';
 import 'package:music_player/features/playlists/data/repositories/playlist_repository_impl.dart';
 import 'package:music_player/features/playlists/domain/repositories/playlist_repository.dart';
@@ -252,6 +259,35 @@ Future<void> initDependencies() async {
       addSongToPlaylist: serviceLocator(),
       removeSongFromPlaylist: serviceLocator(),
       editPlaylist: serviceLocator(),
+    ),
+  );
+
+  // =========================================================
+  // FEATURE: FAVORITES
+  // =========================================================
+  serviceLocator.registerLazySingleton<FavoritesLocalDataSource>(
+    () => FavoritesLocalDataSourceImpl(),
+  );
+
+  serviceLocator.registerLazySingleton<FavoritesRepository>(
+    () => FavoritesRepositoryImpl(serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton(() => AddFavorite(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => RemoveFavorite(serviceLocator()));
+
+  serviceLocator.registerLazySingleton(
+    () => GetFavoriteSongs(
+      favoritesRepository: serviceLocator(),
+      musicRepository: serviceLocator(),
+    ),
+  );
+
+  serviceLocator.registerFactory(
+    () => FavoritesBloc(
+      getFavoriteSongs: serviceLocator(),
+      addFavorite: serviceLocator(),
+      removeFavorite: serviceLocator(),
     ),
   );
 }

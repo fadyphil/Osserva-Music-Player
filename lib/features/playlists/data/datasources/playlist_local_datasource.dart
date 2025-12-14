@@ -1,7 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:music_player/features/playlists/data/models/playlist_model.dart';
-import 'dart:developer';
 
 abstract class PlaylistLocalDataSource {
   Future<PlaylistModel> createPlaylist({
@@ -11,7 +10,7 @@ abstract class PlaylistLocalDataSource {
   });
 
   Future<void> deletePlaylist(int id);
-  
+
   Future<PlaylistModel> editPlaylist({
     required int id,
     String? name,
@@ -20,15 +19,18 @@ abstract class PlaylistLocalDataSource {
   });
 
   Future<void> addSongToPlaylist({
-    required int playlistId, 
-    required int songId, 
-    required int durationMs
+    required int playlistId,
+    required int songId,
+    required int durationMs,
   });
-  
-  Future<void> removeSongFromPlaylist({required int playlistId, required int songId});
-  
+
+  Future<void> removeSongFromPlaylist({
+    required int playlistId,
+    required int songId,
+  });
+
   Future<List<PlaylistModel>> getPlaylists();
-  
+
   Future<List<int>> getPlaylistSongIds(int playlistId);
 }
 
@@ -73,8 +75,10 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
             FOREIGN KEY (playlist_id) REFERENCES $_tablePlaylists (id) ON DELETE CASCADE
           )
         ''');
-        
-        await db.execute('CREATE INDEX idx_playlist_id ON $_tablePlaylistSongs (playlist_id)');
+
+        await db.execute(
+          'CREATE INDEX idx_playlist_id ON $_tablePlaylistSongs (playlist_id)',
+        );
       },
     );
   }
@@ -87,7 +91,7 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
   }) async {
     final database = await db;
     final now = DateTime.now().millisecondsSinceEpoch;
-    
+
     final id = await database.insert(_tablePlaylists, {
       'name': name,
       'description': description,
@@ -124,7 +128,7 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
   }) async {
     final database = await db;
     final now = DateTime.now().millisecondsSinceEpoch;
-    
+
     final Map<String, dynamic> values = {'updated_at': now};
     if (name != null) values['name'] = name;
     if (description != null) values['description'] = description;
@@ -138,9 +142,13 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
     );
 
     // Fetch updated
-    final maps = await database.query(_tablePlaylists, where: 'id = ?', whereArgs: [id]);
+    final maps = await database.query(
+      _tablePlaylists,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     if (maps.isEmpty) throw Exception('Playlist not found');
-    
+
     // We need to fetch stats to return a complete model
     return _getPlaylistWithStats(PlaylistModel.fromJson(maps.first));
   }
@@ -153,15 +161,15 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
   }) async {
     final database = await db;
     // Check duplication? usually playlists allow duplicates, but let's assume unique for now or allow it.
-    // Let's allow duplicates as standard. 
-    
+    // Let's allow duplicates as standard.
+
     await database.insert(_tablePlaylistSongs, {
       'playlist_id': playlistId,
       'song_id': songId,
       'duration': durationMs,
       'added_at': DateTime.now().millisecondsSinceEpoch,
     });
-    
+
     // Update updated_at
     await database.update(
       _tablePlaylists,
@@ -172,14 +180,17 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
   }
 
   @override
-  Future<void> removeSongFromPlaylist({required int playlistId, required int songId}) async {
+  Future<void> removeSongFromPlaylist({
+    required int playlistId,
+    required int songId,
+  }) async {
     final database = await db;
     // Remove ONE instance of the song? Or all? Usually one.
-    // SQLite delete removes all matching rows. 
+    // SQLite delete removes all matching rows.
     // If we support duplicates, we need to delete by row ID or limit 1.
     // 'DELETE FROM table WHERE ... LIMIT 1' is not standard SQL but SQLite supports it if compiled with it.
     // Safer: Select ID of one, then delete.
-    
+
     final List<Map<String, dynamic>> rows = await database.query(
       _tablePlaylistSongs,
       columns: ['id'],
@@ -187,11 +198,15 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
       whereArgs: [playlistId, songId],
       limit: 1,
     );
-    
+
     if (rows.isNotEmpty) {
       final id = rows.first['id'] as int;
-      await database.delete(_tablePlaylistSongs, where: 'id = ?', whereArgs: [id]);
-      
+      await database.delete(
+        _tablePlaylistSongs,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+
       // Update updated_at
       await database.update(
         _tablePlaylists,
@@ -205,10 +220,13 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
   @override
   Future<List<PlaylistModel>> getPlaylists() async {
     final database = await db;
-    
+
     // Get all playlists
-    final playlistMaps = await database.query(_tablePlaylists, orderBy: 'updated_at DESC');
-    
+    final playlistMaps = await database.query(
+      _tablePlaylists,
+      orderBy: 'updated_at DESC',
+    );
+
     // Get stats for all
     // Can be done with a GROUP BY join
     final stats = await database.rawQuery('''
@@ -219,12 +237,13 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
       FROM $_tablePlaylistSongs 
       GROUP BY playlist_id
     ''');
-    
+
     final Map<int, Map<String, int>> statsMap = {};
     for (var row in stats) {
       statsMap[row['playlist_id'] as int] = {
         'count': row['count'] as int,
-        'total_duration': (row['total_duration'] as int? ?? 0) ~/ 1000 // Convert ms to s
+        'total_duration':
+            (row['total_duration'] as int? ?? 0) ~/ 1000, // Convert ms to s
       };
     }
 
@@ -249,20 +268,23 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
       whereArgs: [playlistId],
       orderBy: 'added_at ASC',
     );
-    
+
     return result.map((e) => e['song_id'] as int).toList();
   }
-  
+
   Future<PlaylistModel> _getPlaylistWithStats(PlaylistModel model) async {
     final database = await db;
-    final stats = await database.rawQuery('''
+    final stats = await database.rawQuery(
+      '''
       SELECT 
         COUNT(*) as count, 
         SUM(duration) as total_duration 
       FROM $_tablePlaylistSongs 
       WHERE playlist_id = ?
-    ''', [model.id]);
-    
+    ''',
+      [model.id],
+    );
+
     final row = stats.first;
     return model.copyWith(
       totalSongs: row['count'] as int,

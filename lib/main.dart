@@ -9,6 +9,7 @@ import 'package:music_player/core/theme/app_theme.dart';
 import 'package:music_player/core/usecases/usecase.dart';
 import 'package:music_player/core/di/init_dependencies.dart';
 import 'package:music_player/features/analytics/domain/services/music_analytics_service.dart';
+import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
 import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
 import 'package:music_player/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:music_player/features/onboarding/domain/usecases/check_if_user_is_first_timer.dart';
@@ -64,6 +65,11 @@ class _MyAppState extends State<MyApp> {
           create: (_) =>
               serviceLocator<ProfileBloc>()
                 ..add(const ProfileEvent.loadProfile()),
+        ),
+        BlocProvider(
+          create: (_) =>
+              serviceLocator<FavoritesBloc>()
+                ..add(const FavoritesEvent.loadFavorites()),
         ),
       ],
       child: MaterialApp.router(
