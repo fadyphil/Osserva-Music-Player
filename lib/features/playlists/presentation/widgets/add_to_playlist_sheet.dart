@@ -111,15 +111,63 @@ class AddToPlaylistSheet extends StatelessWidget {
                 child: const Icon(Icons.add, color: Colors.white),
               ),
               title: const Text("Create New Playlist", style: TextStyle(color: Colors.white)),
-              onTap: () {
-                // We could handle creation here or navigate.
-                // For simplicity, just pop and tell user to go to playlists.
-                Navigator.pop(context);
-                // Ideally open Create Dialog.
-              },
+              onTap: () => _showCreatePlaylistDialog(context),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showCreatePlaylistDialog(BuildContext context) {
+    final nameCtrl = TextEditingController();
+    final descCtrl = TextEditingController();
+    final bloc = context.read<PlaylistBloc>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        title: const Text('New Playlist', style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameCtrl,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                labelStyle: TextStyle(color: Colors.white54),
+              ),
+            ),
+            TextField(
+              controller: descCtrl,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Description',
+                labelStyle: TextStyle(color: Colors.white54),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (nameCtrl.text.isNotEmpty) {
+                bloc.add(PlaylistEvent.createPlaylist(
+                  name: nameCtrl.text,
+                  description: descCtrl.text,
+                ));
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Create'),
+          ),
+        ],
       ),
     );
   }
