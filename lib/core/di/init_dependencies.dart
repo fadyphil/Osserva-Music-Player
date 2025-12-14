@@ -37,6 +37,18 @@ import 'package:music_player/features/profile/domain/usecases/get_user_profile.d
 import 'package:music_player/features/profile/domain/usecases/update_user_profile.dart';
 import 'package:music_player/features/profile/domain/usecases/clear_cache.dart';
 import 'package:music_player/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:music_player/features/playlists/data/datasources/playlist_local_datasource.dart';
+import 'package:music_player/features/playlists/data/repositories/playlist_repository_impl.dart';
+import 'package:music_player/features/playlists/domain/repositories/playlist_repository.dart';
+import 'package:music_player/features/playlists/domain/usecases/add_song_to_playlist.dart';
+import 'package:music_player/features/playlists/domain/usecases/create_playlist.dart';
+import 'package:music_player/features/playlists/domain/usecases/delete_playlist.dart';
+import 'package:music_player/features/playlists/domain/usecases/edit_playlist.dart';
+import 'package:music_player/features/playlists/domain/usecases/get_playlist_songs.dart';
+import 'package:music_player/features/playlists/domain/usecases/get_playlists.dart';
+import 'package:music_player/features/playlists/domain/usecases/remove_song_from_playlist.dart';
+import 'package:music_player/features/playlists/presentation/bloc/playlist_bloc.dart';
+import 'package:music_player/features/playlists/presentation/bloc/playlist_detail_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -198,6 +210,48 @@ Future<void> initDependencies() async {
       updateUserProfile: serviceLocator(),
       clearCache: serviceLocator(),
       clearAnalytics: serviceLocator(),
+    ),
+  );
+
+  // =========================================================
+  // FEATURE: PLAYLISTS
+  // =========================================================
+  serviceLocator.registerLazySingleton<PlaylistLocalDataSource>(
+    () => PlaylistLocalDataSourceImpl(),
+  );
+
+  serviceLocator.registerLazySingleton<PlaylistRepository>(
+    () => PlaylistRepositoryImpl(serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton(() => CreatePlaylist(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => DeletePlaylist(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => EditPlaylist(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => GetPlaylists(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => AddSongToPlaylist(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => RemoveSongFromPlaylist(serviceLocator()));
+
+  serviceLocator.registerLazySingleton(
+    () => GetPlaylistSongs(
+      playlistRepository: serviceLocator(),
+      musicRepository: serviceLocator(),
+    ),
+  );
+
+  serviceLocator.registerFactory(
+    () => PlaylistBloc(
+      getPlaylists: serviceLocator(),
+      createPlaylist: serviceLocator(),
+      deletePlaylist: serviceLocator(),
+    ),
+  );
+
+  serviceLocator.registerFactory(
+    () => PlaylistDetailBloc(
+      getPlaylistSongs: serviceLocator(),
+      addSongToPlaylist: serviceLocator(),
+      removeSongFromPlaylist: serviceLocator(),
+      editPlaylist: serviceLocator(),
     ),
   );
 }

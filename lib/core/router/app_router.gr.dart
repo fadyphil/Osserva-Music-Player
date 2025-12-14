@@ -108,6 +108,69 @@ class OnboardingRouteArgs {
 }
 
 /// generated route for
+/// [PlaylistDetailPage]
+class PlaylistDetailRoute extends PageRouteInfo<PlaylistDetailRouteArgs> {
+  PlaylistDetailRoute({
+    Key? key,
+    required PlaylistEntity playlist,
+    List<PageRouteInfo>? children,
+  }) : super(
+         PlaylistDetailRoute.name,
+         args: PlaylistDetailRouteArgs(key: key, playlist: playlist),
+         initialChildren: children,
+       );
+
+  static const String name = 'PlaylistDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<PlaylistDetailRouteArgs>();
+      return PlaylistDetailPage(key: args.key, playlist: args.playlist);
+    },
+  );
+}
+
+class PlaylistDetailRouteArgs {
+  const PlaylistDetailRouteArgs({this.key, required this.playlist});
+
+  final Key? key;
+
+  final PlaylistEntity playlist;
+
+  @override
+  String toString() {
+    return 'PlaylistDetailRouteArgs{key: $key, playlist: $playlist}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! PlaylistDetailRouteArgs) return false;
+    return key == other.key && playlist == other.playlist;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ playlist.hashCode;
+}
+
+/// generated route for
+/// [PlaylistListPage]
+class PlaylistListRoute extends PageRouteInfo<void> {
+  const PlaylistListRoute({List<PageRouteInfo>? children})
+    : super(PlaylistListRoute.name, initialChildren: children);
+
+  static const String name = 'PlaylistListRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PlaylistListPage();
+    },
+  );
+}
+
+/// generated route for
 /// [ProfilePage]
 class ProfileRoute extends PageRouteInfo<void> {
   const ProfileRoute({List<PageRouteInfo>? children})

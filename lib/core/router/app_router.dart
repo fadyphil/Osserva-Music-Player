@@ -12,6 +12,7 @@ import 'package:music_player/features/splash/presentation/pages/splash_page.dart
 // Since I don't know your exact package name, I'm assuming relative imports or you will auto-import them.// Note: "local music" folder has a space, double check folder name
 import '../../features/analytics/presentation/pages/analytics_dashboard_page.dart';
 import 'package:music_player/core/router/guards/onboarding_guard.dart'; // Import the guard
+import 'package:music_player/features/playlists/domain/entities/playlist_entity.dart'; // Import Entity
 
 part 'app_router.gr.dart'; // This file will be generated
 
@@ -39,5 +40,9 @@ class AppRouter extends RootStackRouter {
     ),
 
     AutoRoute(page: MusicPlayerRoute.page),
+    
+    // Playlists
+    AutoRoute(page: PlaylistListRoute.page),
+    AutoRoute(page: PlaylistDetailRoute.page),
   ];
 }
