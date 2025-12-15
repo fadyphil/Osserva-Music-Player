@@ -154,6 +154,7 @@ class PlaylistDetailPage extends StatelessWidget {
               bloc.add(PlaylistDetailEvent.editPlaylist(
                 name: nameCtrl.text,
                 description: descCtrl.text,
+                imagePath: playlist.imagePath,
               ));
               Navigator.pop(ctx);
             },
