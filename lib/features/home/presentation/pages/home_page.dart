@@ -21,7 +21,7 @@ class HomePage extends StatelessWidget {
     return AutoTabsRouter(
       // 1. Define the routes that map to your tabs
       routes: const [
-        SongListRoute(),
+        HomeDashboardRoute(),
         AnalyticsDashboardRoute(),
         ProfileRoute(),
       ],

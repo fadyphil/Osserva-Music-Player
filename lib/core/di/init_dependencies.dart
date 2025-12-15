@@ -6,12 +6,14 @@ import 'package:music_player/features/analytics/data/datasources/analytics_local
 import 'package:music_player/features/analytics/data/repositories/analytics_repository_impl.dart';
 import 'package:music_player/features/analytics/domain/repositories/analytics_repository.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_general_stats.dart';
+import 'package:music_player/features/analytics/domain/usecases/get_playback_history.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_top_items.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
 import 'package:music_player/features/analytics/domain/usecases/log_playback.dart';
 import 'package:music_player/features/analytics/domain/usecases/clear_analytics.dart';
 import 'package:music_player/features/analytics/domain/services/music_analytics_service.dart';
 import 'package:music_player/features/analytics/presentation/bloc/analytics_bloc.dart';
+import 'package:music_player/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
 import 'package:music_player/features/background-notification-feature/data/datasources/audio_handler.dart';
 import 'package:music_player/features/local%20music/data/datasource/local_music_datasource.dart';
 import 'package:music_player/features/local%20music/data/repositories/music_repository_impl.dart';
@@ -146,6 +148,7 @@ Future<void> initDependencies() async {
   serviceLocator.registerLazySingleton(() => GetTopAlbums(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetTopGenres(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetGeneralStats(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => GetPlaybackHistory(serviceLocator()));
   serviceLocator.registerLazySingleton(() => ClearAnalytics(serviceLocator()));
 
   serviceLocator.registerLazySingleton(
@@ -160,6 +163,12 @@ Future<void> initDependencies() async {
       getTopAlbums: serviceLocator(),
       getTopGenres: serviceLocator(),
       getGeneralStats: serviceLocator(),
+    ),
+  );
+
+  serviceLocator.registerFactory(
+    () => HistoryBloc(
+      getPlaybackHistory: serviceLocator(),
     ),
   );
 

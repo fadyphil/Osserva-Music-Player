@@ -17,6 +17,7 @@ abstract interface class AnalyticsLocalDataSource {
   Future<void> logOnboardingComplete();
   Future<void> clearAllData();
   Future<Map<int, int>> getAllSongPlayCounts();
+  Future<List<PlayLog>> getPlaybackHistory({int? limit, int? offset});
 }
 
 class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
@@ -291,5 +292,31 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     }
 
     return counts;
+  }
+
+  @override
+  Future<List<PlayLog>> getPlaybackHistory({int? limit, int? offset}) async {
+    final database = await db;
+    final result = await database.query(
+      _tableName,
+      orderBy: 'timestamp DESC',
+      limit: limit,
+      offset: offset,
+    );
+
+    return result.map((row) {
+      return PlayLog(
+        id: row['id'] as int?,
+        songId: row['song_id'] as int,
+        songTitle: row['title'] as String,
+        artist: row['artist'] as String,
+        album: row['album'] as String,
+        genre: row['genre'] as String,
+        timestamp: DateTime.fromMillisecondsSinceEpoch(row['timestamp'] as int),
+        durationListenedSeconds: row['duration_listened'] as int,
+        isCompleted: (row['is_completed'] as int) == 1,
+        sessionTimeOfDay: row['time_of_day'] as String,
+      );
+    }).toList();
   }
 }

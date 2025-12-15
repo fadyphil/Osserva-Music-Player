@@ -104,4 +104,14 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
       return Left(AnalyticsFailure('Failed to clear analytics data: $e'));
     }
   }
+
+  @override
+  Future<Either<Failure, List<PlayLog>>> getPlaybackHistory({int? limit, int? offset}) async {
+    try {
+      final result = await dataSource.getPlaybackHistory(limit: limit, offset: offset);
+      return Right(result);
+    } catch (e) {
+      return Left(AnalyticsFailure('Failed to fetch playback history: $e'));
+    }
+  }
 }

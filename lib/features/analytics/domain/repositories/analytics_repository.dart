@@ -31,4 +31,7 @@ abstract interface class AnalyticsRepository {
 
   /// Clears all analytics data.
   Future<Either<Failure, void>> clearData();
+
+  /// Retrieves the raw playback history (chronological).
+  Future<Either<Failure, List<PlayLog>>> getPlaybackHistory({int? limit, int? offset});
 }
