@@ -165,6 +165,7 @@ Future<void> initDependencies() async {
       getTopAlbums: serviceLocator(),
       getTopGenres: serviceLocator(),
       getGeneralStats: serviceLocator(),
+      watchPlaybackHistory: serviceLocator(),
     ),
   );
 

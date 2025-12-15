@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/analytics_enums.dart';
@@ -6,6 +7,7 @@ import '../../domain/entities/play_log.dart';
 import '../../domain/usecases/get_general_stats.dart';
 import '../../domain/usecases/get_top_items.dart';
 import '../../domain/usecases/log_playback.dart';
+import '../../domain/usecases/watch_playback_history.dart';
 
 part 'analytics_event.dart';
 part 'analytics_state.dart';
@@ -18,6 +20,8 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
   final GetTopAlbums _getTopAlbums;
   final GetTopGenres _getTopGenres;
   final GetGeneralStats _getGeneralStats;
+  final WatchPlaybackHistory _watchPlaybackHistory;
+  StreamSubscription? _playbackSubscription;
 
   AnalyticsBloc({
     required LogPlayback logPlayback,
@@ -26,15 +30,33 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     required GetTopAlbums getTopAlbums,
     required GetTopGenres getTopGenres,
     required GetGeneralStats getGeneralStats,
+    required WatchPlaybackHistory watchPlaybackHistory,
   })  : _logPlayback = logPlayback,
         _getTopSongs = getTopSongs,
         _getTopArtists = getTopArtists,
         _getTopAlbums = getTopAlbums,
         _getTopGenres = getTopGenres,
         _getGeneralStats = getGeneralStats,
+        _watchPlaybackHistory = watchPlaybackHistory,
         super(const AnalyticsState.initial()) {
     on<_LogPlaybackEvent>(_onLogPlayback);
     on<_LoadAnalyticsData>(_onLoadAnalyticsData);
+
+    _playbackSubscription = _watchPlaybackHistory().listen((_) {
+      state.mapOrNull(
+        loaded: (loadedState) {
+          add(AnalyticsEvent.loadAnalyticsData(
+            timeFrame: loadedState.selectedTimeFrame,
+          ));
+        },
+      );
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _playbackSubscription?.cancel();
+    return super.close();
   }
 
   Future<void> _onLogPlayback(
@@ -55,7 +77,15 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     _LoadAnalyticsData event,
     Emitter<AnalyticsState> emit,
   ) async {
-    emit(const AnalyticsState.loading());
+    // Only emit loading if we are NOT refreshing the SAME timeFrame with existing data.
+    final bool isRefreshing = state.maybeMap(
+      loaded: (s) => s.selectedTimeFrame == event.timeFrame,
+      orElse: () => false,
+    );
+
+    if (!isRefreshing) {
+      emit(const AnalyticsState.loading());
+    }
 
     final timeFrame = event.timeFrame;
     final limit = 10;
