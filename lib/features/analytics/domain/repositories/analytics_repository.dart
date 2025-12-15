@@ -34,4 +34,7 @@ abstract interface class AnalyticsRepository {
 
   /// Retrieves the raw playback history (chronological).
   Future<Either<Failure, List<PlayLog>>> getPlaybackHistory({int? limit, int? offset});
+
+  /// Stream that emits an event whenever a new playback log is added.
+  Stream<void> get playbackStream;
 }

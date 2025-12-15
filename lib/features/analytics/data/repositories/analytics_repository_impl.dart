@@ -114,4 +114,7 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
       return Left(AnalyticsFailure('Failed to fetch playback history: $e'));
     }
   }
+
+  @override
+  Stream<void> get playbackStream => dataSource.onLogStream;
 }

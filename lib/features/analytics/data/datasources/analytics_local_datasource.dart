@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:sqflite/sqflite.dart';
@@ -9,6 +10,7 @@ import '../../domain/entities/play_log.dart';
 abstract interface class AnalyticsLocalDataSource {
   Future<void> initDb();
   Future<void> logEvent(PlayLog log);
+  Stream<void> get onLogStream;
   Future<List<TopItem>> getTopSongs(TimeFrame timeFrame, int limit);
   Future<List<TopItem>> getTopArtists(TimeFrame timeFrame, int limit);
   Future<List<TopItem>> getTopAlbums(TimeFrame timeFrame, int limit);
@@ -23,6 +25,10 @@ abstract interface class AnalyticsLocalDataSource {
 class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
   static Database? _database;
   static const String _tableName = 'playback_logs';
+  final _logController = StreamController<void>.broadcast();
+
+  @override
+  Stream<void> get onLogStream => _logController.stream;
 
   @override
   Future<void> initDb() async {
@@ -82,6 +88,7 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
       'is_completed': log.isCompleted ? 1 : 0,
       'time_of_day': log.sessionTimeOfDay,
     });
+    _logController.add(null);
   }
 
   int _getTimestampThreshold(TimeFrame timeFrame) {

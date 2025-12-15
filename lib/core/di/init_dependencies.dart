@@ -8,6 +8,7 @@ import 'package:music_player/features/analytics/domain/repositories/analytics_re
 import 'package:music_player/features/analytics/domain/usecases/get_general_stats.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_playback_history.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_top_items.dart';
+import 'package:music_player/features/analytics/domain/usecases/watch_playback_history.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
 import 'package:music_player/features/analytics/domain/usecases/log_playback.dart';
 import 'package:music_player/features/analytics/domain/usecases/clear_analytics.dart';
@@ -149,6 +150,7 @@ Future<void> initDependencies() async {
   serviceLocator.registerLazySingleton(() => GetTopGenres(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetGeneralStats(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetPlaybackHistory(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => WatchPlaybackHistory(serviceLocator()));
   serviceLocator.registerLazySingleton(() => ClearAnalytics(serviceLocator()));
 
   serviceLocator.registerLazySingleton(
@@ -169,6 +171,7 @@ Future<void> initDependencies() async {
   serviceLocator.registerFactory(
     () => HistoryBloc(
       getPlaybackHistory: serviceLocator(),
+      watchPlaybackHistory: serviceLocator(),
     ),
   );
 
