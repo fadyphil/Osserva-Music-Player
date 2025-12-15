@@ -13,7 +13,9 @@ class AddToPlaylistSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => serviceLocator<PlaylistBloc>()..add(const PlaylistEvent.loadPlaylists()),
+      create: (_) =>
+          serviceLocator<PlaylistBloc>()
+            ..add(const PlaylistEvent.loadPlaylists()),
       child: Builder(
         builder: (context) {
           return Container(
@@ -38,9 +40,14 @@ class AddToPlaylistSheet extends StatelessWidget {
                   child: BlocBuilder<PlaylistBloc, PlaylistState>(
                     builder: (context, state) {
                       return state.map(
-                        initial: (_) => const Center(child: CircularProgressIndicator()),
-                        loading: (_) => const Center(child: CircularProgressIndicator()),
-                        failure: (f) => Text("Error: ${f.message}", style: const TextStyle(color: Colors.redAccent)),
+                        initial: (_) =>
+                            const Center(child: CircularProgressIndicator()),
+                        loading: (_) =>
+                            const Center(child: CircularProgressIndicator()),
+                        failure: (f) => Text(
+                          "Error: ${f.message}",
+                          style: const TextStyle(color: Colors.redAccent),
+                        ),
                         loaded: (data) {
                           if (data.playlists.isEmpty) {
                             return const Padding(
@@ -54,7 +61,8 @@ class AddToPlaylistSheet extends StatelessWidget {
                           return ListView.separated(
                             shrinkWrap: true,
                             itemCount: data.playlists.length,
-                            separatorBuilder: (_, __) => const Divider(color: Colors.white10),
+                            separatorBuilder: (_, _) =>
+                                const Divider(color: Colors.white10),
                             itemBuilder: (context, index) {
                               final playlist = data.playlists[index];
                               return ListTile(
@@ -66,17 +74,28 @@ class AddToPlaylistSheet extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(8),
                                     image: playlist.imagePath != null
                                         ? DecorationImage(
-                                            image: NetworkImage(playlist.imagePath!),
+                                            image: NetworkImage(
+                                              playlist.imagePath!,
+                                            ),
                                             fit: BoxFit.cover,
                                           )
                                         : null,
                                   ),
                                   child: playlist.imagePath == null
-                                      ? const Icon(Icons.music_note, color: Colors.white24)
+                                      ? const Icon(
+                                          Icons.music_note,
+                                          color: Colors.white24,
+                                        )
                                       : null,
                                 ),
-                                title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
-                                subtitle: Text("${playlist.totalSongs} songs", style: const TextStyle(color: Colors.white54)),
+                                title: Text(
+                                  playlist.name,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                subtitle: Text(
+                                  "${playlist.totalSongs} songs",
+                                  style: const TextStyle(color: Colors.white54),
+                                ),
                                 onTap: () {
                                   context.read<PlaylistBloc>().add(
                                     PlaylistEvent.addSongToPlaylist(
@@ -87,7 +106,9 @@ class AddToPlaylistSheet extends StatelessWidget {
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text("Added to ${playlist.name}"),
+                                      content: Text(
+                                        "Added to ${playlist.name}",
+                                      ),
                                       backgroundColor: AppPallete.primaryGreen,
                                     ),
                                   );
@@ -112,13 +133,16 @@ class AddToPlaylistSheet extends StatelessWidget {
                     ),
                     child: const Icon(Icons.add, color: Colors.white),
                   ),
-                  title: const Text("Create New Playlist", style: TextStyle(color: Colors.white)),
+                  title: const Text(
+                    "Create New Playlist",
+                    style: TextStyle(color: Colors.white),
+                  ),
                   onTap: () => _showCreatePlaylistDialog(context),
                 ),
               ],
             ),
           );
-        }
+        },
       ),
     );
   }
@@ -132,7 +156,10 @@ class AddToPlaylistSheet extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('New Playlist', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'New Playlist',
+          style: TextStyle(color: Colors.white),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -162,10 +189,12 @@ class AddToPlaylistSheet extends StatelessWidget {
           TextButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
-                bloc.add(PlaylistEvent.createPlaylist(
-                  name: nameCtrl.text,
-                  description: descCtrl.text,
-                ));
+                bloc.add(
+                  PlaylistEvent.createPlaylist(
+                    name: nameCtrl.text,
+                    description: descCtrl.text,
+                  ),
+                );
                 Navigator.pop(ctx);
               }
             },

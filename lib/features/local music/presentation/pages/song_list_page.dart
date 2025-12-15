@@ -8,12 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_player/core/router/app_router.dart'; // Import AppRouter
 import 'package:music_player/features/local%20music/presentation/widgets/song_list_tile.dart'; // Import SongListTile
-import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:on_audio_query/on_audio_query.dart';
 
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Architecture Imports
@@ -461,7 +457,8 @@ class _SongListSliverItems extends StatelessWidget {
     return SliverList(
       delegate: SliverChildBuilderDelegate((context, index) {
         final song = songs[index];
-        return SongListTile( // Use public widget
+        return SongListTile(
+          // Use public widget
           key: ValueKey(song.id),
           song: song,
           index: index,
@@ -627,7 +624,9 @@ class _SongListSliverAppBar extends StatelessWidget {
                                     icon: Icons.playlist_play_rounded,
                                     label: "Playlists",
                                     onTap: () {
-                                      context.router.push(const PlaylistListRoute());
+                                      context.router.push(
+                                        const PlaylistListRoute(),
+                                      );
                                     },
                                   ),
                                   const SizedBox(width: 12),
@@ -635,7 +634,9 @@ class _SongListSliverAppBar extends StatelessWidget {
                                     icon: Icons.favorite_rounded,
                                     label: "Favorites",
                                     onTap: () {
-                                      context.router.push(const FavoritesRoute());
+                                      context.router.push(
+                                        const FavoritesRoute(),
+                                      );
                                     },
                                   ),
                                   const SizedBox(width: 12),
@@ -655,7 +656,8 @@ class _SongListSliverAppBar extends StatelessWidget {
                                         ),
                                         builder: (context) => _SortBottomSheet(
                                           currentOption: currentSortOption,
-                                          onOptionSelected: onSortOptionSelected,
+                                          onOptionSelected:
+                                              onSortOptionSelected,
                                         ),
                                       );
                                     },
