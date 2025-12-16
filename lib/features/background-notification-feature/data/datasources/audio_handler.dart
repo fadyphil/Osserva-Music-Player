@@ -8,6 +8,7 @@ import 'package:just_audio/just_audio.dart';
 class MusicPlayerHandler extends BaseAudioHandler
     with QueueHandler, SeekHandler {
   final AudioPlayer _player;
+  ConcatenatingAudioSource? _playlist;
 
   MusicPlayerHandler({AudioPlayer? player})
     : _player = player ?? AudioPlayer() {
@@ -117,6 +118,21 @@ class MusicPlayerHandler extends BaseAudioHandler
 
   // 3. Custom Queue Management (The "True Background" Logic)
 
+  @override
+  Future<void> addQueueItem(MediaItem mediaItem) async {
+    final audioSource = AudioSource.file(
+      mediaItem.extras!['url'] as String,
+      tag: mediaItem,
+    );
+
+    if (_playlist != null) {
+      await _playlist!.add(audioSource);
+    } else {
+      _playlist = ConcatenatingAudioSource(children: [audioSource]);
+      await _player.setAudioSource(_playlist!);
+    }
+  }
+
   /// Replaces the entire queue and starts playing from [initialIndex]
   Future<void> setQueueItems({
     required List<MediaItem> items,
@@ -132,14 +148,15 @@ class MusicPlayerHandler extends BaseAudioHandler
       }).toList();
 
       // 2. Set the player to this playlist and jump to index
-      await _player.setAudioSources(audioSources, initialIndex: initialIndex);
+      _playlist = ConcatenatingAudioSource(children: audioSources);
+      await _player.setAudioSource(_playlist!, initialIndex: initialIndex);
 
       // 4. Play
       await _player.play();
 
       // 5. Update AudioService Queue (For UI to see)
-      queue.add(items);
-      mediaItem.add(items[initialIndex]);
+      // queue.add is handled by the sequenceStateStream listener
+      // mediaItem.add(items[initialIndex]); // also handled by listener
     } catch (e, stackTrace) {
       log("Error setting queue: $e", stackTrace: stackTrace);
 
