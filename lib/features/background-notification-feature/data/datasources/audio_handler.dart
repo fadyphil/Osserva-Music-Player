@@ -125,11 +125,34 @@ class MusicPlayerHandler extends BaseAudioHandler
       tag: mediaItem,
     );
 
-    if (_playlist != null) {
-      await _playlist!.add(audioSource);
-    } else {
-      _playlist = ConcatenatingAudioSource(children: [audioSource]);
-      await _player.setAudioSource(_playlist!);
+    try {
+      if (_playlist != null) {
+        await _playlist!.add(audioSource);
+      } else {
+        _playlist = ConcatenatingAudioSource(children: [audioSource]);
+        await _player.setAudioSource(_playlist!);
+      }
+    } catch (e) {
+      log("Error adding to queue, falling back to reset: $e");
+
+      // Fallback: Reconstruct the entire queue and reset the player source.
+      // This is necessary if the underlying platform doesn't support dynamic playlist modification.
+      final currentMediaItems = queue.value;
+      final newItems = [...currentMediaItems, mediaItem];
+
+      // Capture current state to restore playback position
+      final currentIndex = _player.currentIndex ?? 0;
+      final currentPos = _player.position;
+      final wasPlaying = _player.playing;
+
+      // Note: setQueueItems initializes a NEW _playlist and attaches it.
+      await setQueueItems(items: newItems, initialIndex: currentIndex);
+
+      // setQueueItems automatically plays, so we seek and handle play state
+      await _player.seek(currentPos);
+      if (!wasPlaying) {
+        await _player.pause();
+      }
     }
   }
 
