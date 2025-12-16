@@ -121,10 +121,9 @@ class MusicPlayerHandler extends BaseAudioHandler
   @override
   Future<void> addQueueItem(MediaItem mediaItem) async {
     // Strategy: Always reconstruct the queue to ensure consistency across all platforms.
-    // Dynamic addition to ConcatenatingAudioSource can be flaky or unsupported on some engines (Linux/Android/iOS),
-    // leading to "silent failures" where the player doesn't see the new item.
-    
-    final currentMediaItems = queue.value;
+    final currentMediaItems = queue.hasValue ? queue.value : <MediaItem>[];
+    log("Adding item to queue. Current size: ${currentMediaItems.length}. New item: ${mediaItem.title}");
+
     final newItems = [...currentMediaItems, mediaItem];
 
     // Capture current state to restore playback position
@@ -132,15 +131,18 @@ class MusicPlayerHandler extends BaseAudioHandler
     final currentPos = _player.position;
     final wasPlaying = _player.playing;
 
-    // Re-set the entire source
-    // This causes a brief re-buffer but guarantees the new item is playable.
-    await setQueueItems(items: newItems, initialIndex: currentIndex);
+    try {
+      // Re-set the entire source
+      await setQueueItems(items: newItems, initialIndex: currentIndex);
 
-    // Restore state
-    // Note: setQueueItems automatically calls play(), so we handle the 'was paused' case.
-    await _player.seek(currentPos);
-    if (!wasPlaying) {
-      await _player.pause();
+      // Restore state
+      await _player.seek(currentPos);
+      if (!wasPlaying) {
+        await _player.pause();
+      }
+    } catch (e) {
+      log("Add to Queue Failed: $e");
+      rethrow;
     }
   }
 
@@ -152,10 +154,13 @@ class MusicPlayerHandler extends BaseAudioHandler
     try {
       // 1. Convert MediaItems to AudioSources
       final audioSources = items.map((item) {
-        return AudioSource.file(
-          item.extras!['url'] as String,
-          tag: item, // Crucial: Attach metadata to the source
-        );
+        final url = item.extras!['url'] as String;
+        // Robust handling: Check if it's already a URI (e.g. file:// or http://)
+        if (Uri.tryParse(url)?.hasScheme ?? false) {
+          return AudioSource.uri(Uri.parse(url), tag: item);
+        } else {
+          return AudioSource.file(url, tag: item);
+        }
       }).toList();
 
       // 2. Set the player to this playlist and jump to index
@@ -176,6 +181,8 @@ class MusicPlayerHandler extends BaseAudioHandler
         processingState: AudioProcessingState.error,
         errorMessage: e.toString(),
       ));
+
+      rethrow; // Ensure caller knows about the failure
     }
   }
 
