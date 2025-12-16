@@ -120,39 +120,27 @@ class MusicPlayerHandler extends BaseAudioHandler
 
   @override
   Future<void> addQueueItem(MediaItem mediaItem) async {
-    final audioSource = AudioSource.file(
-      mediaItem.extras!['url'] as String,
-      tag: mediaItem,
-    );
+    // Strategy: Always reconstruct the queue to ensure consistency across all platforms.
+    // Dynamic addition to ConcatenatingAudioSource can be flaky or unsupported on some engines (Linux/Android/iOS),
+    // leading to "silent failures" where the player doesn't see the new item.
+    
+    final currentMediaItems = queue.value;
+    final newItems = [...currentMediaItems, mediaItem];
 
-    try {
-      if (_playlist != null) {
-        await _playlist!.add(audioSource);
-      } else {
-        _playlist = ConcatenatingAudioSource(children: [audioSource]);
-        await _player.setAudioSource(_playlist!);
-      }
-    } catch (e) {
-      log("Error adding to queue, falling back to reset: $e");
+    // Capture current state to restore playback position
+    final currentIndex = _player.currentIndex ?? 0;
+    final currentPos = _player.position;
+    final wasPlaying = _player.playing;
 
-      // Fallback: Reconstruct the entire queue and reset the player source.
-      // This is necessary if the underlying platform doesn't support dynamic playlist modification.
-      final currentMediaItems = queue.value;
-      final newItems = [...currentMediaItems, mediaItem];
+    // Re-set the entire source
+    // This causes a brief re-buffer but guarantees the new item is playable.
+    await setQueueItems(items: newItems, initialIndex: currentIndex);
 
-      // Capture current state to restore playback position
-      final currentIndex = _player.currentIndex ?? 0;
-      final currentPos = _player.position;
-      final wasPlaying = _player.playing;
-
-      // Note: setQueueItems initializes a NEW _playlist and attaches it.
-      await setQueueItems(items: newItems, initialIndex: currentIndex);
-
-      // setQueueItems automatically plays, so we seek and handle play state
-      await _player.seek(currentPos);
-      if (!wasPlaying) {
-        await _player.pause();
-      }
+    // Restore state
+    // Note: setQueueItems automatically calls play(), so we handle the 'was paused' case.
+    await _player.seek(currentPos);
+    if (!wasPlaying) {
+      await _player.pause();
     }
   }
 
