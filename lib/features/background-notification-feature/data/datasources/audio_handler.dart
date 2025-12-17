@@ -8,31 +8,43 @@ import 'package:just_audio/just_audio.dart';
 class MusicPlayerHandler extends BaseAudioHandler
     with QueueHandler, SeekHandler {
   final AudioPlayer _player;
-  ConcatenatingAudioSource? _playlist;
-
+  final List<AudioSource> _currentQueue = [];
   MusicPlayerHandler({AudioPlayer? player})
     : _player = player ?? AudioPlayer() {
+    _init();
+  }
+
+  Future<void> _init() async {
+    try {
+      //NOTE: strict replacement for setAudioSource(ConcatenatingAudioSource(...))
+      await _player.setAudioSources(_currentQueue);
+    } catch (e) {
+      log('Error setting audio sources: $e');
+    }
     _initPlayerListeners();
   }
 
-  // 1. Initialize Listeners: Sync just_audio events -> audio_service State
-  void _initPlayerListeners() {
+  // 1. Initialize Listeners:
+  // Sync just_audio events -> audio_service State
+  void _initPlayerListeners() async {
     // Broadcast the current song details to the Lock Screen / Notification
     _player.sequenceStateStream.listen((sequenceState) {
-      // Update Current Media Item
-      final currentItem = sequenceState.currentSource;
-      if (currentItem != null) {
-        final tag = currentItem.tag as MediaItem;
-        mediaItem.add(tag);
+      final sequence = sequenceState.sequence;
+      final items = sequence.map((source) => source.tag as MediaItem).toList();
+      queue.add(items);
+      // Update the "Now Playing" item (displays the title  and artwork of song)
+      final currentSource = sequenceState.currentSource;
+      if (currentSource != null) {
+        mediaItem.add(currentSource.tag as MediaItem);
       }
 
-      // Update Queue (Optional: if we modify queue dynamically)
-      final sequence = sequenceState.sequence;
-      if (sequence.isNotEmpty) {
-        final items = sequence
-            .map((source) => source.tag as MediaItem)
-            .toList();
-        queue.add(items);
+      // Update the position of the seek bar
+    });
+
+    _player.durationStream.listen((duration) {
+      final current = mediaItem.value;
+      if (duration != null && current != null) {
+        mediaItem.add(current.copyWith(duration: duration));
       }
     });
 
@@ -47,9 +59,11 @@ class MusicPlayerHandler extends BaseAudioHandler
             MediaControl.skipToNext,
           ],
           systemActions: const {
+            // MediaAction.setShuffleMode,
             MediaAction.seek,
             MediaAction.seekForward,
             MediaAction.seekBackward,
+            // MediaAction.setRepeatMode,
           },
           androidCompactActionIndices: const [0, 1, 2],
           processingState: {
@@ -120,28 +134,39 @@ class MusicPlayerHandler extends BaseAudioHandler
 
   @override
   Future<void> addQueueItem(MediaItem mediaItem) async {
-    // Strategy: Always reconstruct the queue to ensure consistency across all platforms.
-    final currentMediaItems = queue.hasValue ? queue.value : <MediaItem>[];
-    log("Adding item to queue. Current size: ${currentMediaItems.length}. New item: ${mediaItem.title}");
-
-    final newItems = [...currentMediaItems, mediaItem];
-
-    // Capture current state to restore playback position
-    final currentIndex = _player.currentIndex ?? 0;
-    final currentPos = _player.position;
-    final wasPlaying = _player.playing;
-
     try {
-      // Re-set the entire source
-      await setQueueItems(items: newItems, initialIndex: currentIndex);
-
-      // Restore state
-      await _player.seek(currentPos);
-      if (!wasPlaying) {
-        await _player.pause();
+      // Strategy: Always reconstruct the queue to ensure consistency across all platforms.
+      final url = mediaItem.extras?['url'] as String?;
+      if (url == null || url.isEmpty) {
+        throw Exception('Cannot add  to queue : Url is missing');
       }
-    } catch (e) {
-      log("Add to Queue Failed: $e");
+
+      final AudioSource source;
+      if (Uri.parse(url).isScheme('content') ||
+          Uri.parse(url).isScheme('file')) {
+        source = AudioSource.uri(Uri.parse(url), tag: mediaItem);
+      } else {
+        source = AudioSource.file(url, tag: mediaItem);
+      }
+
+      _currentQueue.add(source);
+      final currentIndex = _player.currentIndex;
+      final currentPos = _player.position;
+      await _player.setAudioSources(
+        _currentQueue,
+        initialIndex: currentIndex,
+        initialPosition: currentPos,
+      );
+
+      log('Successfuly added to queue: ${mediaItem.title}');
+    } catch (e, stack) {
+      log('Error adding to queue: $e', stackTrace: stack);
+      if (_currentQueue.isNotEmpty) {
+        final lastItem = _currentQueue.last;
+        if (lastItem is IndexedAudioSource && lastItem.tag is MediaItem) {
+          _currentQueue.removeLast();
+        }
+      }
       rethrow;
     }
   }
@@ -152,37 +177,80 @@ class MusicPlayerHandler extends BaseAudioHandler
     required int initialIndex,
   }) async {
     try {
-      // 1. Convert MediaItems to AudioSources
-      final audioSources = items.map((item) {
-        final url = item.extras!['url'] as String;
-        // Robust handling: Check if it's already a URI (e.g. file:// or http://)
-        if (Uri.tryParse(url)?.hasScheme ?? false) {
-          return AudioSource.uri(Uri.parse(url), tag: item);
-        } else {
-          return AudioSource.file(url, tag: item);
-        }
+      // 1. Clear the local queue
+
+      _currentQueue.clear();
+
+      // 2. Rebuild list
+      final sources = items.map((item) {
+        return AudioSource.uri(
+          Uri.parse(item.extras!['url'] as String),
+          tag: item,
+        );
       }).toList();
+      _currentQueue.addAll(sources);
 
-      // 2. Set the player to this playlist and jump to index
-      _playlist = ConcatenatingAudioSource(children: audioSources);
-      await _player.setAudioSource(_playlist!, initialIndex: initialIndex);
+      // 3. set sources on player
+      await _player.setAudioSources(_currentQueue, initialIndex: initialIndex);
 
-      // 4. Play
+      // 4. Ensure plaback starts
       await _player.play();
-
-      // 5. Update AudioService Queue (For UI to see)
-      // queue.add is handled by the sequenceStateStream listener
-      // mediaItem.add(items[initialIndex]); // also handled by listener
     } catch (e, stackTrace) {
       log("Error setting queue: $e", stackTrace: stackTrace);
 
       // Broadcast error to UI
-      playbackState.add(playbackState.value.copyWith(
-        processingState: AudioProcessingState.error,
-        errorMessage: e.toString(),
-      ));
+      playbackState.add(
+        playbackState.value.copyWith(
+          processingState: AudioProcessingState.error,
+          errorMessage: e.toString(),
+        ),
+      );
 
       rethrow; // Ensure caller knows about the failure
+    }
+  }
+
+  // Add this new method to your Handler
+  Future<void> insertNextQueueItem(MediaItem mediaItem) async {
+    try {
+      final url = mediaItem.extras?['url'] as String?;
+      if (url == null || url.isEmpty) {
+        throw Exception('Cannot add to queue: Url is missing');
+      }
+
+      final AudioSource source;
+      if (Uri.parse(url).isScheme('content') ||
+          Uri.parse(url).isScheme('file')) {
+        source = AudioSource.uri(Uri.parse(url), tag: mediaItem);
+      } else {
+        source = AudioSource.file(url, tag: mediaItem);
+      }
+
+      // CALCULATE INSERT POSITION
+      // If nothing is playing, add to start.
+      // If playing, add right after current index.
+      final index = (_player.currentIndex ?? -1) + 1;
+
+      if (index < 0 || index > _currentQueue.length) {
+        _currentQueue.add(source); // Fallback to append
+      } else {
+        _currentQueue.insert(index, source); // Insert specific
+      }
+
+      // Update Player
+      final currentIndex = _player.currentIndex;
+      final currentPos = _player.position;
+
+      await _player.setAudioSources(
+        _currentQueue,
+        initialIndex: currentIndex,
+        initialPosition: currentPos,
+      );
+
+      log('Successfully inserted next: ${mediaItem.title}');
+    } catch (e) {
+      log('Error inserting item: $e');
+      rethrow;
     }
   }
 

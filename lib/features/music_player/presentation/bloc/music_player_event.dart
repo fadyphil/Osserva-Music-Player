@@ -1,10 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 
 part 'music_player_event.freezed.dart';
 
 @freezed
-class MusicPlayerEvent with _$MusicPlayerEvent {
+abstract class MusicPlayerEvent with _$MusicPlayerEvent {
   const factory MusicPlayerEvent.initMusicQueue({
     required List<SongEntity> songs,
     required int currentIndex,
@@ -42,4 +43,7 @@ class MusicPlayerEvent with _$MusicPlayerEvent {
   const factory MusicPlayerEvent.addToQueue(SongEntity song) = _AddToQueue;
   const factory MusicPlayerEvent.addToPlaylist(SongEntity song) =
       _AddToPlaylist;
+  const factory MusicPlayerEvent.queueUpdated(List<SongEntity> queue) =
+      _QueueUpdated;
+  const factory MusicPlayerEvent.playNextinQueue(SongEntity song) = _PlayNext;
 }

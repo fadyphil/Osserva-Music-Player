@@ -4,6 +4,7 @@ abstract class AudioPlayerRepository {
   // Actions
   Future<void> setQueue(List<SongEntity> songs, int initialIndex);
   Future<void> addQueueItem(SongEntity song);
+  Future<void> playNext(SongEntity song);
 
   // Legacy / Single Song
   Future<void> playSong(
@@ -35,4 +36,5 @@ abstract class AudioPlayerRepository {
   Stream<void> get playerCompleteStream; // Listen to queue end or song end?
   Stream<SongEntity?>
   get currentSongStream; // New: Listen to current song updates from OS
+  Stream<List<SongEntity>> get queueStream;
 }

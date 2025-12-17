@@ -3,6 +3,8 @@ import 'package:music_player/features/local%20music/domain/entities/song_entity.
 
 part 'music_player_state.freezed.dart';
 
+enum QueueStatus { initial, success, failure }
+
 @freezed
 abstract class MusicPlayerState with _$MusicPlayerState {
   const factory MusicPlayerState({
@@ -21,5 +23,8 @@ abstract class MusicPlayerState with _$MusicPlayerState {
     @Default(false) bool isSeeking,
     @Default(false) bool isPlayingFromQueue,
     @Default(false) bool isPlayingFromPlaylist,
+    //NEW FIELDS for Feedback
+    @Default(QueueStatus.initial) QueueStatus queueActionStatus,
+    @Default('') String errorMessage,
   }) = _MusicPlayerState;
 }

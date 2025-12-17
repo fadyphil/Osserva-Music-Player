@@ -35,6 +35,7 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
 
   @override
   Future<void> addQueueItem(SongEntity song) async {
+    // PURE PASS - THROUGH . no  local logic
     final item = MediaItem(
       id: song.id.toString(),
       album: song.album,
@@ -163,4 +164,39 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
           size: 0,
         );
       });
+
+  @override
+  Stream<List<SongEntity>> get queueStream {
+    // we listen to the AudioHandler's queue (Which comes from just_audio)
+    return _audioHandler.queue.map((mediaItems) {
+      // Map List<MediaItem> -> List<SongEntity>
+      return mediaItems.map((item) {
+        return SongEntity(
+          id: int.tryParse(item.id) ?? 0,
+          title: item.title,
+          artist: item.artist ?? 'Unknown',
+          album: item.album ?? 'Unknown',
+          albumId: int.tryParse(item.artUri?.pathSegments.last ?? ''),
+          path: item.extras?['url'] as String? ?? '',
+          duration: (item.duration?.inMilliseconds ?? 0).toDouble(),
+          size: 0,
+        );
+      }).toList();
+    });
+  }
+
+  @override
+  Future<void> playNext(SongEntity song) async {
+    final item = MediaItem(
+      id: song.id.toString(),
+      album: song.album,
+      title: song.title,
+      artist: song.artist,
+      artUri: song.albumId != null
+          ? Uri.parse("content://media/external/audio/albumart/${song.albumId}")
+          : null,
+      extras: {'url': song.path},
+    );
+    await (_audioHandler as MusicPlayerHandler).insertNextQueueItem(item);
+  }
 }
