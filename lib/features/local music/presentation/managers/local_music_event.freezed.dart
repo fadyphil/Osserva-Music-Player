@@ -55,11 +55,13 @@ extension LocalMusicEventPatterns on LocalMusicEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _GetLocalSongs value)?  getLocalSongs,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( GetLocalSongs value)?  getLocalSongs,TResult Function( SearchSongs value)?  searchSongs,TResult Function( SortSongs value)?  sortSongs,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
-case _GetLocalSongs() when getLocalSongs != null:
-return getLocalSongs(_that);case _:
+case GetLocalSongs() when getLocalSongs != null:
+return getLocalSongs(_that);case SearchSongs() when searchSongs != null:
+return searchSongs(_that);case SortSongs() when sortSongs != null:
+return sortSongs(_that);case _:
   return orElse();
 
 }
@@ -77,11 +79,13 @@ return getLocalSongs(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _GetLocalSongs value)  getLocalSongs,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( GetLocalSongs value)  getLocalSongs,required TResult Function( SearchSongs value)  searchSongs,required TResult Function( SortSongs value)  sortSongs,}){
 final _that = this;
 switch (_that) {
-case _GetLocalSongs():
-return getLocalSongs(_that);case _:
+case GetLocalSongs():
+return getLocalSongs(_that);case SearchSongs():
+return searchSongs(_that);case SortSongs():
+return sortSongs(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -98,11 +102,13 @@ return getLocalSongs(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _GetLocalSongs value)?  getLocalSongs,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( GetLocalSongs value)?  getLocalSongs,TResult? Function( SearchSongs value)?  searchSongs,TResult? Function( SortSongs value)?  sortSongs,}){
 final _that = this;
 switch (_that) {
-case _GetLocalSongs() when getLocalSongs != null:
-return getLocalSongs(_that);case _:
+case GetLocalSongs() when getLocalSongs != null:
+return getLocalSongs(_that);case SearchSongs() when searchSongs != null:
+return searchSongs(_that);case SortSongs() when sortSongs != null:
+return sortSongs(_that);case _:
   return null;
 
 }
@@ -119,10 +125,12 @@ return getLocalSongs(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  getLocalSongs,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  getLocalSongs,TResult Function( String query)?  searchSongs,TResult Function( SortOption option)?  sortSongs,required TResult orElse(),}) {final _that = this;
 switch (_that) {
-case _GetLocalSongs() when getLocalSongs != null:
-return getLocalSongs();case _:
+case GetLocalSongs() when getLocalSongs != null:
+return getLocalSongs();case SearchSongs() when searchSongs != null:
+return searchSongs(_that.query);case SortSongs() when sortSongs != null:
+return sortSongs(_that.option);case _:
   return orElse();
 
 }
@@ -140,10 +148,12 @@ return getLocalSongs();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  getLocalSongs,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  getLocalSongs,required TResult Function( String query)  searchSongs,required TResult Function( SortOption option)  sortSongs,}) {final _that = this;
 switch (_that) {
-case _GetLocalSongs():
-return getLocalSongs();case _:
+case GetLocalSongs():
+return getLocalSongs();case SearchSongs():
+return searchSongs(_that.query);case SortSongs():
+return sortSongs(_that.option);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -160,10 +170,12 @@ return getLocalSongs();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  getLocalSongs,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  getLocalSongs,TResult? Function( String query)?  searchSongs,TResult? Function( SortOption option)?  sortSongs,}) {final _that = this;
 switch (_that) {
-case _GetLocalSongs() when getLocalSongs != null:
-return getLocalSongs();case _:
+case GetLocalSongs() when getLocalSongs != null:
+return getLocalSongs();case SearchSongs() when searchSongs != null:
+return searchSongs(_that.query);case SortSongs() when sortSongs != null:
+return sortSongs(_that.option);case _:
   return null;
 
 }
@@ -174,8 +186,8 @@ return getLocalSongs();case _:
 /// @nodoc
 
 
-class _GetLocalSongs implements LocalMusicEvent {
-  const _GetLocalSongs();
+class GetLocalSongs implements LocalMusicEvent {
+  const GetLocalSongs();
   
 
 
@@ -185,7 +197,7 @@ class _GetLocalSongs implements LocalMusicEvent {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GetLocalSongs);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GetLocalSongs);
 }
 
 
@@ -202,5 +214,137 @@ String toString() {
 
 
 
+
+/// @nodoc
+
+
+class SearchSongs implements LocalMusicEvent {
+  const SearchSongs(this.query);
+  
+
+ final  String query;
+
+/// Create a copy of LocalMusicEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SearchSongsCopyWith<SearchSongs> get copyWith => _$SearchSongsCopyWithImpl<SearchSongs>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchSongs&&(identical(other.query, query) || other.query == query));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,query);
+
+@override
+String toString() {
+  return 'LocalMusicEvent.searchSongs(query: $query)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $SearchSongsCopyWith<$Res> implements $LocalMusicEventCopyWith<$Res> {
+  factory $SearchSongsCopyWith(SearchSongs value, $Res Function(SearchSongs) _then) = _$SearchSongsCopyWithImpl;
+@useResult
+$Res call({
+ String query
+});
+
+
+
+
+}
+/// @nodoc
+class _$SearchSongsCopyWithImpl<$Res>
+    implements $SearchSongsCopyWith<$Res> {
+  _$SearchSongsCopyWithImpl(this._self, this._then);
+
+  final SearchSongs _self;
+  final $Res Function(SearchSongs) _then;
+
+/// Create a copy of LocalMusicEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? query = null,}) {
+  return _then(SearchSongs(
+null == query ? _self.query : query // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class SortSongs implements LocalMusicEvent {
+  const SortSongs(this.option);
+  
+
+ final  SortOption option;
+
+/// Create a copy of LocalMusicEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SortSongsCopyWith<SortSongs> get copyWith => _$SortSongsCopyWithImpl<SortSongs>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SortSongs&&(identical(other.option, option) || other.option == option));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,option);
+
+@override
+String toString() {
+  return 'LocalMusicEvent.sortSongs(option: $option)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $SortSongsCopyWith<$Res> implements $LocalMusicEventCopyWith<$Res> {
+  factory $SortSongsCopyWith(SortSongs value, $Res Function(SortSongs) _then) = _$SortSongsCopyWithImpl;
+@useResult
+$Res call({
+ SortOption option
+});
+
+
+
+
+}
+/// @nodoc
+class _$SortSongsCopyWithImpl<$Res>
+    implements $SortSongsCopyWith<$Res> {
+  _$SortSongsCopyWithImpl(this._self, this._then);
+
+  final SortSongs _self;
+  final $Res Function(SortSongs) _then;
+
+/// Create a copy of LocalMusicEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? option = null,}) {
+  return _then(SortSongs(
+null == option ? _self.option : option // ignore: cast_nullable_to_non_nullable
+as SortOption,
+  ));
+}
+
+
+}
 
 // dart format on
