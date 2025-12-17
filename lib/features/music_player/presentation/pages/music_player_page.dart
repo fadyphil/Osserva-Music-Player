@@ -14,49 +14,77 @@ class MusicPlayerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppPallete.backgroundColor,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down, color: AppPallete.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Now Playing",
-          style: TextStyle(color: AppPallete.white),
-        ),
-        centerTitle: true,
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppPallete.gradientTop, AppPallete.backgroundColor],
+    return BlocListener<MusicPlayerBloc, MusicPlayerState>(
+      listenWhen: (previous, current) {
+        return previous.queueActionStatus != current.queueActionStatus;
+      },
+      listener: (context, state) {
+        if (state.queueActionStatus == QueueStatus.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Queue updated successfully!'),
+              duration: Duration(seconds: 1),
+              backgroundColor: Colors.green,
+            ),
+            snackBarAnimationStyle: AnimationStyle(curve: Curves.easeInOut),
+          );
+        } else if (state.queueActionStatus == QueueStatus.failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppPallete.backgroundColor,
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(
+              Icons.keyboard_arrow_down,
+              color: AppPallete.white,
+            ),
+            onPressed: () => Navigator.pop(context),
           ),
+          title: const Text(
+            "Now Playing",
+            style: TextStyle(color: AppPallete.white),
+          ),
+          centerTitle: true,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // 1. ART & INFO (Stable - No Flicker)
-            _ArtworkAndTitle(),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [AppPallete.gradientTop, AppPallete.backgroundColor],
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 20),
+              // 1. ART & INFO (Stable - No Flicker)
+              _ArtworkAndTitle(),
 
-            SizedBox(height: 30),
+              SizedBox(height: 30),
 
-            // 2. SLIDER (Updates constantly)
-            _SmoothProgressBar(),
+              // 2. SLIDER (Updates constantly)
+              _SmoothProgressBar(),
 
-            SizedBox(height: 20),
+              SizedBox(height: 20),
 
-            // 3. CONTROLS (Updates on click)
-            _PlayerControls(),
+              // 3. CONTROLS (Updates on click)
+              _PlayerControls(),
 
-            SizedBox(height: 40),
-          ],
+              SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
