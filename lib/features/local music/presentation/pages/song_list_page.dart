@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui';
 import 'package:auto_route/auto_route.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_player/core/router/app_router.dart'; // Import AppRouter
+import 'package:music_player/features/local%20music/presentation/managers/local_music_state.dart';
 import 'package:music_player/features/local%20music/presentation/widgets/song_list_tile.dart'; // Import SongListTile
 import 'package:permission_handler/permission_handler.dart';
 
@@ -18,19 +18,6 @@ import '../../../../core/theme/app_pallete.dart';
 import '../../domain/entities/song_entity.dart';
 import '../managers/local_music_bloc.dart';
 import '../managers/local_music_event.dart';
-import '../managers/local_music_state.dart';
-
-enum SortOption {
-  titleAz('Title (A-Z)'),
-  titleZa('Title (Z-A)'),
-  artistAz('Artist (A-Z)'),
-  dateAdded('Last Added'), // Using ID as proxy
-  duration('Duration'),
-  mostPlayed('Most Played');
-
-  final String label;
-  const SortOption(this.label);
-}
 
 @RoutePage()
 class SongListPage extends StatefulWidget {
@@ -44,31 +31,12 @@ class _SongListPageState extends State<SongListPage>
     with WidgetsBindingObserver {
   bool _hasPermission = false;
   final TextEditingController _searchController = TextEditingController();
-  Timer? _debounce;
-  String _searchQuery = '';
-  SortOption _currentSort = SortOption.dateAdded;
-  bool _isSearching = false;
   static const String _sortPrefKey = 'local_songs_sort_option';
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _loadSortPreference();
-  }
-
-  Future<void> _loadSortPreference() async {
-    final prefs = serviceLocator<SharedPreferences>();
-    final savedIndex = prefs.getInt(_sortPrefKey);
-    if (savedIndex != null &&
-        savedIndex >= 0 &&
-        savedIndex < SortOption.values.length) {
-      if (mounted) {
-        setState(() {
-          _currentSort = SortOption.values[savedIndex];
-        });
-      }
-    }
     _initData();
   }
 
@@ -76,89 +44,7 @@ class _SongListPageState extends State<SongListPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
-    _debounce?.cancel();
     super.dispose();
-  }
-
-  void _onSearchChanged(String query) {
-    setState(() {
-      _isSearching = true;
-    });
-
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        setState(() {
-          _searchQuery = query;
-          _isSearching = false;
-        });
-      }
-    });
-  }
-
-  void _onSortChanged(SortOption option) {
-    setState(() {
-      _currentSort = option;
-    });
-    Navigator.pop(context);
-    try {
-      final prefs = serviceLocator<SharedPreferences>();
-      prefs.setInt(_sortPrefKey, SortOption.values.indexOf(option));
-    } catch (e) {
-      debugPrint("Error saving sort preference: $e");
-    }
-  }
-
-  List<SongEntity> _getFilteredAndSortedSongs(
-    List<SongEntity> songs,
-    Map<int, int> playCounts,
-  ) {
-    // 1. Filter
-    List<SongEntity> filtered;
-    if (_searchQuery.isNotEmpty) {
-      final query = _searchQuery.toLowerCase();
-      filtered = songs.where((song) {
-        return song.title.toLowerCase().contains(query) ||
-            song.artist.toLowerCase().contains(query);
-      }).toList();
-    } else {
-      filtered = List.of(songs);
-    }
-
-    // 2. Sort
-    switch (_currentSort) {
-      case SortOption.titleAz:
-        filtered.sort(
-          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
-        );
-        break;
-      case SortOption.titleZa:
-        filtered.sort(
-          (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()),
-        );
-        break;
-      case SortOption.artistAz:
-        filtered.sort(
-          (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
-        );
-        break;
-      case SortOption.dateAdded:
-        // ID is a decent proxy for date added in MediaStore
-        filtered.sort((a, b) => b.id.compareTo(a.id));
-        break;
-      case SortOption.duration:
-        filtered.sort((a, b) => b.duration.compareTo(a.duration));
-        break;
-      case SortOption.mostPlayed:
-        filtered.sort((a, b) {
-          final countA = playCounts[a.id] ?? 0;
-          final countB = playCounts[b.id] ?? 0;
-          return countB.compareTo(countA); // Descending
-        });
-        break;
-    }
-
-    return filtered;
   }
 
   @override
@@ -216,6 +102,16 @@ class _SongListPageState extends State<SongListPage>
     return BlocProvider(
       create: (_) {
         final bloc = serviceLocator<LocalMusicBloc>();
+
+        // Restore sort preference
+        final prefs = serviceLocator<SharedPreferences>();
+        final savedIndex = prefs.getInt(_sortPrefKey);
+        if (savedIndex != null &&
+            savedIndex >= 0 &&
+            savedIndex < SortOption.values.length) {
+          bloc.add(LocalMusicEvent.sortSongs(SortOption.values[savedIndex]));
+        }
+
         if (_hasPermission) {
           bloc.add(const LocalMusicEvent.getLocalSongs());
         }
@@ -228,7 +124,17 @@ class _SongListPageState extends State<SongListPage>
             if (!_hasPermission)
               _PermissionRequestView(onGrant: _checkPermissionAndFetch),
             if (_hasPermission)
-              BlocBuilder<LocalMusicBloc, LocalMusicState>(
+              BlocConsumer<LocalMusicBloc, LocalMusicState>(
+                listener: (context, state) {
+                  state.mapOrNull(
+                    loaded: (loadedState) {
+                      // Sync Controller if Bloc clears search (e.g. via X button logic if added later)
+                      if (loadedState.searchQuery != _searchController.text) {
+                        _searchController.text = loadedState.searchQuery;
+                      }
+                    },
+                  );
+                },
                 builder: (context, state) {
                   return state.when(
                     initial: () =>
@@ -248,22 +154,39 @@ class _SongListPageState extends State<SongListPage>
                         ),
                       ),
                     ),
-                    loaded: (songs, playCounts) {
-                      final processedSongs = _getFilteredAndSortedSongs(
-                        songs,
-                        playCounts,
-                      );
-
-                      return _SliverSongLayout(
-                        songs: processedSongs,
-                        totalSongs: songs.length,
-                        searchController: _searchController,
-                        onSearchChanged: _onSearchChanged,
-                        onSortOptionSelected: _onSortChanged,
-                        currentSortOption: _currentSort,
-                        isSearching: _isSearching,
-                      );
-                    },
+                    loaded:
+                        (
+                          allSongs,
+                          processedSongs,
+                          sortOption,
+                          isSearching,
+                          searchQuery,
+                          hasPermission,
+                          playCounts,
+                        ) {
+                          return _SliverSongLayout(
+                            songs: processedSongs,
+                            totalSongs: allSongs.length,
+                            searchController: _searchController,
+                            onSearchChanged: (query) {
+                              context.read<LocalMusicBloc>().add(
+                                LocalMusicEvent.searchSongs(query),
+                              );
+                            },
+                            onSortOptionSelected: (option) {
+                              context.read<LocalMusicBloc>().add(
+                                LocalMusicEvent.sortSongs(option),
+                              );
+                              Navigator.pop(context);
+                              serviceLocator<SharedPreferences>().setInt(
+                                _sortPrefKey,
+                                SortOption.values.indexOf(option),
+                              );
+                            },
+                            currentSortOption: sortOption,
+                            isSearching: isSearching,
+                          );
+                        },
                   );
                 },
               ),
@@ -455,16 +378,20 @@ class _SongListSliverItems extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverList(
-      delegate: SliverChildBuilderDelegate((context, index) {
-        final song = songs[index];
-        return SongListTile(
-          // Use public widget
-          key: ValueKey(song.id),
-          song: song,
-          index: index,
-          songList: songs,
-        );
-      }, childCount: songs.length),
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final song = songs[index];
+          return SongListTile(
+            // Use public widget
+            key: ValueKey(song.id),
+            song: song,
+            index: index,
+            songList: songs,
+          );
+        },
+        childCount: songs.length,
+        addAutomaticKeepAlives: false,
+      ),
     );
   }
 }
@@ -770,63 +697,60 @@ class _SearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          height: 42,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-          ),
-          child: TextField(
-            controller: controller,
-            onChanged: onChanged,
-            style: const TextStyle(color: Colors.white, fontSize: 15),
-            cursorColor: AppPallete.primaryGreen,
-            decoration: InputDecoration(
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 11,
-              ), // Center vertically
-              prefixIcon: Icon(
-                Icons.search,
-                color: Colors.white.withValues(alpha: 0.5),
-                size: 22,
-              ),
-              suffixIcon: isSearching
-                  ? const Padding(
-                      padding: EdgeInsets.all(10.0),
-                      child: SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppPallete.primaryGreen,
-                        ),
-                      ),
-                    )
-                  : controller.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(
-                        Icons.close,
-                        size: 18,
-                        color: Colors.white54,
-                      ),
-                      onPressed: () {
-                        controller.clear();
-                        onChanged('');
-                      },
-                    )
-                  : null,
-              hintText: "Find in songs...",
-              hintStyle: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
-              border: InputBorder.none,
+      child: Container(
+        height: 42,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        child: TextField(
+          controller: controller,
+          onChanged: onChanged,
+          style: const TextStyle(color: Colors.white, fontSize: 15),
+          cursorColor: AppPallete.primaryGreen,
+          decoration: InputDecoration(
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 11,
+            ), // Center vertically
+            prefixIcon: Icon(
+              Icons.search,
+              color: Colors.white.withValues(alpha: 0.5),
+              size: 22,
             ),
+            suffixIcon: isSearching
+                ? const Padding(
+                    padding: EdgeInsets.all(10.0),
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppPallete.primaryGreen,
+                      ),
+                    ),
+                  )
+                : controller.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      size: 18,
+                      color: Colors.white54,
+                    ),
+                    onPressed: () {
+                      controller.clear();
+                      onChanged('');
+                    },
+                  )
+                : null,
+            hintText: "Find in songs...",
+            hintStyle: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
+            border: InputBorder.none,
           ),
         ),
       ),
