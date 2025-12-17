@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:music_player/features/favorites/presentation/pages/favorites_page.dart';
 import 'package:music_player/features/home/presentation/pages/home_page.dart';
 import 'package:music_player/features/home/presentation/pages/home_dashboard_page.dart';
+import 'package:music_player/features/home/presentation/pages/home_tab_shell_page.dart';
 import 'package:music_player/features/local%20music/presentation/pages/song_list_page.dart';
 import 'package:music_player/features/music_player/presentation/pages/music_player_page.dart';
 import 'package:music_player/features/onboarding/presentation/pages/onboarding_page.dart';
@@ -38,23 +39,30 @@ class AppRouter extends RootStackRouter {
       page: HomeRoute.page,
       guards: [OnboardingGuard()], // Add the guard here
       children: [
-        AutoRoute(page: HomeDashboardRoute.page),
+        // TAB 1: Home Tab (Nested Stack)
+        AutoRoute(
+          page: HomeTabShellRoute.page,
+          initial: true,
+          children: [
+            AutoRoute(page: HomeDashboardRoute.page, initial: true),
+            AutoRoute(page: SongListRoute.page),
+            AutoRoute(page: FavoritesRoute.page),
+            AutoRoute(page: PlaylistListRoute.page),
+            AutoRoute(page: PlaylistDetailRoute.page),
+            AutoRoute(page: HistoryRoute.page),
+          ],
+        ),
+
+        // TAB 2: Analytics
         AutoRoute(page: AnalyticsDashboardRoute.page),
+
+        // TAB 3: Profile
         AutoRoute(page: ProfileRoute.page),
       ],
     ),
 
     // Top-Level Routes (Pushed from Dashboard)
-    AutoRoute(page: SongListRoute.page),
-    AutoRoute(page: HistoryRoute.page),
-
+    // Music Player needs to be full screen
     AutoRoute(page: MusicPlayerRoute.page),
-
-    // Playlists
-    AutoRoute(page: PlaylistListRoute.page),
-    AutoRoute(page: PlaylistDetailRoute.page),
-
-    // Favorites
-    AutoRoute(page: FavoritesRoute.page),
   ];
 }

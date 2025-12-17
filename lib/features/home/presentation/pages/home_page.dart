@@ -21,7 +21,7 @@ class HomePage extends StatelessWidget {
     return AutoTabsRouter(
       // 1. Define the routes that map to your tabs
       routes: const [
-        HomeDashboardRoute(),
+        HomeTabShellRoute(),
         AnalyticsDashboardRoute(),
         ProfileRoute(),
       ],
@@ -62,66 +62,60 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
               ),
+            ],
+          ),
+          bottomNavigationBar: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Mini Player sits on top of the Nav Bar
+              const MiniPlayer(),
 
-              // LAYER 3: Mini Player
-              const Positioned(
-                left: 0,
-                right: 0,
-                bottom: 80, // Sits on top of the NavBar
-                child: MiniPlayer(),
-              ),
+              // Navigation Deck
+              BlocBuilder<ProfileBloc, ProfileState>(
+                builder: (context, profileState) {
+                  // Determine User's Preferred Style
+                  NavBarStyle style = NavBarStyle.simple;
+                  profileState.maybeWhen(
+                    loaded: (user) {
+                      style = user.preferredNavBar;
+                    },
+                    orElse: () {},
+                  );
 
-              // LAYER 4: Navigation Deck
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: BlocBuilder<ProfileBloc, ProfileState>(
-                  builder: (context, profileState) {
-                    // Determine User's Preferred Style
-                    NavBarStyle style = NavBarStyle.simple;
-                    profileState.maybeWhen(
-                      loaded: (user) {
-                        style = user.preferredNavBar;
-                      },
-                      orElse: () {},
-                    );
+                  // Convert Router Index (int) to Your Enum (HomeTab)
+                  final currentTab = HomeTab.values[tabsRouter.activeIndex];
 
-                    // Convert Router Index (int) to Your Enum (HomeTab)
-                    final currentTab = HomeTab.values[tabsRouter.activeIndex];
+                  Widget navBar;
+                  switch (style) {
+                    case NavBarStyle.prism:
+                      navBar = PrismKnobNavigation(
+                        selectedTab: currentTab,
+                        onTabSelected: (tab) {
+                          // Convert Enum back to int for Router
+                          tabsRouter.setActiveIndex(tab.index);
+                        },
+                      );
+                      break;
+                    case NavBarStyle.neural:
+                      navBar = NeuralStringNavigation(
+                        selectedTab: currentTab,
+                        onTabSelected: (tab) {
+                          tabsRouter.setActiveIndex(tab.index);
+                        },
+                      );
+                      break;
+                    case NavBarStyle.simple:
+                    default:
+                      navBar = SimpleAnimatedNavBar(
+                        selectedTab: currentTab,
+                        onTabSelected: (tab) {
+                          tabsRouter.setActiveIndex(tab.index);
+                        },
+                      );
+                  }
 
-                    Widget navBar;
-                    switch (style) {
-                      case NavBarStyle.prism:
-                        navBar = PrismKnobNavigation(
-                          selectedTab: currentTab,
-                          onTabSelected: (tab) {
-                            // Convert Enum back to int for Router
-                            tabsRouter.setActiveIndex(tab.index);
-                          },
-                        );
-                        break;
-                      case NavBarStyle.neural:
-                        navBar = NeuralStringNavigation(
-                          selectedTab: currentTab,
-                          onTabSelected: (tab) {
-                            tabsRouter.setActiveIndex(tab.index);
-                          },
-                        );
-                        break;
-                      case NavBarStyle.simple:
-                      default:
-                        navBar = SimpleAnimatedNavBar(
-                          selectedTab: currentTab,
-                          onTabSelected: (tab) {
-                            tabsRouter.setActiveIndex(tab.index);
-                          },
-                        );
-                    }
-
-                    return navBar;
-                  },
-                ),
+                  return navBar;
+                },
               ),
             ],
           ),
