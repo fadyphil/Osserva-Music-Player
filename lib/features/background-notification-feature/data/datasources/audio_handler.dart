@@ -51,12 +51,29 @@ class MusicPlayerHandler extends BaseAudioHandler
     // Broadcast the Play/Pause/Loading state to the OS
     _player.playbackEventStream.listen((event) {
       final playing = _player.playing;
+      
+      // Custom controls for Shuffle and Repeat
+      // NOTE: You must add 'ic_shuffle.xml' and 'ic_repeat.xml' to android/app/src/main/res/drawable/
+      const shuffleControl = MediaControl(
+        androidIcon: 'drawable/ic_shuffle',
+        label: 'Shuffle',
+        action: MediaAction.setShuffleMode,
+      );
+      
+      const repeatControl = MediaControl(
+        androidIcon: 'drawable/ic_repeat',
+        label: 'Repeat',
+        action: MediaAction.setRepeatMode,
+      );
+
       playbackState.add(
         playbackState.value.copyWith(
           controls: [
+            shuffleControl,
             MediaControl.skipToPrevious,
             if (playing) MediaControl.pause else MediaControl.play,
             MediaControl.skipToNext,
+            repeatControl,
           ],
           systemActions: const {
             MediaAction.setShuffleMode,
