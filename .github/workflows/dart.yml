@@ -32,6 +32,10 @@ jobs:
       # 4. Get dependencies
       - run: flutter pub get
 
+      # 4.5 GENERATE CODE (Add this step!)
+      - name: Run Build Runner
+        run: dart run build_runner build --delete-conflicting-outputs
+
       # 5. Check for linting errors (Best practice!)
       - run: flutter analyze
 
