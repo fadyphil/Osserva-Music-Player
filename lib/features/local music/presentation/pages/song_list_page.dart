@@ -470,7 +470,7 @@ class _SongListSliverAppBar extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 47),
                             _SearchBar(
                               controller: searchController,
                               onChanged: onSearchChanged,

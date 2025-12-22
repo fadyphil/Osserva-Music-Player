@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
+import 'package:music_player/features/local%20music/domain/use%20cases/get_song_by_id_use_case.dart';
 import 'music_player_event.dart';
 import 'music_player_state.dart';
 
 class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   final AudioPlayerRepository _audioRepository;
+  final GetSongByIdUseCase _getSongByIdUseCase;
 
   StreamSubscription? _positionSubscription;
   StreamSubscription? _durationSubscription;
@@ -16,7 +18,7 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   StreamSubscription? _loopSubscription;
   StreamSubscription? _queueSubscription;
 
-  MusicPlayerBloc(this._audioRepository) : super(const MusicPlayerState()) {
+  MusicPlayerBloc(this._audioRepository, this._getSongByIdUseCase) : super(const MusicPlayerState()) {
     // 1. Setup Listeners
     _positionSubscription = _audioRepository.positionStream.listen((pos) {
       add(MusicPlayerEvent.updatePosition(pos));
@@ -86,6 +88,23 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
             e.song.artist,
             e.song.id.toString(),
             e.song.album,
+          );
+        },
+        playSongById: (e) async {
+          final result = await _getSongByIdUseCase(e.songId);
+          result.fold(
+            (failure) {
+              emit(
+                state.copyWith(
+                  queueActionStatus: QueueStatus.failure,
+                  errorMessage: 'Failed to play song: ${failure.message}',
+                ),
+              );
+              emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+            },
+            (song) {
+              add(MusicPlayerEvent.playSong(song: song));
+            },
           );
         },
         playNextSong: (_) async {

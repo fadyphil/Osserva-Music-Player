@@ -14,6 +14,8 @@ abstract class MusicPlayerEvent with _$MusicPlayerEvent {
   // User Actions
   const factory MusicPlayerEvent.playSong({required SongEntity song}) =
       _PlaySong;
+  const factory MusicPlayerEvent.playSongById({required int songId}) =
+      _PlaySongById;
   const factory MusicPlayerEvent.pause() = _Pause;
   const factory MusicPlayerEvent.resume() = _Resume;
   const factory MusicPlayerEvent.seek(Duration position) = _Seek;

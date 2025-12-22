@@ -6,6 +6,8 @@ import 'package:music_player/core/router/app_router.dart';
 import 'package:music_player/core/theme/app_pallete.dart';
 import 'package:music_player/features/analytics/domain/entities/play_log.dart';
 import 'package:music_player/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
+import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
+import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 @RoutePage()
@@ -208,65 +210,72 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 120,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey[800],
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
+    return GestureDetector(
+      onTap: () {
+        context.read<MusicPlayerBloc>().add(
+          MusicPlayerEvent.playSongById(songId: log.songId),
+        );
+      },
+      child: Container(
+        width: 120,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey[800],
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
                 ),
-              ),
-              child: QueryArtworkWidget(
-                id: log.songId,
-                type: ArtworkType.AUDIO,
-                artworkFit: BoxFit.cover,
-                artworkBorder: const BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
-                nullArtworkWidget: const Center(
-                  child: Icon(
-                    Icons.music_note,
-                    color: Colors.white24,
-                    size: 40,
+                child: QueryArtworkWidget(
+                  id: log.songId,
+                  type: ArtworkType.AUDIO,
+                  artworkFit: BoxFit.cover,
+                  artworkBorder: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
+                  nullArtworkWidget: const Center(
+                    child: Icon(
+                      Icons.music_note,
+                      color: Colors.white24,
+                      size: 40,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  log.songTitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    log.songTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Text(
-                  log.artist,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white54, fontSize: 12),
-                ),
-              ],
+                  Text(
+                    log.artist,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -6,11 +6,40 @@ import 'package:on_audio_query/on_audio_query.dart';
 
 abstract class LocalMusicDatasource {
   Future<List<SongEntity>> getLocalMusic();
+  Future<SongEntity?> getSongById(int id);
 }
 
 class LocalMusicDatasourceImpl implements LocalMusicDatasource {
   final OnAudioQuery _onAudioQuery;
   LocalMusicDatasourceImpl(this._onAudioQuery);
+
+  @override
+  Future<SongEntity?> getSongById(int id) async {
+    // 1. Try Linux Native first if applicable
+    if (Platform.isLinux) {
+      final allSongs = await _getLinuxSongs();
+      try {
+        return allSongs.firstWhere((s) => s.id == id);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // 2. Use OnAudioQuery for others
+    try {
+      final songs = await _onAudioQuery.querySongs(
+        sortType: SongSortType.DATE_ADDED,
+        orderType: OrderType.DESC_OR_GREATER,
+        uriType: UriType.EXTERNAL,
+        ignoreCase: true,
+      );
+      
+      final match = songs.firstWhere((s) => s.id == id);
+      return SongMapper.toEntity(match);
+    } catch (e) {
+      return null;
+    }
+  }
 
   @override
   Future<List<SongEntity>> getLocalMusic() async {
