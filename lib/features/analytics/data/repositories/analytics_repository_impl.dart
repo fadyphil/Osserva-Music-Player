@@ -33,6 +33,16 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
+  Future<Either<Failure, Map<int, int>>> getAllSongPlayCounts() async {
+    try {
+      final result = await dataSource.getAllSongPlayCounts();
+      return Right(result);
+    } catch (e) {
+      return Left(AnalyticsFailure('Failed to fetch play counts: $e'));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<TopItem>>> getTopAlbums(TimeFrame timeFrame, {int limit = 10}) async {
     try {
       final result = await dataSource.getTopAlbums(timeFrame, limit);
@@ -94,4 +104,17 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
       return Left(AnalyticsFailure('Failed to clear analytics data: $e'));
     }
   }
+
+  @override
+  Future<Either<Failure, List<PlayLog>>> getPlaybackHistory({int? limit, int? offset}) async {
+    try {
+      final result = await dataSource.getPlaybackHistory(limit: limit, offset: offset);
+      return Right(result);
+    } catch (e) {
+      return Left(AnalyticsFailure('Failed to fetch playback history: $e'));
+    }
+  }
+
+  @override
+  Stream<void> get playbackStream => dataSource.onLogStream;
 }

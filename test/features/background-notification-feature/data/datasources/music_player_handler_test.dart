@@ -26,6 +26,8 @@ void main() {
     when(
       () => mockPlayer.sequenceStateStream,
     ).thenAnswer((_) => Stream.empty());
+    when(() => mockPlayer.durationStream).thenAnswer((_) => Stream.value(Duration.zero)); // Added
+    when(() => mockPlayer.positionStream).thenAnswer((_) => Stream.value(Duration.zero)); // Added
     when(() => mockPlayer.position).thenReturn(Duration.zero);
     when(() => mockPlayer.bufferedPosition).thenReturn(Duration.zero);
     when(() => mockPlayer.speed).thenReturn(1.0);

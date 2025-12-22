@@ -1,10 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 
 part 'music_player_event.freezed.dart';
 
 @freezed
-class MusicPlayerEvent with _$MusicPlayerEvent {
+abstract class MusicPlayerEvent with _$MusicPlayerEvent {
   const factory MusicPlayerEvent.initMusicQueue({
     required List<SongEntity> songs,
     required int currentIndex,
@@ -13,12 +14,14 @@ class MusicPlayerEvent with _$MusicPlayerEvent {
   // User Actions
   const factory MusicPlayerEvent.playSong({required SongEntity song}) =
       _PlaySong;
+  const factory MusicPlayerEvent.playSongById({required int songId}) =
+      _PlaySongById;
   const factory MusicPlayerEvent.pause() = _Pause;
   const factory MusicPlayerEvent.resume() = _Resume;
   const factory MusicPlayerEvent.seek(Duration position) = _Seek;
   const factory MusicPlayerEvent.playPreviousSong() = _PreviousSong;
   const factory MusicPlayerEvent.playNextSong() = _NextSong;
-  
+
   const factory MusicPlayerEvent.toggleShuffle() = _ToggleShuffle;
   const factory MusicPlayerEvent.cycleLoopMode() = _CycleLoopMode;
 
@@ -37,4 +40,12 @@ class MusicPlayerEvent with _$MusicPlayerEvent {
       _UpdateCurrentSong;
 
   const factory MusicPlayerEvent.songFinished() = _SongFinished;
+
+  // Queue Management
+  const factory MusicPlayerEvent.addToQueue(SongEntity song) = _AddToQueue;
+  const factory MusicPlayerEvent.addToPlaylist(SongEntity song) =
+      _AddToPlaylist;
+  const factory MusicPlayerEvent.queueUpdated(List<SongEntity> queue) =
+      _QueueUpdated;
+  const factory MusicPlayerEvent.playNextinQueue(SongEntity song) = _PlayNext;
 }

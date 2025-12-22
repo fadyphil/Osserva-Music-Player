@@ -128,12 +128,12 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<SongEntity> songs)?  loaded,TResult Function( Failure failure)?  failure,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<SongEntity> allSongs,  List<SongEntity> processedSongs,  SortOption sortOption,  bool isSearching,  String searchQuery,  bool hasPermission,  Map<int, int> playCounts)?  loaded,TResult Function( Failure failure)?  failure,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.songs);case _Error() when failure != null:
+return loaded(_that.allSongs,_that.processedSongs,_that.sortOption,_that.isSearching,_that.searchQuery,_that.hasPermission,_that.playCounts);case _Error() when failure != null:
 return failure(_that.failure);case _:
   return orElse();
 
@@ -152,12 +152,12 @@ return failure(_that.failure);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<SongEntity> songs)  loaded,required TResult Function( Failure failure)  failure,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<SongEntity> allSongs,  List<SongEntity> processedSongs,  SortOption sortOption,  bool isSearching,  String searchQuery,  bool hasPermission,  Map<int, int> playCounts)  loaded,required TResult Function( Failure failure)  failure,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _Loaded():
-return loaded(_that.songs);case _Error():
+return loaded(_that.allSongs,_that.processedSongs,_that.sortOption,_that.isSearching,_that.searchQuery,_that.hasPermission,_that.playCounts);case _Error():
 return failure(_that.failure);case _:
   throw StateError('Unexpected subclass');
 
@@ -175,12 +175,12 @@ return failure(_that.failure);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<SongEntity> songs)?  loaded,TResult? Function( Failure failure)?  failure,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<SongEntity> allSongs,  List<SongEntity> processedSongs,  SortOption sortOption,  bool isSearching,  String searchQuery,  bool hasPermission,  Map<int, int> playCounts)?  loaded,TResult? Function( Failure failure)?  failure,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.songs);case _Error() when failure != null:
+return loaded(_that.allSongs,_that.processedSongs,_that.sortOption,_that.isSearching,_that.searchQuery,_that.hasPermission,_that.playCounts);case _Error() when failure != null:
 return failure(_that.failure);case _:
   return null;
 
@@ -257,14 +257,32 @@ String toString() {
 
 
 class _Loaded implements LocalMusicState {
-  const _Loaded(final  List<SongEntity> songs): _songs = songs;
+  const _Loaded({required final  List<SongEntity> allSongs, required final  List<SongEntity> processedSongs, this.sortOption = SortOption.dateAdded, this.isSearching = false, this.searchQuery = '', this.hasPermission = false, final  Map<int, int> playCounts = const {}}): _allSongs = allSongs,_processedSongs = processedSongs,_playCounts = playCounts;
   
 
- final  List<SongEntity> _songs;
- List<SongEntity> get songs {
-  if (_songs is EqualUnmodifiableListView) return _songs;
+ final  List<SongEntity> _allSongs;
+ List<SongEntity> get allSongs {
+  if (_allSongs is EqualUnmodifiableListView) return _allSongs;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_songs);
+  return EqualUnmodifiableListView(_allSongs);
+}
+
+ final  List<SongEntity> _processedSongs;
+ List<SongEntity> get processedSongs {
+  if (_processedSongs is EqualUnmodifiableListView) return _processedSongs;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_processedSongs);
+}
+
+@JsonKey() final  SortOption sortOption;
+@JsonKey() final  bool isSearching;
+@JsonKey() final  String searchQuery;
+@JsonKey() final  bool hasPermission;
+ final  Map<int, int> _playCounts;
+@JsonKey() Map<int, int> get playCounts {
+  if (_playCounts is EqualUnmodifiableMapView) return _playCounts;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_playCounts);
 }
 
 
@@ -278,16 +296,16 @@ _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._songs, _songs));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._allSongs, _allSongs)&&const DeepCollectionEquality().equals(other._processedSongs, _processedSongs)&&(identical(other.sortOption, sortOption) || other.sortOption == sortOption)&&(identical(other.isSearching, isSearching) || other.isSearching == isSearching)&&(identical(other.searchQuery, searchQuery) || other.searchQuery == searchQuery)&&(identical(other.hasPermission, hasPermission) || other.hasPermission == hasPermission)&&const DeepCollectionEquality().equals(other._playCounts, _playCounts));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_songs));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_allSongs),const DeepCollectionEquality().hash(_processedSongs),sortOption,isSearching,searchQuery,hasPermission,const DeepCollectionEquality().hash(_playCounts));
 
 @override
 String toString() {
-  return 'LocalMusicState.loaded(songs: $songs)';
+  return 'LocalMusicState.loaded(allSongs: $allSongs, processedSongs: $processedSongs, sortOption: $sortOption, isSearching: $isSearching, searchQuery: $searchQuery, hasPermission: $hasPermission, playCounts: $playCounts)';
 }
 
 
@@ -298,7 +316,7 @@ abstract mixin class _$LoadedCopyWith<$Res> implements $LocalMusicStateCopyWith<
   factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
 @useResult
 $Res call({
- List<SongEntity> songs
+ List<SongEntity> allSongs, List<SongEntity> processedSongs, SortOption sortOption, bool isSearching, String searchQuery, bool hasPermission, Map<int, int> playCounts
 });
 
 
@@ -315,10 +333,16 @@ class __$LoadedCopyWithImpl<$Res>
 
 /// Create a copy of LocalMusicState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? songs = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? allSongs = null,Object? processedSongs = null,Object? sortOption = null,Object? isSearching = null,Object? searchQuery = null,Object? hasPermission = null,Object? playCounts = null,}) {
   return _then(_Loaded(
-null == songs ? _self._songs : songs // ignore: cast_nullable_to_non_nullable
-as List<SongEntity>,
+allSongs: null == allSongs ? _self._allSongs : allSongs // ignore: cast_nullable_to_non_nullable
+as List<SongEntity>,processedSongs: null == processedSongs ? _self._processedSongs : processedSongs // ignore: cast_nullable_to_non_nullable
+as List<SongEntity>,sortOption: null == sortOption ? _self.sortOption : sortOption // ignore: cast_nullable_to_non_nullable
+as SortOption,isSearching: null == isSearching ? _self.isSearching : isSearching // ignore: cast_nullable_to_non_nullable
+as bool,searchQuery: null == searchQuery ? _self.searchQuery : searchQuery // ignore: cast_nullable_to_non_nullable
+as String,hasPermission: null == hasPermission ? _self.hasPermission : hasPermission // ignore: cast_nullable_to_non_nullable
+as bool,playCounts: null == playCounts ? _self._playCounts : playCounts // ignore: cast_nullable_to_non_nullable
+as Map<int, int>,
   ));
 }
 

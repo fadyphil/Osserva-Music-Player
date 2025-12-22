@@ -1,12 +1,14 @@
 import 'dart:io';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:music_player/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:music_player/core/router/app_router.dart';
 import '../../domain/entities/user_entity.dart';
 import '../bloc/profile_bloc.dart';
 
+@RoutePage()
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -27,18 +29,21 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Colors.transparent,
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: (context, state) {
-           state.maybeWhen(
-             error: (msg) {
-               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-             },
-             cacheCleared: () {
-               Navigator.of(context).pushAndRemoveUntil(
-                 MaterialPageRoute(builder: (context) => const OnboardingPage()),
-                 (route) => false,
-               );
-             },
-             orElse: () {},
-           );
+          state.maybeWhen(
+            error: (msg) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(msg)));
+            },
+            cacheCleared: () {
+              // Navigator.of(context).pushAndRemoveUntil(
+              //   MaterialPageRoute(builder: (context) => const OnboardingPage()),
+              //   (route) => false,
+              // );
+              context.router.replaceAll([OnboardingRoute()]);
+            },
+            orElse: () {},
+          );
         },
         builder: (context, state) {
           return state.maybeWhen(
@@ -60,8 +65,8 @@ class _ProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
     final imageProvider = user.avatarUrl.isNotEmpty
         ? (user.avatarUrl.startsWith('http')
-            ? NetworkImage(user.avatarUrl)
-            : FileImage(File(user.avatarUrl)) as ImageProvider)
+              ? NetworkImage(user.avatarUrl)
+              : FileImage(File(user.avatarUrl)) as ImageProvider)
         : null;
 
     return ListView(
@@ -79,8 +84,12 @@ class _ProfileView extends StatelessWidget {
                       radius: 60,
                       backgroundColor: Colors.white10,
                       backgroundImage: imageProvider,
-                      child: user.avatarUrl.isEmpty 
-                          ? const Icon(Icons.person, size: 60, color: Colors.white54)
+                      child: user.avatarUrl.isEmpty
+                          ? const Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Colors.white54,
+                            )
                           : null,
                     ),
                     Positioned(
@@ -92,7 +101,11 @@ class _ProfileView extends StatelessWidget {
                           color: Colors.greenAccent,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.camera_alt, color: Colors.black, size: 20),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.black,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ],
@@ -138,8 +151,14 @@ class _ProfileView extends StatelessWidget {
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
-          title: const Text("Clear Cache", style: TextStyle(color: Colors.white)),
-          subtitle: const Text("Purge local temporal data", style: TextStyle(color: Colors.white38, fontSize: 12)),
+          title: const Text(
+            "Clear Cache",
+            style: TextStyle(color: Colors.white),
+          ),
+          subtitle: const Text(
+            "Purge local temporal data",
+            style: TextStyle(color: Colors.white38, fontSize: 12),
+          ),
           onTap: () => _showClearCacheConfirmation(context),
         ),
       ],
@@ -192,7 +211,9 @@ class _ProfileView extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(ctx);
-                      context.read<ProfileBloc>().add(const ProfileEvent.clearCache());
+                      context.read<ProfileBloc>().add(
+                        const ProfileEvent.clearCache(),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.redAccent,
@@ -222,14 +243,19 @@ class _ProfileView extends StatelessWidget {
         builder: (context, setState) {
           return AlertDialog(
             backgroundColor: const Color(0xFF1A1A1A),
-            title: const Text("Update Identity", style: TextStyle(color: Colors.white)),
+            title: const Text(
+              "Update Identity",
+              style: TextStyle(color: Colors.white),
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                 GestureDetector(
+                GestureDetector(
                   onTap: () async {
                     final ImagePicker picker = ImagePicker();
-                    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                    final XFile? image = await picker.pickImage(
+                      source: ImageSource.gallery,
+                    );
                     if (image != null) {
                       setState(() {
                         currentAvatarPath = image.path;
@@ -242,10 +268,11 @@ class _ProfileView extends StatelessWidget {
                     backgroundColor: Colors.white10,
                     backgroundImage: currentAvatarPath.isNotEmpty
                         ? (currentAvatarPath.startsWith('http')
-                            ? NetworkImage(currentAvatarPath)
-                            : FileImage(File(currentAvatarPath)) as ImageProvider)
+                              ? NetworkImage(currentAvatarPath)
+                              : FileImage(File(currentAvatarPath))
+                                    as ImageProvider)
                         : null,
-                    child: currentAvatarPath.isEmpty 
+                    child: currentAvatarPath.isEmpty
                         ? const Icon(Icons.add_a_photo, color: Colors.white54)
                         : null,
                   ),
@@ -271,11 +298,13 @@ class _ProfileView extends StatelessWidget {
               TextButton(
                 onPressed: () {
                   context.read<ProfileBloc>().add(
-                    ProfileEvent.updateProfile(user.copyWith(
-                      username: nameCtrl.text,
-                      email: emailCtrl.text,
-                      avatarUrl: currentAvatarPath,
-                    )),
+                    ProfileEvent.updateProfile(
+                      user.copyWith(
+                        username: nameCtrl.text,
+                        email: emailCtrl.text,
+                        avatarUrl: currentAvatarPath,
+                      ),
+                    ),
                   );
                   Navigator.pop(ctx);
                 },
@@ -283,7 +312,7 @@ class _ProfileView extends StatelessWidget {
               ),
             ],
           );
-        }
+        },
       ),
     );
   }
@@ -321,36 +350,44 @@ class _NavBarSelector extends StatelessWidget {
           final isSelected = style == selectedStyle;
           return GestureDetector(
             onTap: () {
-              context.read<ProfileBloc>().add(ProfileEvent.changeNavBarStyle(style));
+              context.read<ProfileBloc>().add(
+                ProfileEvent.changeNavBarStyle(style),
+              );
             },
             child: Container(
               width: 100,
               margin: const EdgeInsets.only(right: 12),
               decoration: BoxDecoration(
-                color: isSelected ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.2) : Colors.white10,
+                color: isSelected
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.2)
+                    : Colors.white10,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.transparent,
                 ),
               ),
               padding: const EdgeInsets.all(12),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   Icon(
-                     _getIconForStyle(style), 
-                     color: isSelected ? Colors.white : Colors.white54,
-                     size: 32,
-                   ),
-                   const SizedBox(height: 12),
-                   Text(
-                     style.name.toUpperCase(),
-                     style: TextStyle(
-                       color: isSelected ? Colors.white : Colors.white54,
-                       fontSize: 10,
-                       fontWeight: FontWeight.bold,
-                     ),
-                   )
+                  Icon(
+                    _getIconForStyle(style),
+                    color: isSelected ? Colors.white : Colors.white54,
+                    size: 32,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    style.name.toUpperCase(),
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.white54,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -362,10 +399,14 @@ class _NavBarSelector extends StatelessWidget {
 
   IconData _getIconForStyle(NavBarStyle style) {
     switch (style) {
-      case NavBarStyle.simple: return Icons.crop_square;
-      case NavBarStyle.prism: return Icons.radio_button_checked;
-      case NavBarStyle.neural: return Icons.gesture;
-      case NavBarStyle.gravity: return Icons.anchor;
+      case NavBarStyle.simple:
+        return Icons.crop_square;
+      case NavBarStyle.prism:
+        return Icons.radio_button_checked;
+      case NavBarStyle.neural:
+        return Icons.gesture;
+      case NavBarStyle.gravity:
+        return Icons.anchor;
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/init_dependencies.dart';
@@ -10,6 +11,7 @@ import '../widgets/genre_bar_chart.dart';
 import '../widgets/listening_time_chart.dart';
 import '../widgets/time_of_day_chart.dart';
 
+@RoutePage()
 class AnalyticsDashboardPage extends StatelessWidget {
   const AnalyticsDashboardPage({super.key});
 
@@ -17,7 +19,9 @@ class AnalyticsDashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => serviceLocator<AnalyticsBloc>()
-        ..add(const AnalyticsEvent.loadAnalyticsData(timeFrame: TimeFrame.week)),
+        ..add(
+          const AnalyticsEvent.loadAnalyticsData(timeFrame: TimeFrame.week),
+        ),
       child: Scaffold(
         backgroundColor: AppPallete.backgroundColor,
         body: const _AnalyticsBody(),
@@ -45,20 +49,28 @@ class _AnalyticsBody extends StatelessWidget {
         ),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverToBoxAdapter(
-            child: _TimeFrameTabs(),
-          ),
+          sliver: SliverToBoxAdapter(child: _TimeFrameTabs()),
         ),
         const SliverPadding(padding: EdgeInsets.only(top: 16)),
         BlocBuilder<AnalyticsBloc, AnalyticsState>(
           builder: (context, state) {
             return state.map(
-              initial: (_) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+              initial: (_) =>
+                  const SliverToBoxAdapter(child: SizedBox.shrink()),
               loading: (_) => const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator(color: AppPallete.primaryGreen)),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: AppPallete.primaryGreen,
+                  ),
+                ),
               ),
               failure: (f) => SliverFillRemaining(
-                child: Center(child: Text('Error: ${f.message}', style: const TextStyle(color: AppPallete.hotPink))),
+                child: Center(
+                  child: Text(
+                    'Error: ${f.message}',
+                    style: const TextStyle(color: AppPallete.hotPink),
+                  ),
+                ),
               ),
               loaded: (data) => _buildDashboard(context, data),
             );
@@ -72,7 +84,7 @@ class _AnalyticsBody extends StatelessWidget {
   Widget _buildDashboard(BuildContext context, dynamic data) {
     // Note: 'data' is the generated _Loaded class from freezed.
     // We use dynamic or just let inference handle it, but for clarity in this method signature
-    // we accept dynamic to avoid import issues with private classes, 
+    // we accept dynamic to avoid import issues with private classes,
     // though strictly we know it has the fields we need.
     return SliverList(
       delegate: SliverChildListDelegate([
@@ -125,7 +137,9 @@ class _AnalyticsBody extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    TimeOfDayChart(distribution: data.stats.timeOfDayDistribution),
+                    TimeOfDayChart(
+                      distribution: data.stats.timeOfDayDistribution,
+                    ),
                   ],
                 ),
               ),
@@ -163,10 +177,9 @@ class _AnalyticsBody extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              ...(data.topSongs as List<TopItem>).asMap().entries.map((e) => _TopSongTile(
-                    index: e.key + 1,
-                    item: e.value,
-                  )),
+              ...(data.topSongs as List<TopItem>).asMap().entries.map(
+                (e) => _TopSongTile(index: e.key + 1, item: e.value),
+              ),
 
               const SizedBox(height: 24),
 
@@ -180,10 +193,9 @@ class _AnalyticsBody extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              ...(data.topArtists as List<TopItem>).asMap().entries.map((e) => _TopArtistTile(
-                    index: e.key + 1,
-                    item: e.value,
-                  )),
+              ...(data.topArtists as List<TopItem>).asMap().entries.map(
+                (e) => _TopArtistTile(index: e.key + 1, item: e.value),
+              ),
             ],
           ),
         ),
@@ -234,7 +246,9 @@ class _TimeFrameTabs extends StatelessWidget {
   }
 
   void _update(BuildContext context, TimeFrame frame) {
-    context.read<AnalyticsBloc>().add(AnalyticsEvent.loadAnalyticsData(timeFrame: frame));
+    context.read<AnalyticsBloc>().add(
+      AnalyticsEvent.loadAnalyticsData(timeFrame: frame),
+    );
   }
 }
 
@@ -265,7 +279,7 @@ class _TabButton extends StatelessWidget {
                     color: AppPallete.primaryGreen.withValues(alpha: 0.4),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
-                  )
+                  ),
                 ]
               : [],
         ),
@@ -329,10 +343,7 @@ class _TopSongTile extends StatelessWidget {
                 ),
                 Text(
                   item.subtitle ?? 'Unknown Artist',
-                  style: const TextStyle(
-                    color: AppPallete.grey,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: AppPallete.grey, fontSize: 14),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],

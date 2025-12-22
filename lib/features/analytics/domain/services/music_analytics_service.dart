@@ -13,9 +13,11 @@ class MusicAnalyticsService with WidgetsBindingObserver {
   StreamSubscription? _currentSongSubscription;
   StreamSubscription? _durationSubscription;
   StreamSubscription? _completionSubscription;
+  StreamSubscription? _positionSubscription;
 
   SongEntity? _currentSong;
   Duration _currentSongDuration = Duration.zero;
+  Duration _lastPosition = Duration.zero;
   DateTime? _playStartTime;
   int _accumulatedMilliseconds = 0;
   bool _isPlaying = false;
@@ -24,14 +26,21 @@ class MusicAnalyticsService with WidgetsBindingObserver {
 
   void init() {
     WidgetsBinding.instance.addObserver(this);
-    _playerStateSubscription =
-        _audioRepository.isPlayingStream.listen(_onPlayerStateChanged);
-    _currentSongSubscription =
-        _audioRepository.currentSongStream.listen(_onSongChanged);
-    _durationSubscription =
-        _audioRepository.durationStream.listen(_onDurationChanged);
-    _completionSubscription =
-        _audioRepository.playerCompleteStream.listen((_) => _onSongCompleted());
+    _playerStateSubscription = _audioRepository.isPlayingStream.listen(
+      _onPlayerStateChanged,
+    );
+    _currentSongSubscription = _audioRepository.currentSongStream.listen(
+      _onSongChanged,
+    );
+    _durationSubscription = _audioRepository.durationStream.listen(
+      _onDurationChanged,
+    );
+    _completionSubscription = _audioRepository.playerCompleteStream.listen(
+      (_) => _onSongCompleted(),
+    );
+    _positionSubscription = _audioRepository.positionStream.listen(
+      _onPositionChanged,
+    );
   }
 
   void _onPlayerStateChanged(bool isPlaying) {
@@ -42,8 +51,9 @@ class MusicAnalyticsService with WidgetsBindingObserver {
     } else if (!isPlaying && _isPlaying) {
       // Paused/Stopped
       if (_playStartTime != null) {
-        _accumulatedMilliseconds +=
-            now.difference(_playStartTime!).inMilliseconds;
+        _accumulatedMilliseconds += now
+            .difference(_playStartTime!)
+            .inMilliseconds;
         _playStartTime = null;
       }
     }
@@ -64,12 +74,12 @@ class MusicAnalyticsService with WidgetsBindingObserver {
     // Reset for new song
     _currentSong = newSong;
     // Initial duration from metadata (assuming ms)
-    _currentSongDuration =
-        newSong != null
-            ? Duration(milliseconds: newSong.duration.toInt())
-            : Duration.zero;
+    _currentSongDuration = newSong != null
+        ? Duration(milliseconds: newSong.duration.toInt())
+        : Duration.zero;
 
     _accumulatedMilliseconds = 0;
+    _lastPosition = Duration.zero;
     _playStartTime = _isPlaying ? DateTime.now() : null;
   }
 
@@ -78,6 +88,24 @@ class MusicAnalyticsService with WidgetsBindingObserver {
     if (duration != Duration.zero) {
       _currentSongDuration = duration;
     }
+  }
+
+  void _onPositionChanged(Duration position) {
+    if (_currentSongDuration == Duration.zero) return;
+
+    // Check for wrap-around (Loop detection)
+    // If position jumps from near end (> 90%) to near start (< 5s)
+    if (position < _lastPosition) {
+      final thresholdHigh = _currentSongDuration.inMilliseconds * 0.90;
+      const thresholdLow = 5000; // 5 seconds
+
+      if (_lastPosition.inMilliseconds > thresholdHigh &&
+          position.inMilliseconds < thresholdLow) {
+        // Detected Loop or Restart
+        _onSongCompleted();
+      }
+    }
+    _lastPosition = position;
   }
 
   void _onSongCompleted() {
@@ -90,7 +118,13 @@ class MusicAnalyticsService with WidgetsBindingObserver {
       );
       // Reset accumulator to prevent double logging if song changes later
       _accumulatedMilliseconds = 0;
-      _playStartTime = null;
+      
+      // If playing (looping), restart the timer immediately
+      if (_isPlaying) {
+        _playStartTime = DateTime.now();
+      } else {
+        _playStartTime = null;
+      }
     }
   }
 
@@ -103,7 +137,7 @@ class MusicAnalyticsService with WidgetsBindingObserver {
         _onPlayerStateChanged(false); // Force pause logic to accumulate time
         _isPlaying = true; // Restore state just in case (though we are pausing)
       }
-      
+
       if (_currentSong != null && _accumulatedMilliseconds > 0) {
         _finalizeAndLog(_currentSong!, _currentSongDuration);
         _accumulatedMilliseconds = 0; // Prevent double counting if resumed
@@ -119,8 +153,9 @@ class MusicAnalyticsService with WidgetsBindingObserver {
     // Capture any ongoing session
     if (_isPlaying && _playStartTime != null) {
       final now = DateTime.now();
-      _accumulatedMilliseconds +=
-          now.difference(_playStartTime!).inMilliseconds;
+      _accumulatedMilliseconds += now
+          .difference(_playStartTime!)
+          .inMilliseconds;
       // Don't reset _playStartTime here; rely on caller
     }
 
@@ -165,5 +200,6 @@ class MusicAnalyticsService with WidgetsBindingObserver {
     _currentSongSubscription?.cancel();
     _durationSubscription?.cancel();
     _completionSubscription?.cancel();
+    _positionSubscription?.cancel();
   }
 }

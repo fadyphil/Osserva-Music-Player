@@ -12,11 +12,17 @@ part of 'music_player_event.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
-mixin _$MusicPlayerEvent {
+mixin _$MusicPlayerEvent implements DiagnosticableTreeMixin {
 
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -28,7 +34,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent()';
 }
 
@@ -55,12 +61,13 @@ extension MusicPlayerEventPatterns on MusicPlayerEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _InitMusicQueue value)?  initMusicQueue,TResult Function( _PlaySong value)?  playSong,TResult Function( _Pause value)?  pause,TResult Function( _Resume value)?  resume,TResult Function( _Seek value)?  seek,TResult Function( _PreviousSong value)?  playPreviousSong,TResult Function( _NextSong value)?  playNextSong,TResult Function( _ToggleShuffle value)?  toggleShuffle,TResult Function( _CycleLoopMode value)?  cycleLoopMode,TResult Function( _UpdatePosition value)?  updatePosition,TResult Function( _UpdateDuration value)?  updateDuration,TResult Function( _UpdatePlayerState value)?  updatePlayerState,TResult Function( _UpdateShuffleState value)?  updateShuffleState,TResult Function( _UpdateLoopState value)?  updateLoopState,TResult Function( _UpdateCurrentSong value)?  updateCurrentSong,TResult Function( _SongFinished value)?  songFinished,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _InitMusicQueue value)?  initMusicQueue,TResult Function( _PlaySong value)?  playSong,TResult Function( _PlaySongById value)?  playSongById,TResult Function( _Pause value)?  pause,TResult Function( _Resume value)?  resume,TResult Function( _Seek value)?  seek,TResult Function( _PreviousSong value)?  playPreviousSong,TResult Function( _NextSong value)?  playNextSong,TResult Function( _ToggleShuffle value)?  toggleShuffle,TResult Function( _CycleLoopMode value)?  cycleLoopMode,TResult Function( _UpdatePosition value)?  updatePosition,TResult Function( _UpdateDuration value)?  updateDuration,TResult Function( _UpdatePlayerState value)?  updatePlayerState,TResult Function( _UpdateShuffleState value)?  updateShuffleState,TResult Function( _UpdateLoopState value)?  updateLoopState,TResult Function( _UpdateCurrentSong value)?  updateCurrentSong,TResult Function( _SongFinished value)?  songFinished,TResult Function( _AddToQueue value)?  addToQueue,TResult Function( _AddToPlaylist value)?  addToPlaylist,TResult Function( _QueueUpdated value)?  queueUpdated,TResult Function( _PlayNext value)?  playNextinQueue,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _InitMusicQueue() when initMusicQueue != null:
 return initMusicQueue(_that);case _PlaySong() when playSong != null:
-return playSong(_that);case _Pause() when pause != null:
+return playSong(_that);case _PlaySongById() when playSongById != null:
+return playSongById(_that);case _Pause() when pause != null:
 return pause(_that);case _Resume() when resume != null:
 return resume(_that);case _Seek() when seek != null:
 return seek(_that);case _PreviousSong() when playPreviousSong != null:
@@ -74,7 +81,11 @@ return updatePlayerState(_that);case _UpdateShuffleState() when updateShuffleSta
 return updateShuffleState(_that);case _UpdateLoopState() when updateLoopState != null:
 return updateLoopState(_that);case _UpdateCurrentSong() when updateCurrentSong != null:
 return updateCurrentSong(_that);case _SongFinished() when songFinished != null:
-return songFinished(_that);case _:
+return songFinished(_that);case _AddToQueue() when addToQueue != null:
+return addToQueue(_that);case _AddToPlaylist() when addToPlaylist != null:
+return addToPlaylist(_that);case _QueueUpdated() when queueUpdated != null:
+return queueUpdated(_that);case _PlayNext() when playNextinQueue != null:
+return playNextinQueue(_that);case _:
   return orElse();
 
 }
@@ -92,12 +103,13 @@ return songFinished(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _InitMusicQueue value)  initMusicQueue,required TResult Function( _PlaySong value)  playSong,required TResult Function( _Pause value)  pause,required TResult Function( _Resume value)  resume,required TResult Function( _Seek value)  seek,required TResult Function( _PreviousSong value)  playPreviousSong,required TResult Function( _NextSong value)  playNextSong,required TResult Function( _ToggleShuffle value)  toggleShuffle,required TResult Function( _CycleLoopMode value)  cycleLoopMode,required TResult Function( _UpdatePosition value)  updatePosition,required TResult Function( _UpdateDuration value)  updateDuration,required TResult Function( _UpdatePlayerState value)  updatePlayerState,required TResult Function( _UpdateShuffleState value)  updateShuffleState,required TResult Function( _UpdateLoopState value)  updateLoopState,required TResult Function( _UpdateCurrentSong value)  updateCurrentSong,required TResult Function( _SongFinished value)  songFinished,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _InitMusicQueue value)  initMusicQueue,required TResult Function( _PlaySong value)  playSong,required TResult Function( _PlaySongById value)  playSongById,required TResult Function( _Pause value)  pause,required TResult Function( _Resume value)  resume,required TResult Function( _Seek value)  seek,required TResult Function( _PreviousSong value)  playPreviousSong,required TResult Function( _NextSong value)  playNextSong,required TResult Function( _ToggleShuffle value)  toggleShuffle,required TResult Function( _CycleLoopMode value)  cycleLoopMode,required TResult Function( _UpdatePosition value)  updatePosition,required TResult Function( _UpdateDuration value)  updateDuration,required TResult Function( _UpdatePlayerState value)  updatePlayerState,required TResult Function( _UpdateShuffleState value)  updateShuffleState,required TResult Function( _UpdateLoopState value)  updateLoopState,required TResult Function( _UpdateCurrentSong value)  updateCurrentSong,required TResult Function( _SongFinished value)  songFinished,required TResult Function( _AddToQueue value)  addToQueue,required TResult Function( _AddToPlaylist value)  addToPlaylist,required TResult Function( _QueueUpdated value)  queueUpdated,required TResult Function( _PlayNext value)  playNextinQueue,}){
 final _that = this;
 switch (_that) {
 case _InitMusicQueue():
 return initMusicQueue(_that);case _PlaySong():
-return playSong(_that);case _Pause():
+return playSong(_that);case _PlaySongById():
+return playSongById(_that);case _Pause():
 return pause(_that);case _Resume():
 return resume(_that);case _Seek():
 return seek(_that);case _PreviousSong():
@@ -111,7 +123,11 @@ return updatePlayerState(_that);case _UpdateShuffleState():
 return updateShuffleState(_that);case _UpdateLoopState():
 return updateLoopState(_that);case _UpdateCurrentSong():
 return updateCurrentSong(_that);case _SongFinished():
-return songFinished(_that);case _:
+return songFinished(_that);case _AddToQueue():
+return addToQueue(_that);case _AddToPlaylist():
+return addToPlaylist(_that);case _QueueUpdated():
+return queueUpdated(_that);case _PlayNext():
+return playNextinQueue(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -128,12 +144,13 @@ return songFinished(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _InitMusicQueue value)?  initMusicQueue,TResult? Function( _PlaySong value)?  playSong,TResult? Function( _Pause value)?  pause,TResult? Function( _Resume value)?  resume,TResult? Function( _Seek value)?  seek,TResult? Function( _PreviousSong value)?  playPreviousSong,TResult? Function( _NextSong value)?  playNextSong,TResult? Function( _ToggleShuffle value)?  toggleShuffle,TResult? Function( _CycleLoopMode value)?  cycleLoopMode,TResult? Function( _UpdatePosition value)?  updatePosition,TResult? Function( _UpdateDuration value)?  updateDuration,TResult? Function( _UpdatePlayerState value)?  updatePlayerState,TResult? Function( _UpdateShuffleState value)?  updateShuffleState,TResult? Function( _UpdateLoopState value)?  updateLoopState,TResult? Function( _UpdateCurrentSong value)?  updateCurrentSong,TResult? Function( _SongFinished value)?  songFinished,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _InitMusicQueue value)?  initMusicQueue,TResult? Function( _PlaySong value)?  playSong,TResult? Function( _PlaySongById value)?  playSongById,TResult? Function( _Pause value)?  pause,TResult? Function( _Resume value)?  resume,TResult? Function( _Seek value)?  seek,TResult? Function( _PreviousSong value)?  playPreviousSong,TResult? Function( _NextSong value)?  playNextSong,TResult? Function( _ToggleShuffle value)?  toggleShuffle,TResult? Function( _CycleLoopMode value)?  cycleLoopMode,TResult? Function( _UpdatePosition value)?  updatePosition,TResult? Function( _UpdateDuration value)?  updateDuration,TResult? Function( _UpdatePlayerState value)?  updatePlayerState,TResult? Function( _UpdateShuffleState value)?  updateShuffleState,TResult? Function( _UpdateLoopState value)?  updateLoopState,TResult? Function( _UpdateCurrentSong value)?  updateCurrentSong,TResult? Function( _SongFinished value)?  songFinished,TResult? Function( _AddToQueue value)?  addToQueue,TResult? Function( _AddToPlaylist value)?  addToPlaylist,TResult? Function( _QueueUpdated value)?  queueUpdated,TResult? Function( _PlayNext value)?  playNextinQueue,}){
 final _that = this;
 switch (_that) {
 case _InitMusicQueue() when initMusicQueue != null:
 return initMusicQueue(_that);case _PlaySong() when playSong != null:
-return playSong(_that);case _Pause() when pause != null:
+return playSong(_that);case _PlaySongById() when playSongById != null:
+return playSongById(_that);case _Pause() when pause != null:
 return pause(_that);case _Resume() when resume != null:
 return resume(_that);case _Seek() when seek != null:
 return seek(_that);case _PreviousSong() when playPreviousSong != null:
@@ -147,7 +164,11 @@ return updatePlayerState(_that);case _UpdateShuffleState() when updateShuffleSta
 return updateShuffleState(_that);case _UpdateLoopState() when updateLoopState != null:
 return updateLoopState(_that);case _UpdateCurrentSong() when updateCurrentSong != null:
 return updateCurrentSong(_that);case _SongFinished() when songFinished != null:
-return songFinished(_that);case _:
+return songFinished(_that);case _AddToQueue() when addToQueue != null:
+return addToQueue(_that);case _AddToPlaylist() when addToPlaylist != null:
+return addToPlaylist(_that);case _QueueUpdated() when queueUpdated != null:
+return queueUpdated(_that);case _PlayNext() when playNextinQueue != null:
+return playNextinQueue(_that);case _:
   return null;
 
 }
@@ -164,11 +185,12 @@ return songFinished(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<SongEntity> songs,  int currentIndex)?  initMusicQueue,TResult Function( SongEntity song)?  playSong,TResult Function()?  pause,TResult Function()?  resume,TResult Function( Duration position)?  seek,TResult Function()?  playPreviousSong,TResult Function()?  playNextSong,TResult Function()?  toggleShuffle,TResult Function()?  cycleLoopMode,TResult Function( Duration position)?  updatePosition,TResult Function( Duration duration)?  updateDuration,TResult Function( bool isPlaying)?  updatePlayerState,TResult Function( bool isShuffleModeEnabled)?  updateShuffleState,TResult Function( int loopMode)?  updateLoopState,TResult Function( SongEntity song)?  updateCurrentSong,TResult Function()?  songFinished,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<SongEntity> songs,  int currentIndex)?  initMusicQueue,TResult Function( SongEntity song)?  playSong,TResult Function( int songId)?  playSongById,TResult Function()?  pause,TResult Function()?  resume,TResult Function( Duration position)?  seek,TResult Function()?  playPreviousSong,TResult Function()?  playNextSong,TResult Function()?  toggleShuffle,TResult Function()?  cycleLoopMode,TResult Function( Duration position)?  updatePosition,TResult Function( Duration duration)?  updateDuration,TResult Function( bool isPlaying)?  updatePlayerState,TResult Function( bool isShuffleModeEnabled)?  updateShuffleState,TResult Function( int loopMode)?  updateLoopState,TResult Function( SongEntity song)?  updateCurrentSong,TResult Function()?  songFinished,TResult Function( SongEntity song)?  addToQueue,TResult Function( SongEntity song)?  addToPlaylist,TResult Function( List<SongEntity> queue)?  queueUpdated,TResult Function( SongEntity song)?  playNextinQueue,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _InitMusicQueue() when initMusicQueue != null:
 return initMusicQueue(_that.songs,_that.currentIndex);case _PlaySong() when playSong != null:
-return playSong(_that.song);case _Pause() when pause != null:
+return playSong(_that.song);case _PlaySongById() when playSongById != null:
+return playSongById(_that.songId);case _Pause() when pause != null:
 return pause();case _Resume() when resume != null:
 return resume();case _Seek() when seek != null:
 return seek(_that.position);case _PreviousSong() when playPreviousSong != null:
@@ -182,7 +204,11 @@ return updatePlayerState(_that.isPlaying);case _UpdateShuffleState() when update
 return updateShuffleState(_that.isShuffleModeEnabled);case _UpdateLoopState() when updateLoopState != null:
 return updateLoopState(_that.loopMode);case _UpdateCurrentSong() when updateCurrentSong != null:
 return updateCurrentSong(_that.song);case _SongFinished() when songFinished != null:
-return songFinished();case _:
+return songFinished();case _AddToQueue() when addToQueue != null:
+return addToQueue(_that.song);case _AddToPlaylist() when addToPlaylist != null:
+return addToPlaylist(_that.song);case _QueueUpdated() when queueUpdated != null:
+return queueUpdated(_that.queue);case _PlayNext() when playNextinQueue != null:
+return playNextinQueue(_that.song);case _:
   return orElse();
 
 }
@@ -200,11 +226,12 @@ return songFinished();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<SongEntity> songs,  int currentIndex)  initMusicQueue,required TResult Function( SongEntity song)  playSong,required TResult Function()  pause,required TResult Function()  resume,required TResult Function( Duration position)  seek,required TResult Function()  playPreviousSong,required TResult Function()  playNextSong,required TResult Function()  toggleShuffle,required TResult Function()  cycleLoopMode,required TResult Function( Duration position)  updatePosition,required TResult Function( Duration duration)  updateDuration,required TResult Function( bool isPlaying)  updatePlayerState,required TResult Function( bool isShuffleModeEnabled)  updateShuffleState,required TResult Function( int loopMode)  updateLoopState,required TResult Function( SongEntity song)  updateCurrentSong,required TResult Function()  songFinished,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<SongEntity> songs,  int currentIndex)  initMusicQueue,required TResult Function( SongEntity song)  playSong,required TResult Function( int songId)  playSongById,required TResult Function()  pause,required TResult Function()  resume,required TResult Function( Duration position)  seek,required TResult Function()  playPreviousSong,required TResult Function()  playNextSong,required TResult Function()  toggleShuffle,required TResult Function()  cycleLoopMode,required TResult Function( Duration position)  updatePosition,required TResult Function( Duration duration)  updateDuration,required TResult Function( bool isPlaying)  updatePlayerState,required TResult Function( bool isShuffleModeEnabled)  updateShuffleState,required TResult Function( int loopMode)  updateLoopState,required TResult Function( SongEntity song)  updateCurrentSong,required TResult Function()  songFinished,required TResult Function( SongEntity song)  addToQueue,required TResult Function( SongEntity song)  addToPlaylist,required TResult Function( List<SongEntity> queue)  queueUpdated,required TResult Function( SongEntity song)  playNextinQueue,}) {final _that = this;
 switch (_that) {
 case _InitMusicQueue():
 return initMusicQueue(_that.songs,_that.currentIndex);case _PlaySong():
-return playSong(_that.song);case _Pause():
+return playSong(_that.song);case _PlaySongById():
+return playSongById(_that.songId);case _Pause():
 return pause();case _Resume():
 return resume();case _Seek():
 return seek(_that.position);case _PreviousSong():
@@ -218,7 +245,11 @@ return updatePlayerState(_that.isPlaying);case _UpdateShuffleState():
 return updateShuffleState(_that.isShuffleModeEnabled);case _UpdateLoopState():
 return updateLoopState(_that.loopMode);case _UpdateCurrentSong():
 return updateCurrentSong(_that.song);case _SongFinished():
-return songFinished();case _:
+return songFinished();case _AddToQueue():
+return addToQueue(_that.song);case _AddToPlaylist():
+return addToPlaylist(_that.song);case _QueueUpdated():
+return queueUpdated(_that.queue);case _PlayNext():
+return playNextinQueue(_that.song);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -235,11 +266,12 @@ return songFinished();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<SongEntity> songs,  int currentIndex)?  initMusicQueue,TResult? Function( SongEntity song)?  playSong,TResult? Function()?  pause,TResult? Function()?  resume,TResult? Function( Duration position)?  seek,TResult? Function()?  playPreviousSong,TResult? Function()?  playNextSong,TResult? Function()?  toggleShuffle,TResult? Function()?  cycleLoopMode,TResult? Function( Duration position)?  updatePosition,TResult? Function( Duration duration)?  updateDuration,TResult? Function( bool isPlaying)?  updatePlayerState,TResult? Function( bool isShuffleModeEnabled)?  updateShuffleState,TResult? Function( int loopMode)?  updateLoopState,TResult? Function( SongEntity song)?  updateCurrentSong,TResult? Function()?  songFinished,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<SongEntity> songs,  int currentIndex)?  initMusicQueue,TResult? Function( SongEntity song)?  playSong,TResult? Function( int songId)?  playSongById,TResult? Function()?  pause,TResult? Function()?  resume,TResult? Function( Duration position)?  seek,TResult? Function()?  playPreviousSong,TResult? Function()?  playNextSong,TResult? Function()?  toggleShuffle,TResult? Function()?  cycleLoopMode,TResult? Function( Duration position)?  updatePosition,TResult? Function( Duration duration)?  updateDuration,TResult? Function( bool isPlaying)?  updatePlayerState,TResult? Function( bool isShuffleModeEnabled)?  updateShuffleState,TResult? Function( int loopMode)?  updateLoopState,TResult? Function( SongEntity song)?  updateCurrentSong,TResult? Function()?  songFinished,TResult? Function( SongEntity song)?  addToQueue,TResult? Function( SongEntity song)?  addToPlaylist,TResult? Function( List<SongEntity> queue)?  queueUpdated,TResult? Function( SongEntity song)?  playNextinQueue,}) {final _that = this;
 switch (_that) {
 case _InitMusicQueue() when initMusicQueue != null:
 return initMusicQueue(_that.songs,_that.currentIndex);case _PlaySong() when playSong != null:
-return playSong(_that.song);case _Pause() when pause != null:
+return playSong(_that.song);case _PlaySongById() when playSongById != null:
+return playSongById(_that.songId);case _Pause() when pause != null:
 return pause();case _Resume() when resume != null:
 return resume();case _Seek() when seek != null:
 return seek(_that.position);case _PreviousSong() when playPreviousSong != null:
@@ -253,7 +285,11 @@ return updatePlayerState(_that.isPlaying);case _UpdateShuffleState() when update
 return updateShuffleState(_that.isShuffleModeEnabled);case _UpdateLoopState() when updateLoopState != null:
 return updateLoopState(_that.loopMode);case _UpdateCurrentSong() when updateCurrentSong != null:
 return updateCurrentSong(_that.song);case _SongFinished() when songFinished != null:
-return songFinished();case _:
+return songFinished();case _AddToQueue() when addToQueue != null:
+return addToQueue(_that.song);case _AddToPlaylist() when addToPlaylist != null:
+return addToPlaylist(_that.song);case _QueueUpdated() when queueUpdated != null:
+return queueUpdated(_that.queue);case _PlayNext() when playNextinQueue != null:
+return playNextinQueue(_that.song);case _:
   return null;
 
 }
@@ -264,7 +300,7 @@ return songFinished();case _:
 /// @nodoc
 
 
-class _InitMusicQueue implements MusicPlayerEvent {
+class _InitMusicQueue with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _InitMusicQueue({required final  List<SongEntity> songs, required this.currentIndex}): _songs = songs;
   
 
@@ -284,6 +320,12 @@ class _InitMusicQueue implements MusicPlayerEvent {
 _$InitMusicQueueCopyWith<_InitMusicQueue> get copyWith => __$InitMusicQueueCopyWithImpl<_InitMusicQueue>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.initMusicQueue'))
+    ..add(DiagnosticsProperty('songs', songs))..add(DiagnosticsProperty('currentIndex', currentIndex));
+}
 
 @override
 bool operator ==(Object other) {
@@ -295,7 +337,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_songs),currentIndex);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.initMusicQueue(songs: $songs, currentIndex: $currentIndex)';
 }
 
@@ -338,7 +380,7 @@ as int,
 /// @nodoc
 
 
-class _PlaySong implements MusicPlayerEvent {
+class _PlaySong with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _PlaySong({required this.song});
   
 
@@ -351,6 +393,12 @@ class _PlaySong implements MusicPlayerEvent {
 _$PlaySongCopyWith<_PlaySong> get copyWith => __$PlaySongCopyWithImpl<_PlaySong>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.playSong'))
+    ..add(DiagnosticsProperty('song', song));
+}
 
 @override
 bool operator ==(Object other) {
@@ -362,7 +410,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,song);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.playSong(song: $song)';
 }
 
@@ -413,7 +461,79 @@ $SongEntityCopyWith<$Res> get song {
 /// @nodoc
 
 
-class _Pause implements MusicPlayerEvent {
+class _PlaySongById with DiagnosticableTreeMixin implements MusicPlayerEvent {
+  const _PlaySongById({required this.songId});
+  
+
+ final  int songId;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$PlaySongByIdCopyWith<_PlaySongById> get copyWith => __$PlaySongByIdCopyWithImpl<_PlaySongById>(this, _$identity);
+
+
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.playSongById'))
+    ..add(DiagnosticsProperty('songId', songId));
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlaySongById&&(identical(other.songId, songId) || other.songId == songId));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,songId);
+
+@override
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'MusicPlayerEvent.playSongById(songId: $songId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$PlaySongByIdCopyWith<$Res> implements $MusicPlayerEventCopyWith<$Res> {
+  factory _$PlaySongByIdCopyWith(_PlaySongById value, $Res Function(_PlaySongById) _then) = __$PlaySongByIdCopyWithImpl;
+@useResult
+$Res call({
+ int songId
+});
+
+
+
+
+}
+/// @nodoc
+class __$PlaySongByIdCopyWithImpl<$Res>
+    implements _$PlaySongByIdCopyWith<$Res> {
+  __$PlaySongByIdCopyWithImpl(this._self, this._then);
+
+  final _PlaySongById _self;
+  final $Res Function(_PlaySongById) _then;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? songId = null,}) {
+  return _then(_PlaySongById(
+songId: null == songId ? _self.songId : songId // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _Pause with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _Pause();
   
 
@@ -421,6 +541,12 @@ class _Pause implements MusicPlayerEvent {
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.pause'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -432,7 +558,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.pause()';
 }
 
@@ -445,7 +571,7 @@ String toString() {
 /// @nodoc
 
 
-class _Resume implements MusicPlayerEvent {
+class _Resume with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _Resume();
   
 
@@ -453,6 +579,12 @@ class _Resume implements MusicPlayerEvent {
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.resume'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -464,7 +596,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.resume()';
 }
 
@@ -477,7 +609,7 @@ String toString() {
 /// @nodoc
 
 
-class _Seek implements MusicPlayerEvent {
+class _Seek with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _Seek(this.position);
   
 
@@ -490,6 +622,12 @@ class _Seek implements MusicPlayerEvent {
 _$SeekCopyWith<_Seek> get copyWith => __$SeekCopyWithImpl<_Seek>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.seek'))
+    ..add(DiagnosticsProperty('position', position));
+}
 
 @override
 bool operator ==(Object other) {
@@ -501,7 +639,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,position);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.seek(position: $position)';
 }
 
@@ -543,7 +681,7 @@ as Duration,
 /// @nodoc
 
 
-class _PreviousSong implements MusicPlayerEvent {
+class _PreviousSong with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _PreviousSong();
   
 
@@ -551,6 +689,12 @@ class _PreviousSong implements MusicPlayerEvent {
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.playPreviousSong'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -562,7 +706,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.playPreviousSong()';
 }
 
@@ -575,7 +719,7 @@ String toString() {
 /// @nodoc
 
 
-class _NextSong implements MusicPlayerEvent {
+class _NextSong with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _NextSong();
   
 
@@ -583,6 +727,12 @@ class _NextSong implements MusicPlayerEvent {
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.playNextSong'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -594,7 +744,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.playNextSong()';
 }
 
@@ -607,7 +757,7 @@ String toString() {
 /// @nodoc
 
 
-class _ToggleShuffle implements MusicPlayerEvent {
+class _ToggleShuffle with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _ToggleShuffle();
   
 
@@ -615,6 +765,12 @@ class _ToggleShuffle implements MusicPlayerEvent {
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.toggleShuffle'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -626,7 +782,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.toggleShuffle()';
 }
 
@@ -639,7 +795,7 @@ String toString() {
 /// @nodoc
 
 
-class _CycleLoopMode implements MusicPlayerEvent {
+class _CycleLoopMode with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _CycleLoopMode();
   
 
@@ -647,6 +803,12 @@ class _CycleLoopMode implements MusicPlayerEvent {
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.cycleLoopMode'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -658,7 +820,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.cycleLoopMode()';
 }
 
@@ -671,7 +833,7 @@ String toString() {
 /// @nodoc
 
 
-class _UpdatePosition implements MusicPlayerEvent {
+class _UpdatePosition with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _UpdatePosition(this.position);
   
 
@@ -684,6 +846,12 @@ class _UpdatePosition implements MusicPlayerEvent {
 _$UpdatePositionCopyWith<_UpdatePosition> get copyWith => __$UpdatePositionCopyWithImpl<_UpdatePosition>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.updatePosition'))
+    ..add(DiagnosticsProperty('position', position));
+}
 
 @override
 bool operator ==(Object other) {
@@ -695,7 +863,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,position);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.updatePosition(position: $position)';
 }
 
@@ -737,7 +905,7 @@ as Duration,
 /// @nodoc
 
 
-class _UpdateDuration implements MusicPlayerEvent {
+class _UpdateDuration with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _UpdateDuration(this.duration);
   
 
@@ -750,6 +918,12 @@ class _UpdateDuration implements MusicPlayerEvent {
 _$UpdateDurationCopyWith<_UpdateDuration> get copyWith => __$UpdateDurationCopyWithImpl<_UpdateDuration>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.updateDuration'))
+    ..add(DiagnosticsProperty('duration', duration));
+}
 
 @override
 bool operator ==(Object other) {
@@ -761,7 +935,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,duration);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.updateDuration(duration: $duration)';
 }
 
@@ -803,7 +977,7 @@ as Duration,
 /// @nodoc
 
 
-class _UpdatePlayerState implements MusicPlayerEvent {
+class _UpdatePlayerState with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _UpdatePlayerState(this.isPlaying);
   
 
@@ -816,6 +990,12 @@ class _UpdatePlayerState implements MusicPlayerEvent {
 _$UpdatePlayerStateCopyWith<_UpdatePlayerState> get copyWith => __$UpdatePlayerStateCopyWithImpl<_UpdatePlayerState>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.updatePlayerState'))
+    ..add(DiagnosticsProperty('isPlaying', isPlaying));
+}
 
 @override
 bool operator ==(Object other) {
@@ -827,7 +1007,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,isPlaying);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.updatePlayerState(isPlaying: $isPlaying)';
 }
 
@@ -869,7 +1049,7 @@ as bool,
 /// @nodoc
 
 
-class _UpdateShuffleState implements MusicPlayerEvent {
+class _UpdateShuffleState with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _UpdateShuffleState(this.isShuffleModeEnabled);
   
 
@@ -882,6 +1062,12 @@ class _UpdateShuffleState implements MusicPlayerEvent {
 _$UpdateShuffleStateCopyWith<_UpdateShuffleState> get copyWith => __$UpdateShuffleStateCopyWithImpl<_UpdateShuffleState>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.updateShuffleState'))
+    ..add(DiagnosticsProperty('isShuffleModeEnabled', isShuffleModeEnabled));
+}
 
 @override
 bool operator ==(Object other) {
@@ -893,7 +1079,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,isShuffleModeEnabled);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.updateShuffleState(isShuffleModeEnabled: $isShuffleModeEnabled)';
 }
 
@@ -935,7 +1121,7 @@ as bool,
 /// @nodoc
 
 
-class _UpdateLoopState implements MusicPlayerEvent {
+class _UpdateLoopState with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _UpdateLoopState(this.loopMode);
   
 
@@ -948,6 +1134,12 @@ class _UpdateLoopState implements MusicPlayerEvent {
 _$UpdateLoopStateCopyWith<_UpdateLoopState> get copyWith => __$UpdateLoopStateCopyWithImpl<_UpdateLoopState>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.updateLoopState'))
+    ..add(DiagnosticsProperty('loopMode', loopMode));
+}
 
 @override
 bool operator ==(Object other) {
@@ -959,7 +1151,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,loopMode);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.updateLoopState(loopMode: $loopMode)';
 }
 
@@ -1001,7 +1193,7 @@ as int,
 /// @nodoc
 
 
-class _UpdateCurrentSong implements MusicPlayerEvent {
+class _UpdateCurrentSong with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _UpdateCurrentSong(this.song);
   
 
@@ -1014,6 +1206,12 @@ class _UpdateCurrentSong implements MusicPlayerEvent {
 _$UpdateCurrentSongCopyWith<_UpdateCurrentSong> get copyWith => __$UpdateCurrentSongCopyWithImpl<_UpdateCurrentSong>(this, _$identity);
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.updateCurrentSong'))
+    ..add(DiagnosticsProperty('song', song));
+}
 
 @override
 bool operator ==(Object other) {
@@ -1025,7 +1223,7 @@ bool operator ==(Object other) {
 int get hashCode => Object.hash(runtimeType,song);
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.updateCurrentSong(song: $song)';
 }
 
@@ -1076,7 +1274,7 @@ $SongEntityCopyWith<$Res> get song {
 /// @nodoc
 
 
-class _SongFinished implements MusicPlayerEvent {
+class _SongFinished with DiagnosticableTreeMixin implements MusicPlayerEvent {
   const _SongFinished();
   
 
@@ -1084,6 +1282,12 @@ class _SongFinished implements MusicPlayerEvent {
 
 
 
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.songFinished'))
+    ;
+}
 
 @override
 bool operator ==(Object other) {
@@ -1095,7 +1299,7 @@ bool operator ==(Object other) {
 int get hashCode => runtimeType.hashCode;
 
 @override
-String toString() {
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
   return 'MusicPlayerEvent.songFinished()';
 }
 
@@ -1104,5 +1308,326 @@ String toString() {
 
 
 
+
+/// @nodoc
+
+
+class _AddToQueue with DiagnosticableTreeMixin implements MusicPlayerEvent {
+  const _AddToQueue(this.song);
+  
+
+ final  SongEntity song;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AddToQueueCopyWith<_AddToQueue> get copyWith => __$AddToQueueCopyWithImpl<_AddToQueue>(this, _$identity);
+
+
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.addToQueue'))
+    ..add(DiagnosticsProperty('song', song));
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AddToQueue&&(identical(other.song, song) || other.song == song));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,song);
+
+@override
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'MusicPlayerEvent.addToQueue(song: $song)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AddToQueueCopyWith<$Res> implements $MusicPlayerEventCopyWith<$Res> {
+  factory _$AddToQueueCopyWith(_AddToQueue value, $Res Function(_AddToQueue) _then) = __$AddToQueueCopyWithImpl;
+@useResult
+$Res call({
+ SongEntity song
+});
+
+
+$SongEntityCopyWith<$Res> get song;
+
+}
+/// @nodoc
+class __$AddToQueueCopyWithImpl<$Res>
+    implements _$AddToQueueCopyWith<$Res> {
+  __$AddToQueueCopyWithImpl(this._self, this._then);
+
+  final _AddToQueue _self;
+  final $Res Function(_AddToQueue) _then;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? song = null,}) {
+  return _then(_AddToQueue(
+null == song ? _self.song : song // ignore: cast_nullable_to_non_nullable
+as SongEntity,
+  ));
+}
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SongEntityCopyWith<$Res> get song {
+  
+  return $SongEntityCopyWith<$Res>(_self.song, (value) {
+    return _then(_self.copyWith(song: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class _AddToPlaylist with DiagnosticableTreeMixin implements MusicPlayerEvent {
+  const _AddToPlaylist(this.song);
+  
+
+ final  SongEntity song;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AddToPlaylistCopyWith<_AddToPlaylist> get copyWith => __$AddToPlaylistCopyWithImpl<_AddToPlaylist>(this, _$identity);
+
+
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.addToPlaylist'))
+    ..add(DiagnosticsProperty('song', song));
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AddToPlaylist&&(identical(other.song, song) || other.song == song));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,song);
+
+@override
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'MusicPlayerEvent.addToPlaylist(song: $song)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AddToPlaylistCopyWith<$Res> implements $MusicPlayerEventCopyWith<$Res> {
+  factory _$AddToPlaylistCopyWith(_AddToPlaylist value, $Res Function(_AddToPlaylist) _then) = __$AddToPlaylistCopyWithImpl;
+@useResult
+$Res call({
+ SongEntity song
+});
+
+
+$SongEntityCopyWith<$Res> get song;
+
+}
+/// @nodoc
+class __$AddToPlaylistCopyWithImpl<$Res>
+    implements _$AddToPlaylistCopyWith<$Res> {
+  __$AddToPlaylistCopyWithImpl(this._self, this._then);
+
+  final _AddToPlaylist _self;
+  final $Res Function(_AddToPlaylist) _then;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? song = null,}) {
+  return _then(_AddToPlaylist(
+null == song ? _self.song : song // ignore: cast_nullable_to_non_nullable
+as SongEntity,
+  ));
+}
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SongEntityCopyWith<$Res> get song {
+  
+  return $SongEntityCopyWith<$Res>(_self.song, (value) {
+    return _then(_self.copyWith(song: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class _QueueUpdated with DiagnosticableTreeMixin implements MusicPlayerEvent {
+  const _QueueUpdated(final  List<SongEntity> queue): _queue = queue;
+  
+
+ final  List<SongEntity> _queue;
+ List<SongEntity> get queue {
+  if (_queue is EqualUnmodifiableListView) return _queue;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_queue);
+}
+
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$QueueUpdatedCopyWith<_QueueUpdated> get copyWith => __$QueueUpdatedCopyWithImpl<_QueueUpdated>(this, _$identity);
+
+
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.queueUpdated'))
+    ..add(DiagnosticsProperty('queue', queue));
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _QueueUpdated&&const DeepCollectionEquality().equals(other._queue, _queue));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_queue));
+
+@override
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'MusicPlayerEvent.queueUpdated(queue: $queue)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$QueueUpdatedCopyWith<$Res> implements $MusicPlayerEventCopyWith<$Res> {
+  factory _$QueueUpdatedCopyWith(_QueueUpdated value, $Res Function(_QueueUpdated) _then) = __$QueueUpdatedCopyWithImpl;
+@useResult
+$Res call({
+ List<SongEntity> queue
+});
+
+
+
+
+}
+/// @nodoc
+class __$QueueUpdatedCopyWithImpl<$Res>
+    implements _$QueueUpdatedCopyWith<$Res> {
+  __$QueueUpdatedCopyWithImpl(this._self, this._then);
+
+  final _QueueUpdated _self;
+  final $Res Function(_QueueUpdated) _then;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? queue = null,}) {
+  return _then(_QueueUpdated(
+null == queue ? _self._queue : queue // ignore: cast_nullable_to_non_nullable
+as List<SongEntity>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _PlayNext with DiagnosticableTreeMixin implements MusicPlayerEvent {
+  const _PlayNext(this.song);
+  
+
+ final  SongEntity song;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$PlayNextCopyWith<_PlayNext> get copyWith => __$PlayNextCopyWithImpl<_PlayNext>(this, _$identity);
+
+
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.playNextinQueue'))
+    ..add(DiagnosticsProperty('song', song));
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlayNext&&(identical(other.song, song) || other.song == song));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,song);
+
+@override
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'MusicPlayerEvent.playNextinQueue(song: $song)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$PlayNextCopyWith<$Res> implements $MusicPlayerEventCopyWith<$Res> {
+  factory _$PlayNextCopyWith(_PlayNext value, $Res Function(_PlayNext) _then) = __$PlayNextCopyWithImpl;
+@useResult
+$Res call({
+ SongEntity song
+});
+
+
+$SongEntityCopyWith<$Res> get song;
+
+}
+/// @nodoc
+class __$PlayNextCopyWithImpl<$Res>
+    implements _$PlayNextCopyWith<$Res> {
+  __$PlayNextCopyWithImpl(this._self, this._then);
+
+  final _PlayNext _self;
+  final $Res Function(_PlayNext) _then;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? song = null,}) {
+  return _then(_PlayNext(
+null == song ? _self.song : song // ignore: cast_nullable_to_non_nullable
+as SongEntity,
+  ));
+}
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SongEntityCopyWith<$Res> get song {
+  
+  return $SongEntityCopyWith<$Res>(_self.song, (value) {
+    return _then(_self.copyWith(song: value));
+  });
+}
+}
 
 // dart format on

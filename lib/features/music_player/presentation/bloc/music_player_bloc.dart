@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
+import 'package:music_player/features/local%20music/domain/use%20cases/get_song_by_id_use_case.dart';
 import 'music_player_event.dart';
 import 'music_player_state.dart';
 
 class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   final AudioPlayerRepository _audioRepository;
+  final GetSongByIdUseCase _getSongByIdUseCase;
 
   StreamSubscription? _positionSubscription;
   StreamSubscription? _durationSubscription;
@@ -14,9 +16,9 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   StreamSubscription? _currentSongSubscription;
   StreamSubscription? _shuffleSubscription;
   StreamSubscription? _loopSubscription;
+  StreamSubscription? _queueSubscription;
 
-  MusicPlayerBloc(this._audioRepository)
-    : super(const MusicPlayerState()) {
+  MusicPlayerBloc(this._audioRepository, this._getSongByIdUseCase) : super(const MusicPlayerState()) {
     // 1. Setup Listeners
     _positionSubscription = _audioRepository.positionStream.listen((pos) {
       add(MusicPlayerEvent.updatePosition(pos));
@@ -40,6 +42,12 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
 
     _loopSubscription = _audioRepository.loopModeStream.listen((mode) {
       add(MusicPlayerEvent.updateLoopState(mode));
+    });
+
+    // Subscribe to the truth
+    // when the repo (and handler) changes the queue this listener fires
+    _queueSubscription = _audioRepository.queueStream.listen((queue) {
+      add(MusicPlayerEvent.queueUpdated(queue));
     });
 
     // Listen to the Operating System / Audio Service for the current song
@@ -80,6 +88,23 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
             e.song.artist,
             e.song.id.toString(),
             e.song.album,
+          );
+        },
+        playSongById: (e) async {
+          final result = await _getSongByIdUseCase(e.songId);
+          result.fold(
+            (failure) {
+              emit(
+                state.copyWith(
+                  queueActionStatus: QueueStatus.failure,
+                  errorMessage: 'Failed to play song: ${failure.message}',
+                ),
+              );
+              emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+            },
+            (song) {
+              add(MusicPlayerEvent.playSong(song: song));
+            },
           );
         },
         playNextSong: (_) async {
@@ -144,6 +169,58 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
             ),
           );
         },
+        addToQueue: (e) async {
+          try {
+            // we ask the repo to add it
+            // we DO NOT update the UI state locally
+            // we wait for the 'queueUpdated' event to  fire via the stream
+            await _audioRepository.addQueueItem(e.song);
+            // Emit Success status to trigger Green snackbar
+            emit(state.copyWith(queueActionStatus: QueueStatus.success));
+            // Immediately reset status so  it doesn't trigger again on the next rebuild
+            emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+            // OPTIONAL : Emit a 'Side Effect' for the UI (Like a Snackbar trigger)
+            // you might have a separate status field for the one-off messages
+            // emit(state.copyWith(status: Status.success, message: 'Song added to queue'))
+          } catch (e) {
+            // if the handler failed (bad URL) , we catch it here
+            // the queue list in the state never changed
+            // the UI shows an error
+            // emit(state.copyWith(status: Status.error, message: e.toString()));
+            emit(
+              state.copyWith(
+                queueActionStatus: QueueStatus.failure,
+                errorMessage: "Couldn't add song : $e",
+              ),
+            );
+            emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+          }
+        },
+        addToPlaylist: (e) async {
+          // Placeholder for Playlist feature
+          // Ideally, this would open a dialog in UI, but the Bloc just handles logic.
+          // Since we don't have a playlist Repo yet, we do nothing or just emit a side-effect if needed.
+          // For now, no state change.
+        },
+        queueUpdated: (e) {
+          // This is the ONLY place state.queue should change
+          emit(state.copyWith(queue: e.queue));
+        },
+        playNextinQueue: (e) async {
+          try {
+            await _audioRepository.playNext(e.song);
+            emit(state.copyWith(queueActionStatus: QueueStatus.success));
+            emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+          } catch (e) {
+            emit(
+              state.copyWith(
+                queueActionStatus: QueueStatus.failure,
+                errorMessage: "Failed to set play next song : $e",
+              ),
+            );
+            emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+          }
+        },
       );
     });
   }
@@ -157,6 +234,7 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
     _currentSongSubscription?.cancel();
     _shuffleSubscription?.cancel();
     _loopSubscription?.cancel();
+    _queueSubscription?.cancel();
     return super.close();
   }
 }

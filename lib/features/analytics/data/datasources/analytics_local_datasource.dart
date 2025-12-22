@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../../domain/entities/analytics_enums.dart';
@@ -7,6 +10,7 @@ import '../../domain/entities/play_log.dart';
 abstract interface class AnalyticsLocalDataSource {
   Future<void> initDb();
   Future<void> logEvent(PlayLog log);
+  Stream<void> get onLogStream;
   Future<List<TopItem>> getTopSongs(TimeFrame timeFrame, int limit);
   Future<List<TopItem>> getTopArtists(TimeFrame timeFrame, int limit);
   Future<List<TopItem>> getTopAlbums(TimeFrame timeFrame, int limit);
@@ -14,11 +18,17 @@ abstract interface class AnalyticsLocalDataSource {
   Future<ListeningStats> getGeneralStats(TimeFrame timeFrame);
   Future<void> logOnboardingComplete();
   Future<void> clearAllData();
+  Future<Map<int, int>> getAllSongPlayCounts();
+  Future<List<PlayLog>> getPlaybackHistory({int? limit, int? offset});
 }
 
 class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
   static Database? _database;
   static const String _tableName = 'playback_logs';
+  final _logController = StreamController<void>.broadcast();
+
+  @override
+  Stream<void> get onLogStream => _logController.stream;
 
   @override
   Future<void> initDb() async {
@@ -45,7 +55,9 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
             time_of_day TEXT
           )
         ''');
-        await db.execute('CREATE INDEX idx_timestamp ON $_tableName (timestamp)');
+        await db.execute(
+          'CREATE INDEX idx_timestamp ON $_tableName (timestamp)',
+        );
       },
     );
   }
@@ -64,7 +76,7 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     // I defined columns as INTEGER.
     // I need to ensure toJson handles this, OR manually map.
     // Manual map is safer for SQLite specifics.
-    
+
     await database.insert(_tableName, {
       'song_id': log.songId,
       'title': log.songTitle,
@@ -76,6 +88,7 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
       'is_completed': log.isCompleted ? 1 : 0,
       'time_of_day': log.sessionTimeOfDay,
     });
+    _logController.add(null);
   }
 
   int _getTimestampThreshold(TimeFrame timeFrame) {
@@ -99,7 +112,8 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     final database = await db;
     final threshold = _getTimestampThreshold(timeFrame);
 
-    final result = await database.rawQuery('''
+    final result = await database.rawQuery(
+      '''
       SELECT 
         CAST(song_id AS TEXT) as id, 
         title as label, 
@@ -110,9 +124,13 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
       GROUP BY song_id 
       ORDER BY value DESC 
       LIMIT ?
-    ''', [threshold, limit]);
+    ''',
+      [threshold, limit],
+    );
 
-    return result.map((e) => TopItem.fromJson(e).copyWith(type: 'song')).toList();
+    return result
+        .map((e) => TopItem.fromJson(e).copyWith(type: 'song'))
+        .toList();
   }
 
   @override
@@ -120,7 +138,8 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     final database = await db;
     final threshold = _getTimestampThreshold(timeFrame);
 
-    final result = await database.rawQuery('''
+    final result = await database.rawQuery(
+      '''
       SELECT 
         artist as id,
         artist as label, 
@@ -130,9 +149,13 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
       GROUP BY artist 
       ORDER BY value DESC 
       LIMIT ?
-    ''', [threshold, limit]);
+    ''',
+      [threshold, limit],
+    );
 
-    return result.map((e) => TopItem.fromJson(e).copyWith(type: 'artist')).toList();
+    return result
+        .map((e) => TopItem.fromJson(e).copyWith(type: 'artist'))
+        .toList();
   }
 
   @override
@@ -140,7 +163,8 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     final database = await db;
     final threshold = _getTimestampThreshold(timeFrame);
 
-    final result = await database.rawQuery('''
+    final result = await database.rawQuery(
+      '''
       SELECT 
         album as id,
         album as label, 
@@ -151,9 +175,13 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
       GROUP BY album 
       ORDER BY value DESC 
       LIMIT ?
-    ''', [threshold, limit]);
+    ''',
+      [threshold, limit],
+    );
 
-    return result.map((e) => TopItem.fromJson(e).copyWith(type: 'album')).toList();
+    return result
+        .map((e) => TopItem.fromJson(e).copyWith(type: 'album'))
+        .toList();
   }
 
   @override
@@ -161,7 +189,8 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     final database = await db;
     final threshold = _getTimestampThreshold(timeFrame);
 
-    final result = await database.rawQuery('''
+    final result = await database.rawQuery(
+      '''
       SELECT 
         genre as id,
         genre as label, 
@@ -171,9 +200,13 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
       GROUP BY genre 
       ORDER BY value DESC 
       LIMIT ?
-    ''', [threshold, limit]);
+    ''',
+      [threshold, limit],
+    );
 
-    return result.map((e) => TopItem.fromJson(e).copyWith(type: 'genre')).toList();
+    return result
+        .map((e) => TopItem.fromJson(e).copyWith(type: 'genre'))
+        .toList();
   }
 
   @override
@@ -182,23 +215,29 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     final threshold = _getTimestampThreshold(timeFrame);
 
     // 1. Total Time (Seconds) and Count
-    final generalData = await database.rawQuery('''
+    final generalData = await database.rawQuery(
+      '''
       SELECT 
         COALESCE(SUM(duration_listened), 0) as total_duration, 
         COUNT(*) as total_count 
       FROM $_tableName 
       WHERE timestamp > ?
-    ''', [threshold]);
+    ''',
+      [threshold],
+    );
 
     // 2. Time of Day Distribution
-    final timeDistribution = await database.rawQuery('''
+    final timeDistribution = await database.rawQuery(
+      '''
       SELECT 
         time_of_day, 
         COUNT(*) as count 
       FROM $_tableName 
       WHERE timestamp > ? 
       GROUP BY time_of_day
-    ''', [threshold]);
+    ''',
+      [threshold],
+    );
 
     Map<String, int> distributionMap = {};
     for (var row in timeDistribution) {
@@ -206,7 +245,7 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
         distributionMap[row['time_of_day'] as String] = row['count'] as int;
       }
     }
-    
+
     final row = generalData.first;
     // Note: total_duration from SQL is Seconds, UI expects Minutes
     final totalSeconds = row['total_duration'] as int? ?? 0;
@@ -223,12 +262,68 @@ class AnalyticsLocalDataSourceImpl implements AnalyticsLocalDataSource {
     // This is a placeholder for a specific analytics event.
     // In a real app, this might insert into a separate 'events' table
     // or send to Firebase/Mixpanel.
-    print('Analytics: Onboarding Completed');
+    log('Analytics: Onboarding Completed');
   }
 
   @override
   Future<void> clearAllData() async {
     final database = await db;
+
     await database.delete(_tableName);
+  }
+
+  @override
+  Future<Map<int, int>> getAllSongPlayCounts() async {
+    final database = await db;
+
+    final result = await database.rawQuery('''
+
+        SELECT 
+
+          song_id, 
+
+          COUNT(*) as count 
+
+        FROM $_tableName 
+
+        GROUP BY song_id
+
+      ''');
+
+    final Map<int, int> counts = {};
+
+    for (final row in result) {
+      if (row['song_id'] != null) {
+        counts[row['song_id'] as int] = row['count'] as int;
+      }
+    }
+
+    return counts;
+  }
+
+  @override
+  Future<List<PlayLog>> getPlaybackHistory({int? limit, int? offset}) async {
+    final database = await db;
+    final result = await database.query(
+      _tableName,
+      orderBy: 'timestamp DESC',
+      limit: limit,
+      offset: offset,
+    );
+
+    return result.map((row) {
+      return PlayLog(
+        id: row['id'] as int?,
+        songId: row['song_id'] as int,
+        songTitle: row['title'] as String,
+        artist: row['artist'] as String,
+        album: row['album'] as String,
+        genre: row['genre'] as String,
+        timestamp: DateTime.fromMillisecondsSinceEpoch(row['timestamp'] as int),
+        durationListenedSeconds: row['duration_listened'] as int,
+        isCompleted: (row['is_completed'] as int) == 1,
+        sessionTimeOfDay: row['time_of_day'] as String,
+      );
+    }).toList();
   }
 }

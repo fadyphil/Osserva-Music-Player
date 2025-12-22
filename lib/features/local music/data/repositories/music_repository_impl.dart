@@ -19,4 +19,17 @@ class MusicRepositoryImpl implements MusicRepository {
       return Left(MusicFailures.storageError(message: e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, SongEntity>> getSongById(int id) async {
+    try {
+      final song = await _localMusicDatasource.getSongById(id);
+      if (song != null) {
+        return Right(song);
+      }
+      return const Left(MusicFailures.storageError(message: 'Song not found'));
+    } catch (e) {
+      return Left(MusicFailures.storageError(message: e.toString()));
+    }
+  }
 }
