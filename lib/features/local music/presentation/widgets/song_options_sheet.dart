@@ -77,6 +77,18 @@ void showSongOptions(BuildContext context, SongEntity song) {
                 Navigator.pop(context);
               },
             ),
+            
+            // Spacer for MiniPlayer/NavBar
+            Builder(
+              builder: (context) {
+                final isPlaying =
+                    context.select((MusicPlayerBloc bloc) => bloc.state.currentSong != null);
+                if (isPlaying) {
+                  return const SizedBox(height: 150);
+                }
+                return const SizedBox(height: 20);
+              },
+            ),
           ],
         ),
       );
