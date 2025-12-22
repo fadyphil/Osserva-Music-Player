@@ -20,6 +20,7 @@ import 'package:music_player/features/local%20music/data/datasource/local_music_
 import 'package:music_player/features/local%20music/data/repositories/music_repository_impl.dart';
 import 'package:music_player/features/local%20music/domain/repositories/music_repository.dart';
 import 'package:music_player/features/local%20music/domain/use%20cases/get_local_songs_use_case.dart';
+import 'package:music_player/features/local%20music/domain/use%20cases/get_song_by_id_use_case.dart';
 import 'package:music_player/features/local%20music/presentation/managers/local_music_bloc.dart';
 import 'package:music_player/features/music_player/data/repos/audio_player_repository_impl.dart';
 import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
@@ -83,6 +84,7 @@ Future<void> initDependencies() async {
       androidNotificationChannelId: 'com.example.music_player.channel.audio',
       androidNotificationChannelName: 'Music Playback',
       androidNotificationOngoing: true,
+      androidShowNotificationBadge: false,
     ),
   );
 
@@ -111,6 +113,9 @@ Future<void> initDependencies() async {
   serviceLocator.registerLazySingleton(
     () => GetLocalSongsUseCase(serviceLocator()),
   );
+  serviceLocator.registerLazySingleton(
+    () => GetSongByIdUseCase(serviceLocator()),
+  );
 
   // =========================================================
   // 4. Presentation Layer (Bloc)
@@ -127,7 +132,7 @@ Future<void> initDependencies() async {
     () => AudioPlayerRepositoryImpl(serviceLocator<AudioHandler>()),
   );
 
-  serviceLocator.registerLazySingleton(() => MusicPlayerBloc(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => MusicPlayerBloc(serviceLocator(), serviceLocator()));
 
   // =========================================================
   // FEATURE: ANALYTICS

@@ -59,11 +59,11 @@ class MusicPlayerHandler extends BaseAudioHandler
             MediaControl.skipToNext,
           ],
           systemActions: const {
-            // MediaAction.setShuffleMode,
+            MediaAction.setShuffleMode,
             MediaAction.seek,
             MediaAction.seekForward,
             MediaAction.seekBackward,
-            // MediaAction.setRepeatMode,
+            MediaAction.setRepeatMode,
           },
           androidCompactActionIndices: const [0, 1, 2],
           processingState: {
