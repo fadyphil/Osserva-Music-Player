@@ -6,6 +6,7 @@ import 'package:music_player/core/router/app_router.dart';
 import 'package:music_player/core/theme/app_pallete.dart';
 import 'package:music_player/features/analytics/domain/entities/play_log.dart';
 import 'package:music_player/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 @RoutePage()
 class HomeDashboardPage extends StatelessWidget {
@@ -14,7 +15,9 @@ class HomeDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => serviceLocator<HistoryBloc>()..add(const HistoryEvent.fetchRecentHistory()),
+      create: (_) =>
+          serviceLocator<HistoryBloc>()
+            ..add(const HistoryEvent.fetchRecentHistory()),
       child: Scaffold(
         backgroundColor: AppPallete.backgroundColor,
         body: SafeArea(
@@ -26,8 +29,8 @@ class HomeDashboardPage extends StatelessWidget {
                   child: Text(
                     'Library',
                     style: TextStyle(
-                      fontSize: 32, 
-                      fontWeight: FontWeight.bold, 
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
@@ -57,13 +60,15 @@ class HomeDashboardPage extends StatelessWidget {
                       title: 'Playlists',
                       icon: Icons.playlist_play,
                       color: Colors.greenAccent,
-                      onTap: () => context.router.push(const PlaylistListRoute()),
+                      onTap: () =>
+                          context.router.push(const PlaylistListRoute()),
                     ),
                     _HomeTile(
                       title: 'Stats',
                       icon: Icons.bar_chart,
                       color: Colors.purpleAccent,
-                      onTap: () => context.router.push(const AnalyticsDashboardRoute()),
+                      onTap: () =>
+                          context.router.push(const AnalyticsDashboardRoute()),
                     ),
                   ],
                 ),
@@ -78,13 +83,14 @@ class HomeDashboardPage extends StatelessWidget {
                       const Text(
                         'Recently Played',
                         style: TextStyle(
-                          fontSize: 22, 
-                          fontWeight: FontWeight.bold, 
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                       TextButton(
-                        onPressed: () => context.router.push(const HistoryRoute()),
+                        onPressed: () =>
+                            context.router.push(const HistoryRoute()),
                         child: const Text('See More'),
                       ),
                     ],
@@ -100,7 +106,10 @@ class HomeDashboardPage extends StatelessWidget {
                         if (data.recentSongs.isEmpty) {
                           return const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Text("No songs played yet.", style: TextStyle(color: Colors.white54)),
+                            child: Text(
+                              "No songs played yet.",
+                              style: TextStyle(color: Colors.white54),
+                            ),
                           );
                         }
                         return SizedBox(
@@ -109,7 +118,8 @@ class HomeDashboardPage extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             scrollDirection: Axis.horizontal,
                             itemCount: data.recentSongs.length,
-                            separatorBuilder: (_, _) => const SizedBox(width: 12),
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: 12),
                             itemBuilder: (context, index) {
                               final log = data.recentSongs[index];
                               return _HistoryCard(log: log);
@@ -117,12 +127,15 @@ class HomeDashboardPage extends StatelessWidget {
                           ),
                         );
                       },
-                      orElse: () => const Center(child: CircularProgressIndicator()),
+                      orElse: () =>
+                          const Center(child: CircularProgressIndicator()),
                     );
                   },
                 ),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 100)), // Bottom padding
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 100),
+              ), // Bottom padding
             ],
           ),
         ),
@@ -154,12 +167,12 @@ class _HomeTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           boxShadow: [
-             BoxShadow(
-               color: Colors.black.withValues(alpha: 0.2),
-               blurRadius: 8,
-               offset: const Offset(0, 4),
-             )
-          ]
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -209,9 +222,25 @@ class _HistoryCard extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.grey[800],
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
               ),
-              child: const Icon(Icons.music_note, color: Colors.white24, size: 40),
+              child: QueryArtworkWidget(
+                id: log.songId,
+                type: ArtworkType.AUDIO,
+                artworkFit: BoxFit.cover,
+                artworkBorder: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
+                nullArtworkWidget: const Center(
+                  child: Icon(
+                    Icons.music_note,
+                    color: Colors.white24,
+                    size: 40,
+                  ),
+                ),
+              ),
             ),
           ),
           Padding(
@@ -223,7 +252,10 @@ class _HistoryCard extends StatelessWidget {
                   log.songTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   log.artist,
