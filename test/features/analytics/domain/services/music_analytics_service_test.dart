@@ -45,6 +45,9 @@ void main() {
       () => mockAudioRepository.durationStream,
     ).thenAnswer((_) => durationController.stream);
     when(
+      () => mockAudioRepository.positionStream, // Added missing stream
+    ).thenAnswer((_) => Stream.value(Duration.zero)); // Stub with dummy stream
+    when(
       () => mockAudioRepository.playerCompleteStream,
     ).thenAnswer((_) => playerCompleteController.stream);
 

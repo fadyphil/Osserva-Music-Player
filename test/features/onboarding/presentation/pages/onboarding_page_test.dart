@@ -3,25 +3,32 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:auto_route/auto_route.dart'; // Import auto_route
 import 'package:music_player/core/usecases/usecase.dart';
 import 'package:music_player/features/onboarding/domain/usecases/cache_first_timer.dart';
 import 'package:music_player/features/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:music_player/features/onboarding/presentation/pages/onboarding_page.dart';
 
 class MockCacheFirstTimer extends Mock implements CacheFirstTimer {}
+class MockStackRouter extends Mock implements StackRouter {} // Define MockStackRouter
 
 void main() {
   late MockCacheFirstTimer mockCacheFirstTimer;
   late OnboardingCubit onboardingCubit;
+  late MockStackRouter mockRouter; // Declare mockRouter
 
   setUpAll(() {
     registerFallbackValue(NoParams());
+    registerFallbackValue(const PageRouteInfo('')); // Register fallback for AutoRoute
   });
 
   setUp(() {
     mockCacheFirstTimer = MockCacheFirstTimer();
+    mockRouter = MockStackRouter(); // Initialize mockRouter
+
     // Stub the call
     when(() => mockCacheFirstTimer(any())).thenAnswer((_) async => const Right(null));
+    when(() => mockRouter.push(any())).thenAnswer((_) async => null); // Stub push
     
     onboardingCubit = OnboardingCubit(cacheFirstTimer: mockCacheFirstTimer);
 
@@ -41,14 +48,30 @@ void main() {
 
   group('OnboardingPage Widget Tests', () {
     testWidgets('renders first page content initially', (tester) async {
-      await tester.pumpWidget(const MaterialApp(home: OnboardingPage()));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: StackRouterScope( // Wrap with StackRouterScope
+            controller: mockRouter,
+            stateHash: 0,
+            child: const OnboardingPage(),
+          ),
+        ),
+      );
 
       expect(find.text('Welcome to Music Player'), findsOneWidget);
       expect(find.text('Smart Analytics'), findsNothing); // Should be off-screen
     });
 
     testWidgets('taping Next moves to second page', (tester) async {
-      await tester.pumpWidget(const MaterialApp(home: OnboardingPage()));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: StackRouterScope( // Wrap with StackRouterScope
+            controller: mockRouter,
+            stateHash: 0,
+            child: const OnboardingPage(),
+          ),
+        ),
+      );
 
       // Tap Next
       await tester.tap(find.byIcon(Icons.arrow_forward));
@@ -58,13 +81,12 @@ void main() {
     });
 
     testWidgets('taping Skip triggers completion and caching', (tester) async {
-      bool onDoneCalled = false;
       await tester.pumpWidget(
         MaterialApp(
-          home: OnboardingPage(
-            onDone: () {
-              onDoneCalled = true;
-            },
+          home: StackRouterScope( // Wrap with StackRouterScope
+            controller: mockRouter,
+            stateHash: 0,
+            child: const OnboardingPage(),
           ),
         ),
       );
@@ -74,17 +96,16 @@ void main() {
       await tester.pumpAndSettle();
 
       verify(() => mockCacheFirstTimer(any())).called(1);
-      expect(onDoneCalled, true);
+      verify(() => mockRouter.push(any())).called(1); // Verify navigation
     });
     
     testWidgets('completing flow triggers completion and caching', (tester) async {
-      bool onDoneCalled = false;
       await tester.pumpWidget(
         MaterialApp(
-          home: OnboardingPage(
-            onDone: () {
-              onDoneCalled = true;
-            },
+          home: StackRouterScope( // Wrap with StackRouterScope
+            controller: mockRouter,
+            stateHash: 0,
+            child: const OnboardingPage(),
           ),
         ),
       );
@@ -105,7 +126,7 @@ void main() {
       await tester.pumpAndSettle();
       
       verify(() => mockCacheFirstTimer(any())).called(1);
-      expect(onDoneCalled, true);
+      verify(() => mockRouter.push(any())).called(1); // Verify navigation
     });
   });
 }
