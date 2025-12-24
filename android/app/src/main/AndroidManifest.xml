@@ -2,6 +2,9 @@
     <!-- 1. PERMISSIONS GO HERE (Directly inside manifest, NOT inside application) -->
     <uses-permission android:name="android.permission.INTERNET"/>
     
+    <!-- Android 13+ Notification Permission -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
     <!-- Android 13+ Audio Permission -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
     

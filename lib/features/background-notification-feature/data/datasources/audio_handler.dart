@@ -178,7 +178,9 @@ class MusicPlayerHandler extends BaseAudioHandler
     final loopMode = _player.loopMode;
 
     // Fix for Duration: If mediaItem has no duration but player does, update it.
-    if (mediaItem.value?.duration == null && _player.duration != null) {
+    if (mediaItem.value != null &&
+        mediaItem.value!.duration == null &&
+        _player.duration != null) {
       mediaItem.add(mediaItem.value!.copyWith(duration: _player.duration));
     }
 
