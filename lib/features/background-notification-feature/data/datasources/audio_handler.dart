@@ -167,6 +167,8 @@ class MusicPlayerHandler extends BaseAudioHandler
     _player.playbackEventStream.listen((_) => _broadcastState());
     _player.shuffleModeEnabledStream.listen((_) => _broadcastState());
     _player.loopModeStream.listen((_) => _broadcastState());
+    _player.playingStream.listen((_) => _broadcastState());
+    _player.processingStateStream.listen((_) => _broadcastState());
   }
 
   /// HELPER: Builds the notification state dynamically
@@ -174,6 +176,11 @@ class MusicPlayerHandler extends BaseAudioHandler
     final playing = _player.playing;
     final shuffleMode = _player.shuffleModeEnabled;
     final loopMode = _player.loopMode;
+
+    // Fix for Duration: If mediaItem has no duration but player does, update it.
+    if (mediaItem.value?.duration == null && _player.duration != null) {
+      mediaItem.add(mediaItem.value!.copyWith(duration: _player.duration));
+    }
 
     // --- 1. Define Shuffle Button ---
     final shuffleControl = MediaControl.custom(
