@@ -157,7 +157,9 @@ class MusicPlayerHandler extends BaseAudioHandler
     _player.durationStream.listen((duration) {
       final current = mediaItem.value;
       if (duration != null && current != null) {
-        mediaItem.add(current.copyWith(duration: duration));
+        if (current.duration != duration) {
+          mediaItem.add(current.copyWith(duration: duration));
+        }
       }
     });
 
@@ -187,8 +189,9 @@ class MusicPlayerHandler extends BaseAudioHandler
     // --- 1. Define Shuffle Button ---
     final shuffleControl = MediaControl.custom(
       // Swap icon based on state
-      androidIcon:
-          shuffleMode ? 'drawable/ic_shuffle_on' : 'drawable/ic_shuffle',
+      androidIcon: shuffleMode
+          ? 'drawable/ic_shuffle_on'
+          : 'drawable/ic_shuffle',
       label: 'Shuffle',
       name: 'shuffle_mode', // Custom action name
     );
@@ -221,7 +224,7 @@ class MusicPlayerHandler extends BaseAudioHandler
     final controls = [
       shuffleControl,
       MediaControl.skipToPrevious,
-      if (playing) MediaControl.pause else MediaControl.play,
+      playing ? MediaControl.pause : MediaControl.play,
       MediaControl.skipToNext,
       repeatControl,
     ];
@@ -239,6 +242,9 @@ class MusicPlayerHandler extends BaseAudioHandler
           MediaAction.seek,
           MediaAction.seekForward,
           MediaAction.seekBackward,
+          MediaAction.play,
+          MediaAction.pause,
+          MediaAction.stop,
         },
 
         playing: playing,
@@ -254,17 +260,44 @@ class MusicPlayerHandler extends BaseAudioHandler
         repeatMode: loopMode == LoopMode.one
             ? AudioServiceRepeatMode.one
             : (loopMode == LoopMode.all
-                ? AudioServiceRepeatMode.all
-                : AudioServiceRepeatMode.none),
+                  ? AudioServiceRepeatMode.all
+                  : AudioServiceRepeatMode.none),
+        processingState: _getProcessingState(),
       ),
     );
+  }
+
+  // Helper function to map states safely without crashing
+  AudioProcessingState _getProcessingState() {
+    // 1. Check if the player has an error (AudioService needs to know this)
+    // just_audio keeps state as 'idle' on error, so we check explicitly.
+    /* 
+       Note: just_audio doesn't have a direct 'hasError' boolean on the player 
+       that persists easily in this context without tracking it manually, 
+       but standard mapping is usually sufficient unless you are handling broken URLs.
+    */
+
+    switch (_player.processingState) {
+      case ProcessingState.idle:
+        return AudioProcessingState.idle;
+      case ProcessingState.loading:
+        return AudioProcessingState.loading;
+      case ProcessingState.buffering:
+        return AudioProcessingState.buffering;
+      case ProcessingState.ready:
+        return AudioProcessingState.ready;
+      case ProcessingState.completed:
+        return AudioProcessingState.completed;
+    }
   }
 
   // 2. Playback Methods (Called by your UI/Repository)
 
   @override
-  Future<dynamic> customAction(String name,
-      [Map<String, dynamic>? extras]) async {
+  Future<dynamic> customAction(
+    String name, [
+    Map<String, dynamic>? extras,
+  ]) async {
     if (name == 'shuffle_mode') {
       final mode = _player.shuffleModeEnabled
           ? AudioServiceShuffleMode.none
