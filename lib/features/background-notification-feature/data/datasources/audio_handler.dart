@@ -26,21 +26,134 @@ class MusicPlayerHandler extends BaseAudioHandler
 
   // 1. Initialize Listeners:
   // Sync just_audio events -> audio_service State
-  void _initPlayerListeners() async {
-    // Broadcast the current song details to the Lock Screen / Notification
+  // void _initPlayerListeners() async {
+  //   // Broadcast the current song details to the Lock Screen / Notification
+  //   _player.sequenceStateStream.listen((sequenceState) {
+  //     final sequence = sequenceState.sequence;
+  //     final items = sequence.map((source) => source.tag as MediaItem).toList();
+  //     queue.add(items);
+  //     // Update the "Now Playing" item (displays the title  and artwork of song)
+  //     final currentSource = sequenceState.currentSource;
+  //     if (currentSource != null) {
+  //       mediaItem.add(currentSource.tag as MediaItem);
+  //     }
+
+  //     // Update the position of the seek bar
+  //   });
+
+  //   _player.durationStream.listen((duration) {
+  //     final current = mediaItem.value;
+  //     if (duration != null && current != null) {
+  //       mediaItem.add(current.copyWith(duration: duration));
+  //     }
+  //   });
+
+  //   _player.shuffleModeEnabledStream.listen((enabled) {
+  //     final control = playbackState.value.controls.firstWhere(
+  //       (control) => control.action == MediaAction.setShuffleMode,
+  //     );
+  //     playbackState.add(
+  //       playbackState.value.copyWith(
+  //         controls: [
+  //           if (enabled)
+  //             control.copyWith(androidIcon: 'drawable/ic_shuffle_on')
+  //           else
+  //             control.copyWith(androidIcon: 'drawable/ic_shuffle'),
+  //         ],
+  //       ),
+  //     );
+  //   });
+
+  //   _player.loopModeStream.listen((loopMode) {
+  //     final control = playbackState.value.controls.firstWhere(
+  //       (control) => control.action == MediaAction.setRepeatMode,
+  //     );
+  //     playbackState.add(
+  //       playbackState.value.copyWith(
+  //         controls: [
+  //           if (loopMode == LoopMode.off)
+  //             control.copyWith(androidIcon: 'drawable/ic_repeat')
+  //           else if (loopMode == LoopMode.one)
+  //             control.copyWith(androidIcon: 'drawable/ic_repeat_one')
+  //           else
+  //             control.copyWith(androidIcon: 'drawable/ic_repeat_on'),
+  //         ],
+  //       ),
+  //     );
+  //   });
+  //   // Broadcast the Play/Pause/Loading state to the OS
+  //   _player.playbackEventStream.listen((event) {
+  //     final playing = _player.playing;
+
+  //     // Custom controls for Shuffle and Repeat
+  //     // NOTE: You must add 'ic_shuffle.xml' and 'ic_repeat.xml' to android/app/src/main/res/drawable/
+  //     const shuffleControl = MediaControl(
+  //       androidIcon: 'drawable/ic_shuffle',
+  //       label: 'Shuffle',
+  //       action: MediaAction.setShuffleMode,
+  //     );
+
+  //     const repeatControl = MediaControl(
+  //       androidIcon: 'drawable/ic_repeat',
+  //       label: 'Repeat',
+  //       action: MediaAction.setRepeatMode,
+  //     );
+
+  //     playbackState.add(
+  //       playbackState.value.copyWith(
+  //         controls: [
+  //           shuffleControl,
+  //           MediaControl.skipToPrevious,
+  //           if (playing) MediaControl.pause else MediaControl.play,
+  //           MediaControl.skipToNext,
+  //           repeatControl,
+  //         ],
+  //         systemActions: const {
+  //           MediaAction.setShuffleMode,
+  //           MediaAction.seek,
+  //           MediaAction.seekForward,
+  //           MediaAction.seekBackward,
+  //           MediaAction.setRepeatMode,
+  //         },
+  //         androidCompactActionIndices: const [0, 1, 2],
+  //         processingState: {
+  //           ProcessingState.idle: AudioProcessingState.idle,
+  //           ProcessingState.loading: AudioProcessingState.loading,
+  //           ProcessingState.buffering: AudioProcessingState.buffering,
+  //           ProcessingState.ready: AudioProcessingState.ready,
+  //           ProcessingState.completed: AudioProcessingState.completed,
+  //         }[_player.processingState]!,
+  //         playing: playing,
+  //         updatePosition: _player.position,
+  //         bufferedPosition: _player.bufferedPosition,
+  //         speed: _player.speed,
+  //         queueIndex: event.currentIndex,
+  //       ),
+  //     );
+  //   });
+
+  //   // CRITICAL: just_audio's playbackEventStream doesn't fire continuously.
+  //   // We need to bridge the position stream to AudioService so the seek bar works in UI.
+  //   // However, AudioService calculates position based on 'updatePosition' + 'speed' * (now - updateTime).
+  //   // So we just need to ensure we emit a state whenever Play/Pause/Seek happens.
+  //   // _player.playbackEventStream handles this for us.
+  //   // BUT, we might need to be explicit about the 'playing' state.
+  // }
+
+  void _initPlayerListeners() {
+    // 1. Listen to Playlist Changes (Queue)
     _player.sequenceStateStream.listen((sequenceState) {
       final sequence = sequenceState.sequence;
       final items = sequence.map((source) => source.tag as MediaItem).toList();
       queue.add(items);
-      // Update the "Now Playing" item (displays the title  and artwork of song)
+
       final currentSource = sequenceState.currentSource;
       if (currentSource != null) {
         mediaItem.add(currentSource.tag as MediaItem);
       }
-
-      // Update the position of the seek bar
     });
 
+    // 2. Listen to Duration
     _player.durationStream.listen((duration) {
       final current = mediaItem.value;
       if (duration != null && current != null) {
@@ -48,66 +161,116 @@ class MusicPlayerHandler extends BaseAudioHandler
       }
     });
 
-    // Broadcast the Play/Pause/Loading state to the OS
-    _player.playbackEventStream.listen((event) {
-      final playing = _player.playing;
-      
-      // Custom controls for Shuffle and Repeat
-      // NOTE: You must add 'ic_shuffle.xml' and 'ic_repeat.xml' to android/app/src/main/res/drawable/
-      const shuffleControl = MediaControl(
-        androidIcon: 'drawable/ic_shuffle',
-        label: 'Shuffle',
-        action: MediaAction.setShuffleMode,
+    // 3. LISTEN TO ALL STATE CHANGES
+    // We listen to all 3 streams. If ANY of them fire, we run _broadcastState().
+    // This ensures icons and play/pause state are always in sync.
+    _player.playbackEventStream.listen((_) => _broadcastState());
+    _player.shuffleModeEnabledStream.listen((_) => _broadcastState());
+    _player.loopModeStream.listen((_) => _broadcastState());
+  }
+
+  /// HELPER: Builds the notification state dynamically
+  void _broadcastState() {
+    final playing = _player.playing;
+    final shuffleMode = _player.shuffleModeEnabled;
+    final loopMode = _player.loopMode;
+
+    // --- 1. Define Shuffle Button ---
+    final shuffleControl = MediaControl.custom(
+      // Swap icon based on state
+      androidIcon:
+          shuffleMode ? 'drawable/ic_shuffle_on' : 'drawable/ic_shuffle',
+      label: 'Shuffle',
+      name: 'shuffle_mode', // Custom action name
+    );
+
+    // --- 2. Define Repeat Button ---
+    final MediaControl repeatControl;
+    if (loopMode == LoopMode.one) {
+      repeatControl = MediaControl.custom(
+        androidIcon: 'drawable/ic_repeat_one',
+        label: 'Repeat One',
+        name: 'repeat_mode',
       );
-      
-      const repeatControl = MediaControl(
+    } else if (loopMode == LoopMode.all) {
+      repeatControl = MediaControl.custom(
+        androidIcon:
+            'drawable/ic_repeat_on', // Optional: Different icon for Loop All
+        label: 'Repeat All',
+        name: 'repeat_mode',
+      );
+    } else {
+      repeatControl = MediaControl.custom(
         androidIcon: 'drawable/ic_repeat',
-        label: 'Repeat',
-        action: MediaAction.setRepeatMode,
+        label: 'Repeat Off',
+        name: 'repeat_mode',
       );
+    }
 
-      playbackState.add(
-        playbackState.value.copyWith(
-          controls: [
-            shuffleControl,
-            MediaControl.skipToPrevious,
-            if (playing) MediaControl.pause else MediaControl.play,
-            MediaControl.skipToNext,
-            repeatControl,
-          ],
-          systemActions: const {
-            MediaAction.setShuffleMode,
-            MediaAction.seek,
-            MediaAction.seekForward,
-            MediaAction.seekBackward,
-            MediaAction.setRepeatMode,
-          },
-          androidCompactActionIndices: const [0, 1, 2],
-          processingState: {
-            ProcessingState.idle: AudioProcessingState.idle,
-            ProcessingState.loading: AudioProcessingState.loading,
-            ProcessingState.buffering: AudioProcessingState.buffering,
-            ProcessingState.ready: AudioProcessingState.ready,
-            ProcessingState.completed: AudioProcessingState.completed,
-          }[_player.processingState]!,
-          playing: playing,
-          updatePosition: _player.position,
-          bufferedPosition: _player.bufferedPosition,
-          speed: _player.speed,
-          queueIndex: event.currentIndex,
-        ),
-      );
-    });
+    // --- 3. Build the Full List of Controls ---
+    // We recreate the list every time something changes so we don't lose buttons.
+    final controls = [
+      shuffleControl,
+      MediaControl.skipToPrevious,
+      if (playing) MediaControl.pause else MediaControl.play,
+      MediaControl.skipToNext,
+      repeatControl,
+    ];
 
-    // CRITICAL: just_audio's playbackEventStream doesn't fire continuously.
-    // We need to bridge the position stream to AudioService so the seek bar works in UI.
-    // However, AudioService calculates position based on 'updatePosition' + 'speed' * (now - updateTime).
-    // So we just need to ensure we emit a state whenever Play/Pause/Seek happens.
-    // _player.playbackEventStream handles this for us.
-    // BUT, we might need to be explicit about the 'playing' state.
+    // --- 4. Broadcast to System ---
+    playbackState.add(
+      playbackState.value.copyWith(
+        controls: controls,
+        // Shows: Prev, Play/Pause, Next in the compact (small) notification
+        androidCompactActionIndices: const [1, 2, 3],
+
+        systemActions: const {
+          MediaAction.setShuffleMode,
+          MediaAction.setRepeatMode,
+          MediaAction.seek,
+          MediaAction.seekForward,
+          MediaAction.seekBackward,
+        },
+
+        playing: playing,
+        updatePosition: _player.position,
+        bufferedPosition: _player.bufferedPosition,
+        speed: _player.speed,
+        queueIndex: _player.currentIndex,
+
+        // Inform the OS of the specific modes (important for Android Auto/Bluetooth)
+        shuffleMode: shuffleMode
+            ? AudioServiceShuffleMode.all
+            : AudioServiceShuffleMode.none,
+        repeatMode: loopMode == LoopMode.one
+            ? AudioServiceRepeatMode.one
+            : (loopMode == LoopMode.all
+                ? AudioServiceRepeatMode.all
+                : AudioServiceRepeatMode.none),
+      ),
+    );
   }
 
   // 2. Playback Methods (Called by your UI/Repository)
+
+  @override
+  Future<dynamic> customAction(String name,
+      [Map<String, dynamic>? extras]) async {
+    if (name == 'shuffle_mode') {
+      final mode = _player.shuffleModeEnabled
+          ? AudioServiceShuffleMode.none
+          : AudioServiceShuffleMode.all;
+      await setShuffleMode(mode);
+    } else if (name == 'repeat_mode') {
+      final current = _player.loopMode;
+      final next = {
+        LoopMode.off: AudioServiceRepeatMode.all,
+        LoopMode.all: AudioServiceRepeatMode.one,
+        LoopMode.one: AudioServiceRepeatMode.none,
+      }[current]!;
+      await setRepeatMode(next);
+    }
+  }
 
   @override
   Future<void> play() => _player.play();
