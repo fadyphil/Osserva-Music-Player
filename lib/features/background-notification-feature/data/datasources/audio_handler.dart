@@ -350,6 +350,7 @@ class MusicPlayerHandler extends BaseAudioHandler
     required String artist,
     required String id,
     required String artUri,
+    Duration? duration,
   }) async {
     final item = MediaItem(
       id: id,
@@ -358,6 +359,7 @@ class MusicPlayerHandler extends BaseAudioHandler
       artist: artist,
       artUri: Uri.parse(artUri),
       extras: {'url': uri},
+      duration: duration,
     );
     await setQueueItems(items: [item], initialIndex: 0);
   }
