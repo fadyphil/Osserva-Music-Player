@@ -13,6 +13,7 @@ abstract class AudioPlayerRepository {
     String artist,
     String songId,
     String albumId,
+    String? artUri,
   );
 
   Future<void> pause();

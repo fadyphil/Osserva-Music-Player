@@ -61,7 +61,7 @@ void main() {
       ).thenAnswer((_) async {});
 
       // ACT
-      await repository.playSong('path', 'Title', 'Artist', '1', '123');
+      await repository.playSong('path', 'Title', 'Artist', '1', '123', null);
 
       // ASSERT
       verify(

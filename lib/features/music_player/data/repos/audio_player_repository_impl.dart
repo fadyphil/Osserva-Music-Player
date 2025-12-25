@@ -57,6 +57,7 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
     String artist,
     String songId,
     String albumId,
+    String? artUri,
   ) async {
     // Legacy support
     await _handler.playSong(
@@ -64,7 +65,7 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
       title: title,
       artist: artist,
       id: songId,
-      artUri: "content://media/external/audio/albumart/$albumId",
+      artUri: artUri ?? "content://media/external/audio/media/$songId/albumart",
     );
   }
 

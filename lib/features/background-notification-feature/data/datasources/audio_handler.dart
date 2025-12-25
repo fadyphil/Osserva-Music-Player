@@ -8,7 +8,6 @@ import 'package:just_audio/just_audio.dart';
 class MusicPlayerHandler extends BaseAudioHandler
     with QueueHandler, SeekHandler {
   final AudioPlayer _player;
-  final List<AudioSource> _currentQueue = [];
   MusicPlayerHandler({AudioPlayer? player})
     : _player = player ?? AudioPlayer() {
     _init();
@@ -17,128 +16,14 @@ class MusicPlayerHandler extends BaseAudioHandler
   Future<void> _init() async {
     try {
       //NOTE: strict replacement for setAudioSource(ConcatenatingAudioSource(...))
-      await _player.setAudioSources(_currentQueue);
+      await _player.setAudioSources([]);
     } catch (e) {
       log('Error setting audio sources: $e');
     }
     _initPlayerListeners();
   }
 
-  // 1. Initialize Listeners:
-  // Sync just_audio events -> audio_service State
-  // void _initPlayerListeners() async {
-  //   // Broadcast the current song details to the Lock Screen / Notification
-  //   _player.sequenceStateStream.listen((sequenceState) {
-  //     final sequence = sequenceState.sequence;
-  //     final items = sequence.map((source) => source.tag as MediaItem).toList();
-  //     queue.add(items);
-  //     // Update the "Now Playing" item (displays the title  and artwork of song)
-  //     final currentSource = sequenceState.currentSource;
-  //     if (currentSource != null) {
-  //       mediaItem.add(currentSource.tag as MediaItem);
-  //     }
-
-  //     // Update the position of the seek bar
-  //   });
-
-  //   _player.durationStream.listen((duration) {
-  //     final current = mediaItem.value;
-  //     if (duration != null && current != null) {
-  //       mediaItem.add(current.copyWith(duration: duration));
-  //     }
-  //   });
-
-  //   _player.shuffleModeEnabledStream.listen((enabled) {
-  //     final control = playbackState.value.controls.firstWhere(
-  //       (control) => control.action == MediaAction.setShuffleMode,
-  //     );
-  //     playbackState.add(
-  //       playbackState.value.copyWith(
-  //         controls: [
-  //           if (enabled)
-  //             control.copyWith(androidIcon: 'drawable/ic_shuffle_on')
-  //           else
-  //             control.copyWith(androidIcon: 'drawable/ic_shuffle'),
-  //         ],
-  //       ),
-  //     );
-  //   });
-
-  //   _player.loopModeStream.listen((loopMode) {
-  //     final control = playbackState.value.controls.firstWhere(
-  //       (control) => control.action == MediaAction.setRepeatMode,
-  //     );
-  //     playbackState.add(
-  //       playbackState.value.copyWith(
-  //         controls: [
-  //           if (loopMode == LoopMode.off)
-  //             control.copyWith(androidIcon: 'drawable/ic_repeat')
-  //           else if (loopMode == LoopMode.one)
-  //             control.copyWith(androidIcon: 'drawable/ic_repeat_one')
-  //           else
-  //             control.copyWith(androidIcon: 'drawable/ic_repeat_on'),
-  //         ],
-  //       ),
-  //     );
-  //   });
-  //   // Broadcast the Play/Pause/Loading state to the OS
-  //   _player.playbackEventStream.listen((event) {
-  //     final playing = _player.playing;
-
-  //     // Custom controls for Shuffle and Repeat
-  //     // NOTE: You must add 'ic_shuffle.xml' and 'ic_repeat.xml' to android/app/src/main/res/drawable/
-  //     const shuffleControl = MediaControl(
-  //       androidIcon: 'drawable/ic_shuffle',
-  //       label: 'Shuffle',
-  //       action: MediaAction.setShuffleMode,
-  //     );
-
-  //     const repeatControl = MediaControl(
-  //       androidIcon: 'drawable/ic_repeat',
-  //       label: 'Repeat',
-  //       action: MediaAction.setRepeatMode,
-  //     );
-
-  //     playbackState.add(
-  //       playbackState.value.copyWith(
-  //         controls: [
-  //           shuffleControl,
-  //           MediaControl.skipToPrevious,
-  //           if (playing) MediaControl.pause else MediaControl.play,
-  //           MediaControl.skipToNext,
-  //           repeatControl,
-  //         ],
-  //         systemActions: const {
-  //           MediaAction.setShuffleMode,
-  //           MediaAction.seek,
-  //           MediaAction.seekForward,
-  //           MediaAction.seekBackward,
-  //           MediaAction.setRepeatMode,
-  //         },
-  //         androidCompactActionIndices: const [0, 1, 2],
-  //         processingState: {
-  //           ProcessingState.idle: AudioProcessingState.idle,
-  //           ProcessingState.loading: AudioProcessingState.loading,
-  //           ProcessingState.buffering: AudioProcessingState.buffering,
-  //           ProcessingState.ready: AudioProcessingState.ready,
-  //           ProcessingState.completed: AudioProcessingState.completed,
-  //         }[_player.processingState]!,
-  //         playing: playing,
-  //         updatePosition: _player.position,
-  //         bufferedPosition: _player.bufferedPosition,
-  //         speed: _player.speed,
-  //         queueIndex: event.currentIndex,
-  //       ),
-  //     );
-  //   });
-
-  //   // CRITICAL: just_audio's playbackEventStream doesn't fire continuously.
-  //   // We need to bridge the position stream to AudioService so the seek bar works in UI.
-  //   // However, AudioService calculates position based on 'updatePosition' + 'speed' * (now - updateTime).
-  //   // So we just need to ensure we emit a state whenever Play/Pause/Seek happens.
-  //   // _player.playbackEventStream handles this for us.
-  //   // BUT, we might need to be explicit about the 'playing' state.
-  // }
+  // 1. Initialize Listeners
 
   void _initPlayerListeners() {
     // 1. Listen to Playlist Changes (Queue)
@@ -371,24 +256,12 @@ class MusicPlayerHandler extends BaseAudioHandler
         source = AudioSource.file(url, tag: mediaItem);
       }
 
-      _currentQueue.add(source);
-      final currentIndex = _player.currentIndex;
-      final currentPos = _player.position;
-      await _player.setAudioSources(
-        _currentQueue,
-        initialIndex: currentIndex,
-        initialPosition: currentPos,
-      );
+      await _player.addAudioSource(source);
 
       log('Successfuly added to queue: ${mediaItem.title}');
     } catch (e, stack) {
       log('Error adding to queue: $e', stackTrace: stack);
-      if (_currentQueue.isNotEmpty) {
-        final lastItem = _currentQueue.last;
-        if (lastItem is IndexedAudioSource && lastItem.tag is MediaItem) {
-          _currentQueue.removeLast();
-        }
-      }
+
       rethrow;
     }
   }
@@ -399,10 +272,6 @@ class MusicPlayerHandler extends BaseAudioHandler
     required int initialIndex,
   }) async {
     try {
-      // 1. Clear the local queue
-
-      _currentQueue.clear();
-
       // 2. Rebuild list
       final sources = items.map((item) {
         return AudioSource.uri(
@@ -410,10 +279,20 @@ class MusicPlayerHandler extends BaseAudioHandler
           tag: item,
         );
       }).toList();
-      _currentQueue.addAll(sources);
+
+      // FIX FOR FIRST SONG BUG:
+      // Force stop the player before loading a completely new list.
+      // This clears the buffer and prevents "ghosting" of the first track.
+      if (_player.playing) {
+        await _player.stop();
+      }
 
       // 3. set sources on player
-      await _player.setAudioSources(_currentQueue, initialIndex: initialIndex);
+      await _player.setAudioSources(
+        sources,
+        initialIndex: initialIndex,
+        initialPosition: Duration.zero,
+      );
 
       // 4. Ensure plaback starts
       await _player.play();
@@ -448,26 +327,14 @@ class MusicPlayerHandler extends BaseAudioHandler
         source = AudioSource.file(url, tag: mediaItem);
       }
 
-      // CALCULATE INSERT POSITION
-      // If nothing is playing, add to start.
-      // If playing, add right after current index.
-      final index = (_player.currentIndex ?? -1) + 1;
-
-      if (index < 0 || index > _currentQueue.length) {
-        _currentQueue.add(source); // Fallback to append
-      } else {
-        _currentQueue.insert(index, source); // Insert specific
-      }
-
-      // Update Player
       final currentIndex = _player.currentIndex;
-      final currentPos = _player.position;
 
-      await _player.setAudioSources(
-        _currentQueue,
-        initialIndex: currentIndex,
-        initialPosition: currentPos,
-      );
+      if (currentIndex == null || (_player.sequence.isEmpty)) {
+        await _player.setAudioSource(source);
+      } else {
+        final nextIndex = currentIndex + 1;
+        await _player.insertAudioSource(nextIndex, source);
+      }
 
       log('Successfully inserted next: ${mediaItem.title}');
     } catch (e) {
@@ -483,6 +350,7 @@ class MusicPlayerHandler extends BaseAudioHandler
     required String artist,
     required String id,
     required String artUri,
+    Duration? duration,
   }) async {
     final item = MediaItem(
       id: id,
@@ -491,6 +359,7 @@ class MusicPlayerHandler extends BaseAudioHandler
       artist: artist,
       artUri: Uri.parse(artUri),
       extras: {'url': uri},
+      duration: duration,
     );
     await setQueueItems(items: [item], initialIndex: 0);
   }

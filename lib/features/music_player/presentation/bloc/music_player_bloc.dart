@@ -18,7 +18,8 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   StreamSubscription? _loopSubscription;
   StreamSubscription? _queueSubscription;
 
-  MusicPlayerBloc(this._audioRepository, this._getSongByIdUseCase) : super(const MusicPlayerState()) {
+  MusicPlayerBloc(this._audioRepository, this._getSongByIdUseCase)
+    : super(const MusicPlayerState()) {
     // 1. Setup Listeners
     _positionSubscription = _audioRepository.positionStream.listen((pos) {
       add(MusicPlayerEvent.updatePosition(pos));
@@ -82,12 +83,15 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
         playSong: (e) async {
           // Play Single Song (Legacy/Specific use case)
           emit(state.copyWith(currentSong: e.song, isPlaying: true));
+          final artworkUri =
+              "content://media/external/audio/media/${e.song.id}/albumart";
           await _audioRepository.playSong(
             e.song.path,
             e.song.title,
             e.song.artist,
             e.song.id.toString(),
             e.song.album,
+            artworkUri,
           );
         },
         playSongById: (e) async {
