@@ -1,36 +1,30 @@
 import 'package:flutter/material.dart';
 
 class AppPallete {
-  // The Base Colors
-  static const Color backgroundColor = Color(
-    0xFF121212,
-  ); // Deep Dark Grey/Black
-  static const Color gradientTop = Color.fromARGB(
-    255,
-    49,
-    55,
-    173,
-  ); // The Blue top fade
-  static const Color gradientBottom = backgroundColor;
-
-  // The Accents
-  static const Color primaryGreen = Color(0xFF1ED760); // "Spotify" Green
-  static const Color cardColor = Color(
-    0xFF242424,
-  ); // Slightly lighter for cards
-
-  // New Analytics Accents (Neon/Cyberpunk)
-  static const Color neonPurple = Color(0xFFBB86FC);
-  static const Color hotPink = Color(0xFFFF4081);
-  static const Color electricBlue = Color(0xFF2979FF);
-  static const Color warmOrange = Color(0xFFFF9100);
+  // Design 2.0 "Pulse" Theme (Dark Mode)
   
-  // Surface Variants
-  static const Color surfaceDark = Color(0xFF1E1E1E);
-  static const Color surfaceLight = Color(0xFF2C2C2C);
+  // Base
+  static const Color background = Color(0xFF0D1117); // GitHub Dark Dimmed-ish
+  static const Color foreground = Color(0xFFE6EDF3); 
+  static const Color surface = Color(0xFF161B22); // Secondary/Card
+  static const Color border = Color(0xFF30363D);
+  
+  // Accents
+  static const Color accent = Color(0xFF1F6FEB); // Blue
+  static const Color destructive = Color(0xFFF85149); // Red
+  
+  // Charts / Analytics
+  static const Color chart1 = Color(0xFF1F6FEB); // Blue
+  static const Color chart2 = Color(0xFFA371F7); // Purple
+  static const Color chart3 = Color(0xFF3FB950); // Green
+  static const Color chart4 = Color(0xFFD29922); // Yellow/Orange
+  static const Color chart5 = Color(0xFFF85149); // Red
 
-  // Text & Icons
+  // Legacy mappings (for backward compatibility during migration)
+  static const Color backgroundColor = background;
+  static const Color primaryGreen = chart3; // Approximate replacement
+  static const Color cardColor = surface;
   static const Color white = Colors.white;
-  static const Color grey = Colors.grey;
+  static const Color grey = Color(0xFF7D8590); // Muted foreground
   static const Color transparent = Colors.transparent;
 }

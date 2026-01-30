@@ -61,7 +61,7 @@ class MusicPlayerPage extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [AppPallete.gradientTop, AppPallete.backgroundColor],
+              colors: [AppPallete.surface, AppPallete.background],
             ),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24),

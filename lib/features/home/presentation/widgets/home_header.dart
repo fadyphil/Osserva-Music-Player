@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:music_player/core/theme/app_pallete.dart';
 
 class HomeHeader extends StatelessWidget {
   final String greeting;
@@ -26,13 +27,14 @@ class HomeHeader extends StatelessWidget {
               Container(
                  padding: const EdgeInsets.all(8),
                  decoration: BoxDecoration(
-                   color: Colors.blueAccent,
+                   color: AppPallete.accent,
                    borderRadius: BorderRadius.circular(8),
                  ),
-                 child: const Icon(Icons.music_note, color: Colors.white),
+                 child: const Icon(Icons.music_note, color: AppPallete.white, size: 20),
               ),
               IconButton(
-                icon: const Icon(Icons.menu, color: Colors.white),
+                icon: const Icon(Icons.menu, color: AppPallete.white), // Menu icon is white in design? No, usually foreground.
+                color: AppPallete.foreground,
                 onPressed: () {
                    // Open drawer or settings
                 },
@@ -43,17 +45,17 @@ class HomeHeader extends StatelessWidget {
           Text(
             greeting,
             style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+              fontSize: 24, // text-2xl
+              fontWeight: FontWeight.w500, // font-medium
+              color: AppPallete.foreground,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             '$date • $trackCount tracks offline',
             style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
+              fontSize: 14, // text-sm
+              color: AppPallete.grey,
             ),
           ),
         ],

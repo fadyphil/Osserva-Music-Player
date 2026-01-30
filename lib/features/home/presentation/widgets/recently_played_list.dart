@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_player/core/theme/app_pallete.dart';
 import 'package:music_player/features/analytics/domain/entities/play_log.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -19,20 +20,20 @@ class RecentlyPlayedList extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Row(
                 children: [
-                  Icon(Icons.access_time, color: Colors.white, size: 20),
+                  Icon(Icons.access_time, color: AppPallete.foreground, size: 16),
                   SizedBox(width: 8),
                   Text(
                     'Recently Played',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      color: AppPallete.foreground,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -41,7 +42,7 @@ class RecentlyPlayedList extends StatelessWidget {
                 onTap: onSeeAll,
                 child: const Text(
                   'See all',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                  style: TextStyle(color: AppPallete.grey, fontSize: 12),
                 ),
               ),
             ],
@@ -52,7 +53,7 @@ class RecentlyPlayedList extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
           itemCount: songs.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          separatorBuilder: (context, index) => const SizedBox(height: 4),
           itemBuilder: (context, index) {
             final song = songs[index];
             return _RecentlyPlayedTile(
@@ -84,29 +85,32 @@ class _RecentlyPlayedTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
-      child: Container(
-        color: Colors.transparent, // Hit test
+      borderRadius: BorderRadius.circular(6),
+      hoverColor: AppPallete.surface,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: Row(
           children: [
             Container(
-              width: 50,
-              height: 50,
+              width: 40, 
+              height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF1E1E1E),
-                borderRadius: BorderRadius.circular(8),
+                color: AppPallete.surface,
+                borderRadius: BorderRadius.circular(6),
               ),
               child: QueryArtworkWidget(
                 id: song.songId,
                 type: ArtworkType.AUDIO,
                 nullArtworkWidget: const Icon(
-                  Icons.play_arrow_outlined,
-                  color: Colors.white,
+                  Icons.play_arrow,
+                  color: AppPallete.grey,
+                  size: 20,
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,18 +120,18 @@ class _RecentlyPlayedTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+                      color: AppPallete.foreground,
+                      fontWeight: FontWeight.w500,
                       fontSize: 14,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     '${song.artist} • ${song.album}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: Colors.grey,
+                      color: AppPallete.grey,
                       fontSize: 12,
                     ),
                   ),
@@ -135,11 +139,8 @@ class _RecentlyPlayedTile extends StatelessWidget {
               ),
             ),
             Text(
-              _formatDuration(song.durationListenedSeconds), // Assuming this is duration of song, but PlayLog has 'durationListened'.
-              // Ideally PlayLog should have total duration of song too, but let's use what we have or placeholder
-               // If playlog doesn't have total duration, we might need to fetch it or just not show it.
-               // For now using durationListened as a placeholder or 0:00
-               style: const TextStyle(color: Colors.grey, fontSize: 12),
+              _formatDuration(song.durationListenedSeconds),
+               style: const TextStyle(color: AppPallete.grey, fontSize: 12),
             ),
           ],
         ),

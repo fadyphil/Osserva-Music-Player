@@ -141,7 +141,7 @@ class _SongListPageState extends State<SongListPage>
                         const Center(child: CircularProgressIndicator()),
                     loading: () => const Center(
                       child: CircularProgressIndicator(
-                        color: AppPallete.gradientTop,
+                        color: AppPallete.accent,
                       ),
                     ),
                     failure: (failure) => Center(
@@ -212,7 +212,7 @@ class _PermissionRequestView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppPallete.cardColor,
+                color: AppPallete.surface,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(

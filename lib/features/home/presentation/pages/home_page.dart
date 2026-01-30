@@ -10,7 +10,7 @@ import 'package:music_player/features/home/domain/entities/home_tab.dart'; // Ne
 // Import your widgets
 import '../widgets/prism_knob_navigation.dart';
 import '../widgets/neural_string_navigation.dart';
-import '../widgets/simple_animated_nav_bar.dart';
+import '../widgets/pulse_bottom_nav_bar.dart';
 
 @RoutePage()
 class HomePage extends StatelessWidget {
@@ -106,7 +106,7 @@ class HomePage extends StatelessWidget {
                       break;
                     case NavBarStyle.simple:
                     default:
-                      navBar = SimpleAnimatedNavBar(
+                      navBar = PulseBottomNavBar(
                         selectedTab: currentTab,
                         onTabSelected: (tab) {
                           tabsRouter.setActiveIndex(tab.index);
