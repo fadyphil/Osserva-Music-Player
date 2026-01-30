@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../cubit/home_state.dart';
+import 'package:music_player/features/home/domain/entities/home_tab.dart';
 
 class SimpleAnimatedNavBar extends StatelessWidget {
   final HomeTab selectedTab;
