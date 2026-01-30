@@ -1,21 +1,43 @@
+import 'dart:developer';
+
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/entities/analytics_enums.dart';
 import '../../domain/entities/analytics_stats.dart';
 import '../../domain/entities/play_log.dart';
 import '../../domain/repositories/analytics_repository.dart';
-import '../datasources/analytics_local_datasource.dart';
+import '../datasources/analytics_aggregator.dart';
+import '../datasources/analytics_reader.dart';
+import '../datasources/analytics_recorder.dart';
 import '../failures/analytics_failure.dart';
 
 class AnalyticsRepositoryImpl implements AnalyticsRepository {
-  final AnalyticsLocalDataSource dataSource;
+  final AnalyticsRecorder recorder;
+  final AnalyticsReader reader;
+  final AnalyticsAggregator aggregator;
 
-  AnalyticsRepositoryImpl(this.dataSource);
+  AnalyticsRepositoryImpl({
+    required this.recorder,
+    required this.reader,
+    required this.aggregator,
+  });
+
+  /// Triggers database maintenance (Roll-up aggregation).
+  /// Should be called on app startup.
+  Future<void> performMaintenance() async {
+    try {
+      // Roll up logs older than 90 days
+      await aggregator.performRollUp(daysToKeep: 90);
+    } catch (e) {
+      // Log error but don't crash app
+      log('Analytics Maintenance Failed: $e');
+    }
+  }
 
   @override
   Future<Either<Failure, void>> logEvent(PlayLog log) async {
     try {
-      await dataSource.logEvent(log);
+      await recorder.logEvent(log);
       return const Right(null);
     } catch (e) {
       return Left(AnalyticsFailure('Failed to log playback event: $e'));
@@ -23,9 +45,10 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Either<Failure, ListeningStats>> getGeneralStats(TimeFrame timeFrame) async {
+  Future<Either<Failure, ListeningStats>> getGeneralStats(
+      TimeFrame timeFrame) async {
     try {
-      final result = await dataSource.getGeneralStats(timeFrame);
+      final result = await reader.getGeneralStats(timeFrame);
       return Right(result);
     } catch (e) {
       return Left(AnalyticsFailure('Failed to fetch general stats: $e'));
@@ -35,7 +58,7 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   @override
   Future<Either<Failure, Map<int, int>>> getAllSongPlayCounts() async {
     try {
-      final result = await dataSource.getAllSongPlayCounts();
+      final result = await reader.getAllSongPlayCounts();
       return Right(result);
     } catch (e) {
       return Left(AnalyticsFailure('Failed to fetch play counts: $e'));
@@ -43,9 +66,10 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Either<Failure, List<TopItem>>> getTopAlbums(TimeFrame timeFrame, {int limit = 10}) async {
+  Future<Either<Failure, List<TopItem>>> getTopAlbums(TimeFrame timeFrame,
+      {int limit = 10}) async {
     try {
-      final result = await dataSource.getTopAlbums(timeFrame, limit);
+      final result = await reader.getTopAlbums(timeFrame, limit);
       return Right(result);
     } catch (e) {
       return Left(AnalyticsFailure('Failed to fetch top albums: $e'));
@@ -53,9 +77,10 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Either<Failure, List<TopItem>>> getTopArtists(TimeFrame timeFrame, {int limit = 10}) async {
+  Future<Either<Failure, List<TopItem>>> getTopArtists(TimeFrame timeFrame,
+      {int limit = 10}) async {
     try {
-      final result = await dataSource.getTopArtists(timeFrame, limit);
+      final result = await reader.getTopArtists(timeFrame, limit);
       return Right(result);
     } catch (e) {
       return Left(AnalyticsFailure('Failed to fetch top artists: $e'));
@@ -63,9 +88,10 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Either<Failure, List<TopItem>>> getTopGenres(TimeFrame timeFrame, {int limit = 10}) async {
+  Future<Either<Failure, List<TopItem>>> getTopGenres(TimeFrame timeFrame,
+      {int limit = 10}) async {
     try {
-      final result = await dataSource.getTopGenres(timeFrame, limit);
+      final result = await reader.getTopGenres(timeFrame, limit);
       return Right(result);
     } catch (e) {
       return Left(AnalyticsFailure('Failed to fetch top genres: $e'));
@@ -73,9 +99,10 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Either<Failure, List<TopItem>>> getTopSongs(TimeFrame timeFrame, {int limit = 10}) async {
+  Future<Either<Failure, List<TopItem>>> getTopSongs(TimeFrame timeFrame,
+      {int limit = 10}) async {
     try {
-      final result = await dataSource.getTopSongs(timeFrame, limit);
+      final result = await reader.getTopSongs(timeFrame, limit);
       return Right(result);
     } catch (e) {
       return Left(AnalyticsFailure('Failed to fetch top songs: $e'));
@@ -84,11 +111,8 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
   @override
   Future<Either<Failure, void>> logOnboardingComplete() async {
-    // Fire and forget, or actually log to DB if we had a generic event table.
-    // For now, we'll just print or assume the DataSource handles it if we add it there.
-    // Since strict adherence is required, I'll add it to DataSource first.
     try {
-      await dataSource.logOnboardingComplete();
+      await recorder.logOnboardingComplete();
       return const Right(null);
     } catch (e) {
       return Left(AnalyticsFailure('Failed to log onboarding complete: $e'));
@@ -98,7 +122,7 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   @override
   Future<Either<Failure, void>> clearData() async {
     try {
-      await dataSource.clearAllData();
+      await recorder.clearAllData();
       return const Right(null);
     } catch (e) {
       return Left(AnalyticsFailure('Failed to clear analytics data: $e'));
@@ -106,9 +130,11 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Either<Failure, List<PlayLog>>> getPlaybackHistory({int? limit, int? offset}) async {
+  Future<Either<Failure, List<PlayLog>>> getPlaybackHistory(
+      {int? limit, int? offset}) async {
     try {
-      final result = await dataSource.getPlaybackHistory(limit: limit, offset: offset);
+      final result =
+          await reader.getPlaybackHistory(limit: limit, offset: offset);
       return Right(result);
     } catch (e) {
       return Left(AnalyticsFailure('Failed to fetch playback history: $e'));
@@ -116,5 +142,5 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Stream<void> get playbackStream => dataSource.onLogStream;
+  Stream<void> get playbackStream => recorder.onLogStream;
 }

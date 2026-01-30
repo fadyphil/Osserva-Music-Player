@@ -1,0 +1,285 @@
+import '../../domain/entities/analytics_enums.dart';
+import '../../domain/entities/analytics_stats.dart';
+import '../../domain/entities/play_log.dart';
+import 'db/analytics_database.dart';
+
+class AnalyticsReader {
+  final AnalyticsDatabase _dbProvider;
+
+  AnalyticsReader(this._dbProvider);
+
+  int _getTimestampThreshold(TimeFrame timeFrame) {
+    final now = DateTime.now();
+    switch (timeFrame) {
+      case TimeFrame.day:
+        return now.subtract(const Duration(days: 1)).millisecondsSinceEpoch;
+      case TimeFrame.week:
+        return now.subtract(const Duration(days: 7)).millisecondsSinceEpoch;
+      case TimeFrame.month:
+        return now.subtract(const Duration(days: 30)).millisecondsSinceEpoch;
+      case TimeFrame.year:
+        return now.subtract(const Duration(days: 365)).millisecondsSinceEpoch;
+      case TimeFrame.all:
+        return 0;
+    }
+  }
+
+  /// Helper to generate the SQL that unions Hot Logs + Cold Aggregates
+  String _buildUnionQuery({
+    required String innerSelect,
+    required String innerGroupBy,
+    required String outerSelect,
+    required String outerGroupBy,
+  }) {
+    return '''
+      SELECT $outerSelect, SUM(count_val) as value
+      FROM (
+        -- Hot Data
+        SELECT $innerSelect, COUNT(*) as count_val
+        FROM ${AnalyticsDatabase.tblPlaybackLogs} log
+        JOIN ${AnalyticsDatabase.tblSongs} s ON log.song_id = s.id
+        JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
+        JOIN ${AnalyticsDatabase.tblAlbums} al ON s.album_id = al.id
+        JOIN ${AnalyticsDatabase.tblGenres} g ON s.genre_id = g.id
+        WHERE log.timestamp > ?
+        GROUP BY $innerGroupBy
+
+        UNION ALL
+
+        -- Cold Data
+        SELECT $innerSelect, SUM(play_count) as count_val
+        FROM ${AnalyticsDatabase.tblDailyAggregates} agg
+        JOIN ${AnalyticsDatabase.tblSongs} s ON agg.song_id = s.id
+        JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
+        JOIN ${AnalyticsDatabase.tblAlbums} al ON s.album_id = al.id
+        JOIN ${AnalyticsDatabase.tblGenres} g ON s.genre_id = g.id
+        WHERE agg.date_epoch > ?
+        GROUP BY $innerGroupBy
+      )
+      GROUP BY $outerGroupBy
+      ORDER BY value DESC
+      LIMIT ?
+    ''';
+  }
+
+  Future<List<TopItem>> getTopSongs(TimeFrame timeFrame, int limit) async {
+    final db = await _dbProvider.db;
+    final threshold = _getTimestampThreshold(timeFrame);
+
+    // For Songs, we group by song ID but need to fetch titles/artists for display
+    final sql =
+        '''
+      SELECT 
+        CAST(s.source_id AS TEXT) as id, -- Return the original MediaStore ID
+        s.title as label, 
+        ar.name as sub_label, 
+        SUM(count_val) as value
+      FROM (
+        SELECT song_id, COUNT(*) as count_val FROM ${AnalyticsDatabase.tblPlaybackLogs} WHERE timestamp > ? GROUP BY song_id
+        UNION ALL
+        SELECT song_id, SUM(play_count) as count_val FROM ${AnalyticsDatabase.tblDailyAggregates} WHERE date_epoch > ? GROUP BY song_id
+      ) combined
+      JOIN ${AnalyticsDatabase.tblSongs} s ON combined.song_id = s.id
+      JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
+      GROUP BY s.id
+      ORDER BY value DESC
+      LIMIT ?
+    ''';
+
+    final result = await db.rawQuery(sql, [threshold, threshold, limit]);
+    return result
+        .map((e) => TopItem.fromJson(e).copyWith(type: 'song'))
+        .toList();
+  }
+
+  Future<List<TopItem>> getTopArtists(TimeFrame timeFrame, int limit) async {
+    final db = await _dbProvider.db;
+    final threshold = _getTimestampThreshold(timeFrame);
+
+    final sql = _buildUnionQuery(
+      innerSelect: 'ar.name as name',
+      innerGroupBy: 'ar.name',
+      outerSelect: 'name as id, name as label',
+      outerGroupBy: 'name',
+    );
+
+    final result = await db.rawQuery(sql, [threshold, threshold, limit]);
+    return result
+        .map((e) => TopItem.fromJson(e).copyWith(type: 'artist'))
+        .toList();
+  }
+
+  Future<List<TopItem>> getTopAlbums(TimeFrame timeFrame, int limit) async {
+    final db = await _dbProvider.db;
+    final threshold = _getTimestampThreshold(timeFrame);
+
+    final sql = _buildUnionQuery(
+      innerSelect: 'al.name as album_name, ar.name as artist_name',
+      innerGroupBy: 'al.name',
+      outerSelect:
+          'album_name as id, album_name as label, artist_name as sub_label',
+      outerGroupBy: 'album_name',
+    );
+
+    final result = await db.rawQuery(sql, [threshold, threshold, limit]);
+    return result
+        .map((e) => TopItem.fromJson(e).copyWith(type: 'album'))
+        .toList();
+  }
+
+  Future<List<TopItem>> getTopGenres(TimeFrame timeFrame, int limit) async {
+    final db = await _dbProvider.db;
+    final threshold = _getTimestampThreshold(timeFrame);
+
+    final sql = _buildUnionQuery(
+      innerSelect: 'g.name as name',
+      innerGroupBy: 'g.name',
+      outerSelect: 'name as id, name as label',
+      outerGroupBy: 'name',
+    );
+
+    final result = await db.rawQuery(sql, [threshold, threshold, limit]);
+    return result
+        .map((e) => TopItem.fromJson(e).copyWith(type: 'genre'))
+        .toList();
+  }
+
+  Future<ListeningStats> getGeneralStats(TimeFrame timeFrame) async {
+    final db = await _dbProvider.db;
+    final threshold = _getTimestampThreshold(timeFrame);
+
+    // 1. Total Duration and Count (Hot + Cold)
+    final sql = '''
+      SELECT 
+        SUM(total_duration) as total_duration, 
+        SUM(play_count) as total_count
+      FROM (
+        -- Hot Data
+        SELECT 
+          SUM(duration_listened) as total_duration, 
+          COUNT(*) as play_count 
+        FROM ${AnalyticsDatabase.tblPlaybackLogs} 
+        WHERE timestamp > ?
+        
+        UNION ALL
+        
+        -- Cold Data
+        SELECT 
+          SUM(total_duration) as total_duration, 
+          SUM(play_count) as play_count 
+        FROM ${AnalyticsDatabase.tblDailyAggregates} 
+        WHERE date_epoch > ?
+      )
+    ''';
+
+    final result = await db.rawQuery(sql, [threshold, threshold]);
+    final row = result.first;
+    final totalSeconds = row['total_duration'] as int? ?? 0;
+    final totalCount = row['total_count'] as int? ?? 0;
+
+    // 2. Time of Day Distribution (Hot + Cold)
+    final timeSql = '''
+      SELECT time_of_day, SUM(cnt) as count
+      FROM (
+        SELECT time_of_day, COUNT(*) as cnt 
+        FROM ${AnalyticsDatabase.tblPlaybackLogs} 
+        WHERE timestamp > ? 
+        GROUP BY time_of_day
+        
+        UNION ALL
+        
+        SELECT time_of_day, SUM(play_count) as cnt 
+        FROM ${AnalyticsDatabase.tblDailyAggregates} 
+        WHERE date_epoch > ? 
+        GROUP BY time_of_day
+      )
+      GROUP BY time_of_day
+    ''';
+
+    final timeResult = await db.rawQuery(timeSql, [threshold, threshold]);
+    final Map<String, int> distributionMap = {};
+    for (var r in timeResult) {
+      if (r['time_of_day'] != null) {
+        distributionMap[r['time_of_day'] as String] = r['count'] as int;
+      }
+    }
+
+    return ListeningStats(
+      totalMinutes: totalSeconds ~/ 60,
+      totalSongsPlayed: totalCount,
+      timeOfDayDistribution: distributionMap,
+    );
+  }
+
+  Future<Map<int, int>> getAllSongPlayCounts() async {
+    final db = await _dbProvider.db;
+    // We need SOURCE ID (s.source_id), not internal ID
+    final sql = '''
+      SELECT s.source_id, SUM(cnt) as count
+      FROM (
+        SELECT song_id, COUNT(*) as cnt FROM ${AnalyticsDatabase.tblPlaybackLogs} GROUP BY song_id
+        UNION ALL
+        SELECT song_id, SUM(play_count) as cnt FROM ${AnalyticsDatabase.tblDailyAggregates} GROUP BY song_id
+      ) combined
+      JOIN ${AnalyticsDatabase.tblSongs} s ON combined.song_id = s.id
+      GROUP BY s.source_id
+    ''';
+
+    final result = await db.rawQuery(sql);
+    final Map<int, int> counts = {};
+
+    for (final row in result) {
+      if (row['source_id'] != null) {
+        counts[row['source_id'] as int] = row['count'] as int;
+      }
+    }
+    return counts;
+  }
+
+  Future<List<PlayLog>> getPlaybackHistory({int? limit, int? offset}) async {
+    final db = await _dbProvider.db;
+
+    // History usually only cares about "Hot" logs (recent).
+    // If user scrolls back 5 years, we might need a different strategy,
+    // but typically "History" implies "Recent Logs".
+
+    final result = await db.rawQuery(
+      '''
+      SELECT 
+        log.id,
+        s.source_id as song_id,
+        s.title,
+        ar.name as artist,
+        al.name as album,
+        g.name as genre,
+        log.timestamp,
+        log.duration_listened,
+        log.is_completed,
+        log.time_of_day
+      FROM ${AnalyticsDatabase.tblPlaybackLogs} log
+      JOIN ${AnalyticsDatabase.tblSongs} s ON log.song_id = s.id
+      LEFT JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
+      LEFT JOIN ${AnalyticsDatabase.tblAlbums} al ON s.album_id = al.id
+      LEFT JOIN ${AnalyticsDatabase.tblGenres} g ON s.genre_id = g.id
+      ORDER BY log.timestamp DESC
+      LIMIT ? OFFSET ?
+    ''',
+      [limit ?? 50, offset ?? 0],
+    );
+
+    return result.map((row) {
+      return PlayLog(
+        id: row['id'] as int?,
+        songId: row['song_id'] as int,
+        songTitle: row['title'] as String,
+        artist: row['artist'] as String,
+        album: row['album'] as String,
+        genre: row['genre'] as String,
+        timestamp: DateTime.fromMillisecondsSinceEpoch(row['timestamp'] as int),
+        durationListenedSeconds: row['duration_listened'] as int,
+        isCompleted: (row['is_completed'] as int) == 1,
+        sessionTimeOfDay: row['time_of_day'] as String,
+      );
+    }).toList();
+  }
+}
