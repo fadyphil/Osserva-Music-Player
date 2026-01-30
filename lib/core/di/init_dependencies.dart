@@ -2,7 +2,10 @@ import 'package:audio_service/audio_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:music_player/core/router/app_router.dart';
-import 'package:music_player/features/analytics/data/datasources/analytics_local_datasource.dart';
+import 'package:music_player/features/analytics/data/datasources/analytics_aggregator.dart';
+import 'package:music_player/features/analytics/data/datasources/analytics_reader.dart';
+import 'package:music_player/features/analytics/data/datasources/analytics_recorder.dart';
+import 'package:music_player/features/analytics/data/datasources/db/analytics_database.dart';
 import 'package:music_player/features/analytics/data/repositories/analytics_repository_impl.dart';
 import 'package:music_player/features/analytics/domain/repositories/analytics_repository.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_general_stats.dart';
@@ -33,7 +36,7 @@ import 'package:music_player/features/onboarding/domain/usecases/check_if_user_i
 import 'package:music_player/features/onboarding/domain/usecases/log_onboarding_complete.dart';
 import 'package:music_player/features/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:music_player/features/onboarding/presentation/cubit/user_registration_cubit.dart';
-import 'package:music_player/features/home/presentation/cubit/home_cubit.dart';
+import 'package:music_player/features/home/presentation/bloc/home_bloc/home_bloc.dart';
 import 'package:music_player/features/profile/data/datasources/profile_local_datasource.dart';
 import 'package:music_player/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:music_player/features/profile/domain/repositories/profile_repository.dart';
@@ -137,12 +140,28 @@ Future<void> initDependencies() async {
   // =========================================================
   // FEATURE: ANALYTICS
   // =========================================================
-  serviceLocator.registerLazySingleton<AnalyticsLocalDataSource>(
-    () => AnalyticsLocalDataSourceImpl(),
+  serviceLocator.registerLazySingleton(() => AnalyticsDatabase());
+  
+  serviceLocator.registerLazySingleton(
+    () => AnalyticsRecorder(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => AnalyticsReader(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => AnalyticsAggregator(serviceLocator()),
   );
 
   serviceLocator.registerLazySingleton<AnalyticsRepository>(
-    () => AnalyticsRepositoryImpl(serviceLocator()),
+    () {
+      final repo = AnalyticsRepositoryImpl(
+        recorder: serviceLocator(),
+        reader: serviceLocator(),
+        aggregator: serviceLocator(),
+      );
+      repo.performMaintenance();
+      return repo;
+    },
   );
 
   serviceLocator.registerLazySingleton(() => LogPlayback(serviceLocator()));
@@ -212,7 +231,9 @@ Future<void> initDependencies() async {
   // =========================================================
   // FEATURE: HOME
   // =========================================================
-  serviceLocator.registerFactory(() => HomeCubit());
+  serviceLocator.registerFactory(
+    () => HomeBloc(musicRepository: serviceLocator()),
+  );
 
   // =========================================================
   // FEATURE: PROFILE
