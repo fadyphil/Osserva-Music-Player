@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:music_player/core/theme/app_pallete.dart';
 import 'package:music_player/features/analytics/domain/entities/play_log.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 class QuickResumeGrid extends StatelessWidget {
   final List<PlayLog> songs;
   final Function(PlayLog) onPlay;
 
-  const QuickResumeGrid({
-    super.key,
-    required this.songs,
-    required this.onPlay,
-  });
+  const QuickResumeGrid({super.key, required this.songs, required this.onPlay});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +23,11 @@ class QuickResumeGrid extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Row(
             children: [
-              Icon(Icons.play_arrow_outlined, color: AppPallete.foreground, size: 16),
+              Icon(
+                Icons.play_arrow_outlined,
+                color: AppPallete.foreground,
+                size: 16,
+              ),
               SizedBox(width: 8),
               Text(
                 'Quick Resume',
@@ -52,10 +53,7 @@ class QuickResumeGrid extends StatelessWidget {
           itemCount: displaySongs.length,
           itemBuilder: (context, index) {
             final song = displaySongs[index];
-            return _QuickResumeCard(
-              song: song,
-              onTap: () => onPlay(song),
-            );
+            return _QuickResumeCard(song: song, onTap: () => onPlay(song));
           },
         ),
       ],
@@ -67,10 +65,7 @@ class _QuickResumeCard extends StatelessWidget {
   final PlayLog song;
   final VoidCallback onTap;
 
-  const _QuickResumeCard({
-    required this.song,
-    required this.onTap,
-  });
+  const _QuickResumeCard({required this.song, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -85,14 +80,26 @@ class _QuickResumeCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 32, 
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppPallete.background, // bg-muted
-                borderRadius: BorderRadius.circular(4),
+            QueryArtworkWidget(
+              artworkBorder: BorderRadius.circular(4),
+              artworkFit: BoxFit.cover,
+              artworkWidth: 32,
+              artworkHeight: 32,
+              id: song.songId,
+              type: ArtworkType.AUDIO,
+              nullArtworkWidget: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppPallete.background, // bg-muted
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Icon(
+                  Icons.play_arrow,
+                  color: AppPallete.grey,
+                  size: 16,
+                ),
               ),
-              child: const Icon(Icons.play_arrow, color: AppPallete.grey, size: 16),
             ),
             const SizedBox(width: 12),
             Expanded(

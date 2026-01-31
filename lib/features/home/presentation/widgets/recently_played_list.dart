@@ -26,7 +26,11 @@ class RecentlyPlayedList extends StatelessWidget {
             children: [
               const Row(
                 children: [
-                  Icon(Icons.access_time, color: AppPallete.foreground, size: 16),
+                  Icon(
+                    Icons.access_time,
+                    color: AppPallete.foreground,
+                    size: 16,
+                  ),
                   SizedBox(width: 8),
                   Text(
                     'Recently Played',
@@ -56,10 +60,7 @@ class RecentlyPlayedList extends StatelessWidget {
           separatorBuilder: (context, index) => const SizedBox(height: 4),
           itemBuilder: (context, index) {
             final song = songs[index];
-            return _RecentlyPlayedTile(
-              song: song,
-              onTap: () => onPlay(song),
-            );
+            return _RecentlyPlayedTile(song: song, onTap: () => onPlay(song));
           },
         ),
       ],
@@ -71,10 +72,7 @@ class _RecentlyPlayedTile extends StatelessWidget {
   final PlayLog song;
   final VoidCallback onTap;
 
-  const _RecentlyPlayedTile({
-    required this.song,
-    required this.onTap,
-  });
+  const _RecentlyPlayedTile({required this.song, required this.onTap});
 
   String _formatDuration(int seconds) {
     final duration = Duration(seconds: seconds);
@@ -87,20 +85,21 @@ class _RecentlyPlayedTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(4),
       hoverColor: AppPallete.surface,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
           children: [
             Container(
-              width: 40, 
+              width: 40,
               height: 40,
               decoration: BoxDecoration(
                 color: AppPallete.surface,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: QueryArtworkWidget(
+                artworkBorder: BorderRadius.circular(4),
                 id: song.songId,
                 type: ArtworkType.AUDIO,
                 nullArtworkWidget: const Icon(
@@ -140,7 +139,7 @@ class _RecentlyPlayedTile extends StatelessWidget {
             ),
             Text(
               _formatDuration(song.durationListenedSeconds),
-               style: const TextStyle(color: AppPallete.grey, fontSize: 12),
+              style: const TextStyle(color: AppPallete.grey, fontSize: 12),
             ),
           ],
         ),
