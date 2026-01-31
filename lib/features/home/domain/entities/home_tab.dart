@@ -1,1 +1,1 @@
-enum HomeTab { songs, artists, analytics, profile }
+enum HomeTab { songs, library, artists, analytics, profile }

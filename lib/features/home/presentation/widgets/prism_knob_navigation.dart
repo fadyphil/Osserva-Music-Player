@@ -61,19 +61,22 @@ class _PrismKnobNavigationState extends State<PrismKnobNavigation>
     switch (tab) {
       case HomeTab.songs:
         return -60 * (math.pi / 180);
+      case HomeTab.library:
+        return -30 * (math.pi / 180);
       case HomeTab.artists:
-        return -20 * (math.pi / 180);
+        return 0.0;
       case HomeTab.analytics:
-        return 20 * (math.pi / 180);
+        return 30 * (math.pi / 180);
       case HomeTab.profile:
         return 60 * (math.pi / 180);
     }
   }
 
   HomeTab _getTabForAngle(double angle) {
-    if (angle < -40 * (math.pi / 180)) return HomeTab.songs;
-    if (angle < 0) return HomeTab.artists;
-    if (angle < 40 * (math.pi / 180)) return HomeTab.analytics;
+    if (angle < -45 * (math.pi / 180)) return HomeTab.songs;
+    if (angle < -15 * (math.pi / 180)) return HomeTab.library;
+    if (angle < 15 * (math.pi / 180)) return HomeTab.artists;
+    if (angle < 45 * (math.pi / 180)) return HomeTab.analytics;
     return HomeTab.profile;
   }
 
@@ -150,7 +153,7 @@ class _PrismKnobNavigationState extends State<PrismKnobNavigation>
           Positioned(
             bottom: 60,
             child: SizedBox(
-              width: 300,
+              width: 320,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -160,12 +163,17 @@ class _PrismKnobNavigationState extends State<PrismKnobNavigation>
                     alignment: Alignment.centerLeft,
                   ),
                   _KnobLabel(
-                    label: "ARTIST",
-                    isActive: widget.selectedTab == HomeTab.artists,
+                    label: "LIB",
+                    isActive: widget.selectedTab == HomeTab.library,
                     alignment: Alignment.centerLeft,
                   ),
                   _KnobLabel(
-                    label: "INSIGHT",
+                    label: "ART",
+                    isActive: widget.selectedTab == HomeTab.artists,
+                    alignment: Alignment.center,
+                  ),
+                  _KnobLabel(
+                    label: "DATA",
                     isActive: widget.selectedTab == HomeTab.analytics,
                     alignment: Alignment.centerRight,
                   ),

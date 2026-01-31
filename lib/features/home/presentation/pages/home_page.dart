@@ -22,6 +22,7 @@ class HomePage extends StatelessWidget {
       // 1. Define the routes that map to your tabs
       routes: const [
         HomeTabShellRoute(),
+        LibraryTabShellRoute(),
         ArtistsTabShellRoute(),
         AnalyticsDashboardRoute(),
         ProfileRoute(),

@@ -35,9 +35,15 @@ class PulseBottomNavBar extends StatelessWidget {
         children: [
           _PulseTabItem(
             label: "Home",
-            icon: Icons.music_note, // Mapping 'Music' from minimal layout
+            icon: Icons.home_filled,
             isSelected: selectedTab == HomeTab.songs,
             onTap: () => _handleTap(HomeTab.songs),
+          ),
+          _PulseTabItem(
+            label: "Library",
+            icon: Icons.library_music,
+            isSelected: selectedTab == HomeTab.library,
+            onTap: () => _handleTap(HomeTab.library),
           ),
           _PulseTabItem(
             label: "Artists",

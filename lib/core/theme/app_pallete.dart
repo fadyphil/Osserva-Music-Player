@@ -23,6 +23,7 @@ class AppPallete {
   // Legacy mappings (for backward compatibility during migration)
   static const Color backgroundColor = background;
   static const Color primaryGreen = chart3; // Approximate replacement
+  static const Color primaryColor = accent;
   static const Color cardColor = surface;
   static const Color white = Colors.white;
   static const Color grey = Color(0xFF7D8590); // Muted foreground

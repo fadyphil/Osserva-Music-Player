@@ -203,6 +203,38 @@ class HomeTabShellRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [LibraryPage]
+class LibraryRoute extends PageRouteInfo<void> {
+  const LibraryRoute({List<PageRouteInfo>? children})
+    : super(LibraryRoute.name, initialChildren: children);
+
+  static const String name = 'LibraryRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const LibraryPage();
+    },
+  );
+}
+
+/// generated route for
+/// [LibraryTabShellPage]
+class LibraryTabShellRoute extends PageRouteInfo<void> {
+  const LibraryTabShellRoute({List<PageRouteInfo>? children})
+    : super(LibraryTabShellRoute.name, initialChildren: children);
+
+  static const String name = 'LibraryTabShellRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const LibraryTabShellPage();
+    },
+  );
+}
+
+/// generated route for
 /// [MusicPlayerPage]
 class MusicPlayerRoute extends PageRouteInfo<void> {
   const MusicPlayerRoute({List<PageRouteInfo>? children})
