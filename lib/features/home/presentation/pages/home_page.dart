@@ -22,6 +22,7 @@ class HomePage extends StatelessWidget {
       // 1. Define the routes that map to your tabs
       routes: const [
         HomeTabShellRoute(),
+        ArtistsTabShellRoute(),
         AnalyticsDashboardRoute(),
         ProfileRoute(),
       ],
@@ -33,35 +34,11 @@ class HomePage extends StatelessWidget {
         final tabsRouter = AutoTabsRouter.of(context);
 
         return Scaffold(
-          extendBody: true, // Content goes behind the nav/miniplayer
+          extendBody: false, // Content goes behind the nav/miniplayer
           body: Stack(
             children: [
               // LAYER 1: The Active Page (Replaces IndexedStack)
               child,
-
-              // LAYER 2: Gradient Fade
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: 160,
-                child: IgnorePointer(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withValues(alpha: 0.8),
-                          Colors.black,
-                        ],
-                        stops: const [0.0, 0.6, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
           bottomNavigationBar: Column(

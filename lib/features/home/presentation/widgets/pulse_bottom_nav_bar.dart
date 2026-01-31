@@ -40,6 +40,12 @@ class PulseBottomNavBar extends StatelessWidget {
             onTap: () => _handleTap(HomeTab.songs),
           ),
           _PulseTabItem(
+            label: "Artists",
+            icon: Icons.people,
+            isSelected: selectedTab == HomeTab.artists,
+            onTap: () => _handleTap(HomeTab.artists),
+          ),
+          _PulseTabItem(
             label: "Analytics",
             icon: Icons.bar_chart, // Mapping 'ListMusic' or 'BarChart'
             isSelected: selectedTab == HomeTab.analytics,

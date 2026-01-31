@@ -20,8 +20,7 @@ class PrismKnobNavigation extends StatefulWidget {
 class _PrismKnobNavigationState extends State<PrismKnobNavigation>
     with SingleTickerProviderStateMixin {
   // Logic Constants
-  static const double _maxAngle = 45 * (math.pi / 180); // 45 degrees in radians
-  static const double _snapThreshold = 20 * (math.pi / 180);
+  static const double _maxAngle = 60 * (math.pi / 180); // 60 degrees in radians
 
   // Animation
   late AnimationController _snapController;
@@ -38,7 +37,9 @@ class _PrismKnobNavigationState extends State<PrismKnobNavigation>
       vsync: this,
       duration: const Duration(milliseconds: 600), // Heavy, damped feel
     );
-    _angleAnimation = AlwaysStoppedAnimation(_getAngleForTab(widget.selectedTab));
+    _angleAnimation = AlwaysStoppedAnimation(
+      _getAngleForTab(widget.selectedTab),
+    );
     _currentAngle = _getAngleForTab(widget.selectedTab);
   }
 
@@ -59,30 +60,33 @@ class _PrismKnobNavigationState extends State<PrismKnobNavigation>
   double _getAngleForTab(HomeTab tab) {
     switch (tab) {
       case HomeTab.songs:
-        return -_maxAngle;
+        return -60 * (math.pi / 180);
+      case HomeTab.artists:
+        return -20 * (math.pi / 180);
       case HomeTab.analytics:
-        return 0.0;
+        return 20 * (math.pi / 180);
       case HomeTab.profile:
-        return _maxAngle;
+        return 60 * (math.pi / 180);
     }
   }
 
   HomeTab _getTabForAngle(double angle) {
-    if (angle < -_snapThreshold) return HomeTab.songs;
-    if (angle > _snapThreshold) return HomeTab.profile;
-    return HomeTab.analytics;
+    if (angle < -40 * (math.pi / 180)) return HomeTab.songs;
+    if (angle < 0) return HomeTab.artists;
+    if (angle < 40 * (math.pi / 180)) return HomeTab.analytics;
+    return HomeTab.profile;
   }
 
   void _animateToTab(HomeTab tab) {
     final targetAngle = _getAngleForTab(tab);
-    _angleAnimation = Tween<double>(
-      begin: _currentAngle,
-      end: targetAngle,
-    ).animate(CurvedAnimation(
-      parent: _snapController,
-      curve: Curves.easeOutBack, // Slight overshoot for realism
-    ));
-    
+    _angleAnimation = Tween<double>(begin: _currentAngle, end: targetAngle)
+        .animate(
+          CurvedAnimation(
+            parent: _snapController,
+            curve: Curves.easeOutBack, // Slight overshoot for realism
+          ),
+        );
+
     _snapController.forward(from: 0).then((_) {
       setState(() {
         _currentAngle = targetAngle;
@@ -98,11 +102,14 @@ class _PrismKnobNavigationState extends State<PrismKnobNavigation>
   void _onPanUpdate(DragUpdateDetails details, Size size) {
     // Just use dx sensitivity for a "virtual" knob feel
     // rather than absolute touch tracking which can be jumpy.
-    
+
     double delta = details.delta.dx * 0.015; // Sensitivity
-    
+
     setState(() {
-      _currentAngle = (_currentAngle + delta).clamp(-_maxAngle * 1.5, _maxAngle * 1.5);
+      _currentAngle = (_currentAngle + delta).clamp(
+        -_maxAngle * 1.5,
+        _maxAngle * 1.5,
+      );
     });
 
     // Haptic feedback on passing thresholds (simulating detents)
@@ -112,7 +119,7 @@ class _PrismKnobNavigationState extends State<PrismKnobNavigation>
   void _onPanEnd(DragEndDetails details) {
     _isDragging = false;
     final targetTab = _getTabForAngle(_currentAngle);
-    
+
     // Haptic confirmation
     if (targetTab != widget.selectedTab) {
       HapticFeedback.mediumImpact();
@@ -148,17 +155,22 @@ class _PrismKnobNavigationState extends State<PrismKnobNavigation>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _KnobLabel(
-                    label: "MUSE", 
+                    label: "MUSE",
                     isActive: widget.selectedTab == HomeTab.songs,
                     alignment: Alignment.centerLeft,
                   ),
-                   _KnobLabel(
-                    label: "INSIGHT", 
-                    isActive: widget.selectedTab == HomeTab.analytics,
-                    alignment: Alignment.center,
+                  _KnobLabel(
+                    label: "ARTIST",
+                    isActive: widget.selectedTab == HomeTab.artists,
+                    alignment: Alignment.centerLeft,
                   ),
-                   _KnobLabel(
-                    label: "AURA", 
+                  _KnobLabel(
+                    label: "INSIGHT",
+                    isActive: widget.selectedTab == HomeTab.analytics,
+                    alignment: Alignment.centerRight,
+                  ),
+                  _KnobLabel(
+                    label: "AURA",
                     isActive: widget.selectedTab == HomeTab.profile,
                     alignment: Alignment.centerRight,
                   ),
@@ -175,7 +187,9 @@ class _PrismKnobNavigationState extends State<PrismKnobNavigation>
             child: AnimatedBuilder(
               animation: _snapController,
               builder: (context, child) {
-                final displayAngle = _isDragging ? _currentAngle : _angleAnimation.value;
+                final displayAngle = _isDragging
+                    ? _currentAngle
+                    : _angleAnimation.value;
                 return Transform.rotate(
                   angle: displayAngle,
                   alignment: Alignment.center,
@@ -195,20 +209,17 @@ class _PrismKnobNavigationState extends State<PrismKnobNavigation>
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
-                     BoxShadow(
+                    BoxShadow(
                       color: Colors.white.withValues(alpha: 0.05),
                       blurRadius: 2,
                       offset: const Offset(0, -1),
-                      spreadRadius: 1
+                      spreadRadius: 1,
                     ),
                   ],
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      const Color(0xFF2A2A2A),
-                      const Color(0xFF111111),
-                    ],
+                    colors: [const Color(0xFF2A2A2A), const Color(0xFF111111)],
                   ),
                 ),
                 child: CustomPaint(
@@ -222,7 +233,9 @@ class _PrismKnobNavigationState extends State<PrismKnobNavigation>
                         color: Theme.of(context).colorScheme.primary,
                         boxShadow: [
                           BoxShadow(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.6),
                             blurRadius: 12,
                             spreadRadius: 2,
                           ),
@@ -246,7 +259,7 @@ class _KnobLabel extends StatelessWidget {
   final Alignment alignment;
 
   const _KnobLabel({
-    required this.label, 
+    required this.label,
     required this.isActive,
     required this.alignment,
   });
@@ -289,7 +302,7 @@ class _KnobPainter extends CustomPainter {
       final angle = (i * 30) * (math.pi / 180);
       final outerR = radius - 8;
       final innerR = radius - 16;
-      
+
       final p1 = Offset(
         center.dx + math.cos(angle) * outerR,
         center.dy + math.sin(angle) * outerR,
@@ -308,7 +321,7 @@ class _KnobPainter extends CustomPainter {
     // Points upwards (negative Y)
     final pointerP1 = Offset(center.dx, center.dy - 10);
     final pointerP2 = Offset(center.dx, center.dy - 35);
-    
+
     paint.color = const Color(0xFFE0E0E0); // Almost white
     paint.strokeWidth = 3;
     paint.shader = const LinearGradient(

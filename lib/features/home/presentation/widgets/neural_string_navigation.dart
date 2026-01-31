@@ -62,11 +62,13 @@ class _NeuralStringNavigationState extends State<NeuralStringNavigation>
   double _getTabPosition(HomeTab tab) {
     switch (tab) {
       case HomeTab.songs:
-        return 0.16; // 1/6
+        return 0.125; 
+      case HomeTab.artists:
+        return 0.375;
       case HomeTab.analytics:
-        return 0.5; // Center
+        return 0.625; 
       case HomeTab.profile:
-        return 0.83; // 5/6
+        return 0.875; 
     }
   }
 
@@ -113,6 +115,12 @@ class _NeuralStringNavigationState extends State<NeuralStringNavigation>
                 label: "FLUX",
                 isSelected: widget.selectedTab == HomeTab.songs,
                 onTap: () => _handleTap(HomeTab.songs),
+              ),
+              _HoloIcon(
+                icon: Icons.people_outline,
+                label: "ARTIST",
+                isSelected: widget.selectedTab == HomeTab.artists,
+                onTap: () => _handleTap(HomeTab.artists),
               ),
               _HoloIcon(
                 icon: Icons.graphic_eq,
