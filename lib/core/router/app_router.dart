@@ -12,6 +12,9 @@ import 'package:music_player/features/playlists/presentation/pages/playlist_deta
 import 'package:music_player/features/playlists/presentation/pages/playlist_list_page.dart';
 import 'package:music_player/features/profile/presentation/pages/profile_page.dart';
 import 'package:music_player/features/splash/presentation/pages/splash_page.dart';
+import 'package:music_player/features/artists/presentation/pages/artists_page.dart';
+import 'package:music_player/features/artists/presentation/pages/artist_detail_page.dart';
+import 'package:music_player/features/artists/presentation/pages/artists_tab_shell_page.dart';
 
 // You will need to import your page widgets here.
 // Since I don't know your exact package name, I'm assuming relative imports or you will auto-import them.// Note: "local music" folder has a space, double check folder name
@@ -53,7 +56,16 @@ class AppRouter extends RootStackRouter {
           ],
         ),
 
-        // TAB 2: Analytics
+        // TAB 2: Artists
+        AutoRoute(
+          page: ArtistsTabShellRoute.page,
+          children: [
+            AutoRoute(page: ArtistsRoute.page, initial: true),
+            AutoRoute(page: ArtistDetailRoute.page),
+          ],
+        ),
+
+        // TAB 3: Analytics
         AutoRoute(page: AnalyticsDashboardRoute.page),
 
         // TAB 3: Profile

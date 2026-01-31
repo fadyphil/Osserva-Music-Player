@@ -63,6 +63,14 @@ import 'package:music_player/features/playlists/domain/usecases/get_playlists.da
 import 'package:music_player/features/playlists/domain/usecases/remove_song_from_playlist.dart';
 import 'package:music_player/features/playlists/presentation/bloc/playlist_bloc.dart';
 import 'package:music_player/features/playlists/presentation/bloc/playlist_detail_bloc.dart';
+import 'package:music_player/features/artists/data/datasources/artist_local_datasource.dart';
+import 'package:music_player/features/artists/data/repositories/artist_repository_impl.dart';
+import 'package:music_player/features/artists/domain/repositories/artist_repository.dart';
+import 'package:music_player/features/artists/domain/usecases/get_artists.dart';
+import 'package:music_player/features/artists/domain/usecases/get_artist_songs.dart';
+import 'package:music_player/features/artists/domain/usecases/get_artist_analytics_stats.dart';
+import 'package:music_player/features/artists/presentation/bloc/artists/artists_bloc.dart';
+import 'package:music_player/features/artists/presentation/bloc/artist-details/artist_detail_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -135,34 +143,32 @@ Future<void> initDependencies() async {
     () => AudioPlayerRepositoryImpl(serviceLocator<AudioHandler>()),
   );
 
-  serviceLocator.registerLazySingleton(() => MusicPlayerBloc(serviceLocator(), serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => MusicPlayerBloc(serviceLocator(), serviceLocator()),
+  );
 
   // =========================================================
   // FEATURE: ANALYTICS
   // =========================================================
   serviceLocator.registerLazySingleton(() => AnalyticsDatabase());
-  
+
   serviceLocator.registerLazySingleton(
     () => AnalyticsRecorder(serviceLocator()),
   );
-  serviceLocator.registerLazySingleton(
-    () => AnalyticsReader(serviceLocator()),
-  );
+  serviceLocator.registerLazySingleton(() => AnalyticsReader(serviceLocator()));
   serviceLocator.registerLazySingleton(
     () => AnalyticsAggregator(serviceLocator()),
   );
 
-  serviceLocator.registerLazySingleton<AnalyticsRepository>(
-    () {
-      final repo = AnalyticsRepositoryImpl(
-        recorder: serviceLocator(),
-        reader: serviceLocator(),
-        aggregator: serviceLocator(),
-      );
-      repo.performMaintenance();
-      return repo;
-    },
-  );
+  serviceLocator.registerLazySingleton<AnalyticsRepository>(() {
+    final repo = AnalyticsRepositoryImpl(
+      recorder: serviceLocator(),
+      reader: serviceLocator(),
+      aggregator: serviceLocator(),
+    );
+    repo.performMaintenance();
+    return repo;
+  });
 
   serviceLocator.registerLazySingleton(() => LogPlayback(serviceLocator()));
   serviceLocator.registerLazySingleton(
@@ -173,8 +179,12 @@ Future<void> initDependencies() async {
   serviceLocator.registerLazySingleton(() => GetTopAlbums(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetTopGenres(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetGeneralStats(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => GetPlaybackHistory(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => WatchPlaybackHistory(serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => GetPlaybackHistory(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => WatchPlaybackHistory(serviceLocator()),
+  );
   serviceLocator.registerLazySingleton(() => ClearAnalytics(serviceLocator()));
 
   serviceLocator.registerLazySingleton(
@@ -274,8 +284,12 @@ Future<void> initDependencies() async {
   serviceLocator.registerLazySingleton(() => DeletePlaylist(serviceLocator()));
   serviceLocator.registerLazySingleton(() => EditPlaylist(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetPlaylists(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => AddSongToPlaylist(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => RemoveSongFromPlaylist(serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => AddSongToPlaylist(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => RemoveSongFromPlaylist(serviceLocator()),
+  );
 
   serviceLocator.registerLazySingleton(
     () => GetPlaylistSongs(
@@ -329,5 +343,27 @@ Future<void> initDependencies() async {
       addFavorite: serviceLocator(),
       removeFavorite: serviceLocator(),
     ),
+  );
+
+  // =========================================================
+  // FEATURE: ARTISTS
+  // =========================================================
+  serviceLocator.registerLazySingleton<ArtistLocalDataSource>(
+    () => ArtistLocalDataSourceImpl(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton<ArtistRepository>(
+    () => ArtistRepositoryImpl(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(() => GetArtists(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => GetArtistSongs(serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => GetArtistAnalyticsStats(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => ArtistsBloc(serviceLocator(), serviceLocator()),
+  );
+  serviceLocator.registerFactory(
+    () => ArtistDetailBloc(serviceLocator(), serviceLocator()),
   );
 }

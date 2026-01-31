@@ -27,6 +27,102 @@ class AnalyticsDashboardRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ArtistDetailPage]
+class ArtistDetailRoute extends PageRouteInfo<ArtistDetailRouteArgs> {
+  ArtistDetailRoute({
+    Key? key,
+    required int artistId,
+    required String artistName,
+    List<PageRouteInfo>? children,
+  }) : super(
+         ArtistDetailRoute.name,
+         args: ArtistDetailRouteArgs(
+           key: key,
+           artistId: artistId,
+           artistName: artistName,
+         ),
+         initialChildren: children,
+       );
+
+  static const String name = 'ArtistDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<ArtistDetailRouteArgs>();
+      return ArtistDetailPage(
+        key: args.key,
+        artistId: args.artistId,
+        artistName: args.artistName,
+      );
+    },
+  );
+}
+
+class ArtistDetailRouteArgs {
+  const ArtistDetailRouteArgs({
+    this.key,
+    required this.artistId,
+    required this.artistName,
+  });
+
+  final Key? key;
+
+  final int artistId;
+
+  final String artistName;
+
+  @override
+  String toString() {
+    return 'ArtistDetailRouteArgs{key: $key, artistId: $artistId, artistName: $artistName}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ArtistDetailRouteArgs) return false;
+    return key == other.key &&
+        artistId == other.artistId &&
+        artistName == other.artistName;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ artistId.hashCode ^ artistName.hashCode;
+}
+
+/// generated route for
+/// [ArtistsPage]
+class ArtistsRoute extends PageRouteInfo<void> {
+  const ArtistsRoute({List<PageRouteInfo>? children})
+    : super(ArtistsRoute.name, initialChildren: children);
+
+  static const String name = 'ArtistsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ArtistsPage();
+    },
+  );
+}
+
+/// generated route for
+/// [ArtistsTabShellPage]
+class ArtistsTabShellRoute extends PageRouteInfo<void> {
+  const ArtistsTabShellRoute({List<PageRouteInfo>? children})
+    : super(ArtistsTabShellRoute.name, initialChildren: children);
+
+  static const String name = 'ArtistsTabShellRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ArtistsTabShellPage();
+    },
+  );
+}
+
+/// generated route for
 /// [FavoritesPage]
 class FavoritesRoute extends PageRouteInfo<void> {
   const FavoritesRoute({List<PageRouteInfo>? children})
