@@ -34,6 +34,25 @@ class _LibraryTracksViewState extends State<LibraryTracksView> {
       builder: (context, state) {
         return state.maybeMap(
           orElse: () => const Center(child: CircularProgressIndicator()),
+          failure: (f) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Error loading songs: ${f.failure.message}",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.redAccent),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    context.read<LocalMusicBloc>().add(const LocalMusicEvent.getLocalSongs());
+                  },
+                  child: const Text("Retry"),
+                )
+              ],
+            ),
+          ),
           loaded: (loadedState) {
             final songs = loadedState.processedSongs;
             final allSongs = loadedState.allSongs;
