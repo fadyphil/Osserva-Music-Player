@@ -118,4 +118,37 @@ class AnalyticsRecorder {
     _idCache.clear();
     _logController.add(null);
   }
+
+  Future<void> deleteSongLogs(int sourceSongId) async {
+    final db = await _dbProvider.db;
+    await db.transaction((txn) async {
+      final songQuery = await txn.query(
+        AnalyticsDatabase.tblSongs,
+        columns: ['id'],
+        where: 'source_id = ?',
+        whereArgs: [sourceSongId],
+        limit: 1,
+      );
+
+      if (songQuery.isNotEmpty) {
+        final internalId = songQuery.first['id'] as int;
+        await txn.delete(
+          AnalyticsDatabase.tblPlaybackLogs,
+          where: 'song_id = ?',
+          whereArgs: [internalId],
+        );
+        await txn.delete(
+          AnalyticsDatabase.tblDailyAggregates,
+          where: 'song_id = ?',
+          whereArgs: [internalId],
+        );
+        await txn.delete(
+          AnalyticsDatabase.tblSongs,
+          where: 'id = ?',
+          whereArgs: [internalId],
+        );
+      }
+    });
+    _logController.add(null);
+  }
 }

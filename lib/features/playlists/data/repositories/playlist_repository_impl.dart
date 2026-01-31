@@ -85,6 +85,25 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
   }
 
   @override
+  Future<Either<Failure, void>> removeSongFromAllPlaylists(int songId) async {
+    try {
+      // We might need to implement this in Datasource.
+      // For now, let's assume we iterate or Datasource has a method.
+      // I'll assume I need to add it to Datasource first.
+      // But for quick implementation, I can fetch all playlists and remove from each.
+      final playlists = await dataSource.getPlaylists();
+      for (final playlist in playlists) {
+        if (playlist.songIds.contains(songId)) {
+          await dataSource.removeSongFromPlaylist(playlistId: playlist.id, songId: songId);
+        }
+      }
+      return const Right(null);
+    } catch (e) {
+      return Left(PlaylistFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<PlaylistEntity>>> getPlaylists() async {
     try {
       final models = await dataSource.getPlaylists();

@@ -24,6 +24,8 @@ import 'package:music_player/features/local%20music/data/repositories/music_repo
 import 'package:music_player/features/local%20music/domain/repositories/music_repository.dart';
 import 'package:music_player/features/local%20music/domain/use%20cases/get_local_songs_use_case.dart';
 import 'package:music_player/features/local%20music/domain/use%20cases/get_song_by_id_use_case.dart';
+import 'package:music_player/features/local%20music/domain/usecases/delete_song.dart';
+import 'package:music_player/features/local%20music/domain/usecases/edit_song_metadata.dart';
 import 'package:music_player/features/local%20music/presentation/managers/local_music_bloc.dart';
 import 'package:music_player/features/music_player/data/repos/audio_player_repository_impl.dart';
 import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
@@ -127,12 +129,23 @@ Future<void> initDependencies() async {
   serviceLocator.registerLazySingleton(
     () => GetSongByIdUseCase(serviceLocator()),
   );
+  serviceLocator.registerLazySingleton(
+    () => DeleteSong(serviceLocator(), serviceLocator(), serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => EditSongMetadata(serviceLocator()),
+  );
 
   // =========================================================
   // 4. Presentation Layer (Bloc)
   // =========================================================
   serviceLocator.registerFactory(
-    () => LocalMusicBloc(serviceLocator(), serviceLocator()),
+    () => LocalMusicBloc(
+      serviceLocator(),
+      serviceLocator(),
+      serviceLocator(),
+      serviceLocator(),
+    ),
   );
 
   // =========================================================

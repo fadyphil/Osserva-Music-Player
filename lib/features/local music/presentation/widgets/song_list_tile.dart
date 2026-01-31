@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:music_player/core/theme/app_pallete.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
+import 'package:music_player/features/local%20music/presentation/managers/local_music_bloc.dart';
 import 'package:music_player/features/local%20music/presentation/widgets/song_options_sheet.dart';
 import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
 import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
@@ -52,12 +53,16 @@ class SongListTile extends StatelessWidget {
           children: [
             SlidableAction(
               onPressed: (context) {
+                final localMusicBloc = context.read<LocalMusicBloc>();
                 showModalBottomSheet(
                   context: context,
                   useRootNavigator: true,
                   backgroundColor: Colors.transparent,
                   isScrollControlled: true,
-                  builder: (context) => AddToPlaylistSheet(song: song),
+                  builder: (context) => BlocProvider.value(
+                    value: localMusicBloc,
+                    child: AddToPlaylistSheet(song: song),
+                  ),
                 );
               },
               backgroundColor: const Color(0xFF7F58FF),
@@ -81,12 +86,16 @@ class SongListTile extends StatelessWidget {
             },
             onLongPress: () {
               HapticFeedback.mediumImpact();
+              final localMusicBloc = context.read<LocalMusicBloc>();
               showModalBottomSheet(
                 context: context,
                 useRootNavigator: true,
                 backgroundColor: Colors.transparent,
                 isScrollControlled: true,
-                builder: (context) => AddToPlaylistSheet(song: song),
+                builder: (context) => BlocProvider.value(
+                  value: localMusicBloc,
+                  child: AddToPlaylistSheet(song: song),
+                ),
               );
             },
             splashColor: AppPallete.primaryGreen.withValues(alpha: 0.1),

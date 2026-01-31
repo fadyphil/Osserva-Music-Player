@@ -23,6 +23,8 @@ abstract class PlaylistRepository {
 
   Future<Either<Failure, void>> removeSongFromPlaylist(int playlistId, int songId);
 
+  Future<Either<Failure, void>> removeSongFromAllPlaylists(int songId);
+
   Future<Either<Failure, List<PlaylistEntity>>> getPlaylists();
 
   Future<Either<Failure, List<int>>> getPlaylistSongIds(int playlistId);

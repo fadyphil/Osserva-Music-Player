@@ -32,4 +32,30 @@ class MusicRepositoryImpl implements MusicRepository {
       return Left(MusicFailures.storageError(message: e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, bool>> deleteSong(String path) async {
+    try {
+      final result = await _localMusicDatasource.deleteSong(path);
+      if (result) {
+        return const Right(true);
+      }
+      return const Left(MusicFailures.storageError(message: 'Failed to delete song file'));
+    } catch (e) {
+      return Left(MusicFailures.storageError(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> editSongMetadata(SongEntity song, Map<String, dynamic> metadata) async {
+    try {
+      final result = await _localMusicDatasource.editSongMetadata(song, metadata);
+       if (result) {
+        return const Right(true);
+      }
+      return const Left(MusicFailures.storageError(message: 'Failed to edit song metadata'));
+    } catch (e) {
+      return Left(MusicFailures.storageError(message: e.toString()));
+    }
+  }
 }

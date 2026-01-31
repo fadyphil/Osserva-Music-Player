@@ -141,6 +141,19 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
+  Future<Either<Failure, void>> deleteSongAnalytics(int songId) async {
+    try {
+      // Need to implement in Recorder/Reader. Assuming recorder has it or we add it.
+      // I'll assume we need to add it to Recorder.
+      // For now, I'll just mock call it, I need to add it to AnalyticsRecorder.
+      await recorder.deleteSongLogs(songId); 
+      return const Right(null);
+    } catch (e) {
+      return Left(AnalyticsFailure('Failed to delete song analytics: $e'));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<PlayLog>>> getPlaybackHistory(
       {int? limit, int? offset}) async {
     try {

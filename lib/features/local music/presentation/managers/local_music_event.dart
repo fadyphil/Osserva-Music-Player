@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:music_player/features/local%20music/presentation/managers/local_music_state.dart';
+import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 part 'local_music_event.freezed.dart';
 
 @freezed
@@ -7,4 +8,13 @@ class LocalMusicEvent with _$LocalMusicEvent {
   const factory LocalMusicEvent.getLocalSongs() = GetLocalSongs;
   const factory LocalMusicEvent.searchSongs(String query) = SearchSongs;
   const factory LocalMusicEvent.sortSongs(SortOption option) = SortSongs;
+  const factory LocalMusicEvent.deleteSong(SongEntity song) = DeleteSongEvent;
+  const factory LocalMusicEvent.editSong({
+    required SongEntity song,
+    required String title,
+    required String artist,
+    required String album,
+    String? genre,
+    String? lyrics,
+  }) = EditSongEvent;
 }

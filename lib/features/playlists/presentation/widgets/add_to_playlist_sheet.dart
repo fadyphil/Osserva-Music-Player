@@ -4,6 +4,9 @@ import 'package:music_player/core/di/init_dependencies.dart';
 import 'package:music_player/core/theme/app_pallete.dart';
 import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
+import 'package:music_player/features/local%20music/presentation/managers/local_music_bloc.dart';
+import 'package:music_player/features/local%20music/presentation/managers/local_music_event.dart';
+import 'package:music_player/features/local%20music/presentation/widgets/edit_song_metadata_sheet.dart';
 import 'package:music_player/features/playlists/domain/entities/playlist_entity.dart';
 import 'package:music_player/features/playlists/presentation/bloc/playlist_bloc.dart';
 // Actually PlaylistBloc handles 'addSongToPlaylist'. Does it handle remove?
@@ -193,6 +196,80 @@ class AddToPlaylistSheet extends StatelessWidget {
                             ),
                           ],
 
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            child: Divider(color: Colors.white10),
+                          ),
+                          ListTile(
+                            leading:
+                                const Icon(Icons.edit, color: Colors.white),
+                            title: const Text(
+                              "Edit Info",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            onTap: () {
+                              final bloc = context.read<LocalMusicBloc>();
+                              Navigator.pop(context);
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder:
+                                    (context) => BlocProvider.value(
+                                      value: bloc,
+                                      child: EditSongMetadataSheet(song: song),
+                                    ),
+                              );
+                            },
+                          ),
+                          ListTile(
+                            leading: const Icon(
+                              Icons.delete,
+                              color: AppPallete.destructive,
+                            ),
+                            title: const Text(
+                              "Delete from device",
+                              style: TextStyle(color: AppPallete.destructive),
+                            ),
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder:
+                                    (ctx) => AlertDialog(
+                                      backgroundColor: AppPallete.cardColor,
+                                      title: const Text(
+                                        "Delete Song?",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      content: const Text(
+                                        "This will permanently delete the file from your device.",
+                                        style: TextStyle(color: Colors.white70),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(ctx),
+                                          child: const Text("Cancel"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            context.read<LocalMusicBloc>().add(
+                                              LocalMusicEvent.deleteSong(song),
+                                            );
+                                            Navigator.pop(ctx);
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text(
+                                            "Delete",
+                                            style: TextStyle(
+                                              color: AppPallete.destructive,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                              );
+                            },
+                          ),
                           const SizedBox(height: 24),
                         ],
                       );
