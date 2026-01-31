@@ -23,6 +23,9 @@ abstract interface class AnalyticsRepository {
   /// Retrieves general statistics (total time, count, time of day dist) for [timeFrame].
   Future<Either<Failure, ListeningStats>> getGeneralStats(TimeFrame timeFrame);
 
+  /// Retrieves specific stats for an artist.
+  Future<Either<Failure, Map<String, dynamic>>> getArtistStats(String artistName);
+
   /// Retrieves a map of song_id to play count for ALL time.
   Future<Either<Failure, Map<int, int>>> getAllSongPlayCounts();
 

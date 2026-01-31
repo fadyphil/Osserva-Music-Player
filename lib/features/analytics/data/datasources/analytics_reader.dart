@@ -149,7 +149,8 @@ class AnalyticsReader {
     final threshold = _getTimestampThreshold(timeFrame);
 
     // 1. Total Duration and Count (Hot + Cold)
-    final sql = '''
+    final sql =
+        '''
       SELECT 
         SUM(total_duration) as total_duration, 
         SUM(play_count) as total_count
@@ -178,7 +179,8 @@ class AnalyticsReader {
     final totalCount = row['total_count'] as int? ?? 0;
 
     // 2. Time of Day Distribution (Hot + Cold)
-    final timeSql = '''
+    final timeSql =
+        '''
       SELECT time_of_day, SUM(cnt) as count
       FROM (
         SELECT time_of_day, COUNT(*) as cnt 
@@ -214,7 +216,8 @@ class AnalyticsReader {
   Future<Map<int, int>> getAllSongPlayCounts() async {
     final db = await _dbProvider.db;
     // We need SOURCE ID (s.source_id), not internal ID
-    final sql = '''
+    final sql =
+        '''
       SELECT s.source_id, SUM(cnt) as count
       FROM (
         SELECT song_id, COUNT(*) as cnt FROM ${AnalyticsDatabase.tblPlaybackLogs} GROUP BY song_id
@@ -234,6 +237,97 @@ class AnalyticsReader {
       }
     }
     return counts;
+  }
+
+  Future<Map<String, dynamic>> getArtistStats(String artistName) async {
+    final db = await _dbProvider.db;
+
+    final sql =
+        '''
+      SELECT 
+        SUM(total_duration) as total_duration, 
+        SUM(play_count) as total_count,
+        COUNT(DISTINCT session_id) as sessions -- Heuristic session count if possible
+      FROM (
+        -- Hot Data
+        SELECT 
+          SUM(duration_listened) as total_duration, 
+          COUNT(*) as play_count,
+          strftime('%Y-%m-%d %H', datetime(timestamp / 1000, 'unixepoch')) as session_id
+        FROM ${AnalyticsDatabase.tblPlaybackLogs} log
+        JOIN ${AnalyticsDatabase.tblSongs} s ON log.song_id = s.id
+        JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
+        WHERE ar.name = ?
+        GROUP BY session_id
+        
+        UNION ALL
+        
+        -- Cold Data
+        SELECT 
+          SUM(total_duration) as total_duration, 
+          SUM(play_count) as play_count,
+          date_epoch || time_of_day as session_id
+        FROM ${AnalyticsDatabase.tblDailyAggregates} agg
+        JOIN ${AnalyticsDatabase.tblSongs} s ON agg.song_id = s.id
+        JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
+        WHERE ar.name = ?
+        GROUP BY session_id
+      )
+    ''';
+
+    final result = await db.rawQuery(sql, [artistName, artistName]);
+    if (result.isEmpty) {
+      return {'total_duration': 0, 'total_count': 0, 'sessions': 0};
+    }
+
+    // final row = result.first;
+    // We need to sum up the sub-queries' results because the UNION ALL grouping above might be weird
+    // Actually, the above SQL returns multiple rows (one per session_id).
+    // We should wrap it in another SUM.
+
+    final finalSql =
+        '''
+      SELECT 
+        SUM(total_duration) as total_duration,
+        SUM(play_count) as total_count,
+        COUNT(*) as sessions
+      FROM ($sql)
+    ''';
+
+    final finalResult = await db.rawQuery(finalSql, [artistName, artistName]);
+    final stats = Map<String, dynamic>.from(finalResult.first);
+
+    // 2. Get Dominant Time of Day
+    final timeSql = '''
+      SELECT time_of_day, SUM(cnt) as count
+      FROM (
+        SELECT time_of_day, COUNT(*) as cnt 
+        FROM ${AnalyticsDatabase.tblPlaybackLogs} log
+        JOIN ${AnalyticsDatabase.tblSongs} s ON log.song_id = s.id
+        JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
+        WHERE ar.name = ?
+        GROUP BY time_of_day
+        
+        UNION ALL
+        
+        SELECT time_of_day, SUM(play_count) as cnt 
+        FROM ${AnalyticsDatabase.tblDailyAggregates} agg
+        JOIN ${AnalyticsDatabase.tblSongs} s ON agg.song_id = s.id
+        JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
+        WHERE ar.name = ?
+        GROUP BY time_of_day
+      )
+      GROUP BY time_of_day
+      ORDER BY count DESC
+      LIMIT 1
+    ''';
+    
+    final timeResult = await db.rawQuery(timeSql, [artistName, artistName]);
+    if (timeResult.isNotEmpty) {
+      stats['dominant_time'] = timeResult.first['time_of_day'];
+    }
+
+    return stats;
   }
 
   Future<List<PlayLog>> getPlaybackHistory({int? limit, int? offset}) async {

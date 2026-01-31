@@ -56,6 +56,17 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
+  Future<Either<Failure, Map<String, dynamic>>> getArtistStats(
+      String artistName) async {
+    try {
+      final result = await reader.getArtistStats(artistName);
+      return Right(result);
+    } catch (e) {
+      return Left(AnalyticsFailure('Failed to fetch artist stats: $e'));
+    }
+  }
+
+  @override
   Future<Either<Failure, Map<int, int>>> getAllSongPlayCounts() async {
     try {
       final result = await reader.getAllSongPlayCounts();
