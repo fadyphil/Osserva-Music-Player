@@ -164,6 +164,7 @@ class _LibraryTracksViewState extends State<LibraryTracksView> {
                         song: song,
                         index: index,
                         songList: songs,
+                        playCount: loadedState.playCounts[song.id] ?? 0,
                       );
                     },
                     childCount: songs.length,

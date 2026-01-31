@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/favorites/presentation/widgets/favorite_button.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 import 'package:music_player/features/local%20music/presentation/widgets/song_options_sheet.dart';
 import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
@@ -16,12 +15,14 @@ class SongListTile extends StatelessWidget {
   final SongEntity song;
   final int index;
   final List<SongEntity> songList;
+  final int playCount;
 
   const SongListTile({
     super.key,
     required this.song,
     required this.index,
     required this.songList,
+    this.playCount = 0,
   });
 
   @override
@@ -36,17 +37,6 @@ class SongListTile extends StatelessWidget {
           children: [
             SlidableAction(
               onPressed: (context) {
-                // HapticFeedback.mediumImpact();
-                // context.read<MusicPlayerBloc>().add(
-                //   MusicPlayerEvent.addToQueue(song),
-                // );
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   SnackBar(
-                //     content: Text('Added "${song.title}" to Queue'),
-                //     behavior: SnackBarBehavior.floating,
-                //     backgroundColor: AppPallete.primaryGreen,
-                //   ),
-                // );
                 showSongOptions(context, song);
               },
               backgroundColor: const Color(0xFF21B7CA),
@@ -62,7 +52,6 @@ class SongListTile extends StatelessWidget {
           children: [
             SlidableAction(
               onPressed: (context) {
-                HapticFeedback.mediumImpact();
                 showModalBottomSheet(
                   context: context,
                   useRootNavigator: true,
@@ -90,6 +79,16 @@ class SongListTile extends StatelessWidget {
                 ),
               );
             },
+            onLongPress: () {
+              HapticFeedback.mediumImpact();
+              showModalBottomSheet(
+                context: context,
+                useRootNavigator: true,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (context) => AddToPlaylistSheet(song: song),
+              );
+            },
             splashColor: AppPallete.primaryGreen.withValues(alpha: 0.1),
             highlightColor: Colors.white.withValues(alpha: 0.05),
             child: Padding(
@@ -104,13 +103,6 @@ class SongListTile extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: AppPallete.cardColor,
                       borderRadius: BorderRadius.circular(4),
-                      // boxShadow: [
-                      //   BoxShadow(
-                      //     color: Colors.black.withValues(alpha: 0.2),
-                      //     blurRadius: 4,
-                      //     offset: const Offset(0, 2),
-                      //   ),
-                      // ],
                     ),
                     child: QueryArtworkWidget(
                       size: 200,
@@ -183,7 +175,29 @@ class SongListTile extends StatelessWidget {
                     ),
                   ),
                   // Action Menu - Replaced with Favorite Button as requested implicitly by context
-                  FavoriteButton(song: song),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _formatDuration(song.duration),
+                        style: const TextStyle(
+                          color: AppPallete.grey,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "$playCount plays",
+                        style: TextStyle(
+                          color: AppPallete.grey.withValues(alpha: 0.5),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -199,6 +213,13 @@ class SongListTile extends StatelessWidget {
         // ),
       ),
     );
+  }
+
+  String _formatDuration(double durationMs) {
+    final duration = Duration(milliseconds: durationMs.toInt());
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds.remainder(60);
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 }
 

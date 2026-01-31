@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_player/core/di/init_dependencies.dart';
 import 'package:music_player/core/theme/app_pallete.dart';
+import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 import 'package:music_player/features/playlists/presentation/bloc/playlist_bloc.dart';
 
@@ -36,6 +37,45 @@ class AddToPlaylistSheet extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
+                BlocBuilder<FavoritesBloc, FavoritesState>(
+                  builder: (context, state) {
+                    bool isFav = false;
+                    state.maybeWhen(
+                      loaded: (ids, _) => isFav = ids.contains(song.id),
+                      orElse: () {},
+                    );
+                    return Column(
+                      children: [
+                        ListTile(
+                          leading: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.white10,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: isFav
+                                  ? AppPallete.primaryGreen
+                                  : Colors.white,
+                            ),
+                          ),
+                          title: Text(
+                            isFav ? "Remove from Favorites" : "Add to Favorites",
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          onTap: () {
+                            context.read<FavoritesBloc>().add(
+                              FavoritesEvent.toggleFavorite(song),
+                            );
+                          },
+                        ),
+                        const Divider(color: Colors.white10),
+                      ],
+                    );
+                  },
+                ),
                 Flexible(
                   child: BlocBuilder<PlaylistBloc, PlaylistState>(
                     builder: (context, state) {
