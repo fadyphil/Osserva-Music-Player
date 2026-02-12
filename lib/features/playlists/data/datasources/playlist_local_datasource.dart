@@ -29,6 +29,8 @@ abstract class PlaylistLocalDataSource {
     required int songId,
   });
 
+  Future<void> removeSongFromAllPlaylists(int songId);
+
   Future<List<PlaylistModel>> getPlaylists();
 
   Future<List<int>> getPlaylistSongIds(int playlistId);
@@ -214,6 +216,39 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
         where: 'id = ?',
         whereArgs: [playlistId],
       );
+    }
+  }
+
+  @override
+  Future<void> removeSongFromAllPlaylists(int songId) async {
+    final database = await db;
+    // We need to find which playlists had this song to update their updated_at
+    final affectedPlaylists = await database.query(
+      _tablePlaylistSongs,
+      columns: ['playlist_id'],
+      where: 'song_id = ?',
+      whereArgs: [songId],
+    );
+
+    if (affectedPlaylists.isNotEmpty) {
+      final playlistIds = affectedPlaylists.map((e) => e['playlist_id'] as int).toSet();
+
+      await database.delete(
+        _tablePlaylistSongs,
+        where: 'song_id = ?',
+        whereArgs: [songId],
+      );
+
+      // Update updated_at for all affected playlists
+      final now = DateTime.now().millisecondsSinceEpoch;
+      for (final id in playlistIds) {
+        await database.update(
+          _tablePlaylists,
+          {'updated_at': now},
+          where: 'id = ?',
+          whereArgs: [id],
+        );
+      }
     }
   }
 
