@@ -131,14 +131,14 @@ return editSong(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  getLocalSongs,TResult Function( String query)?  searchSongs,TResult Function( SortOption option)?  sortSongs,TResult Function( SongEntity song)?  deleteSong,TResult Function( SongEntity song,  String title,  String artist,  String album,  String? genre,  String? lyrics)?  editSong,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  getLocalSongs,TResult Function( String query)?  searchSongs,TResult Function( SortOption option)?  sortSongs,TResult Function( SongEntity song)?  deleteSong,TResult Function( SongEntity song,  String? title,  String? artist,  String? album,  String? genre,  String? year,  Uint8List? artworkBytes)?  editSong,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case GetLocalSongs() when getLocalSongs != null:
 return getLocalSongs();case SearchSongs() when searchSongs != null:
 return searchSongs(_that.query);case SortSongs() when sortSongs != null:
 return sortSongs(_that.option);case DeleteSongEvent() when deleteSong != null:
 return deleteSong(_that.song);case EditSongEvent() when editSong != null:
-return editSong(_that.song,_that.title,_that.artist,_that.album,_that.genre,_that.lyrics);case _:
+return editSong(_that.song,_that.title,_that.artist,_that.album,_that.genre,_that.year,_that.artworkBytes);case _:
   return orElse();
 
 }
@@ -156,14 +156,14 @@ return editSong(_that.song,_that.title,_that.artist,_that.album,_that.genre,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  getLocalSongs,required TResult Function( String query)  searchSongs,required TResult Function( SortOption option)  sortSongs,required TResult Function( SongEntity song)  deleteSong,required TResult Function( SongEntity song,  String title,  String artist,  String album,  String? genre,  String? lyrics)  editSong,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  getLocalSongs,required TResult Function( String query)  searchSongs,required TResult Function( SortOption option)  sortSongs,required TResult Function( SongEntity song)  deleteSong,required TResult Function( SongEntity song,  String? title,  String? artist,  String? album,  String? genre,  String? year,  Uint8List? artworkBytes)  editSong,}) {final _that = this;
 switch (_that) {
 case GetLocalSongs():
 return getLocalSongs();case SearchSongs():
 return searchSongs(_that.query);case SortSongs():
 return sortSongs(_that.option);case DeleteSongEvent():
 return deleteSong(_that.song);case EditSongEvent():
-return editSong(_that.song,_that.title,_that.artist,_that.album,_that.genre,_that.lyrics);case _:
+return editSong(_that.song,_that.title,_that.artist,_that.album,_that.genre,_that.year,_that.artworkBytes);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -180,14 +180,14 @@ return editSong(_that.song,_that.title,_that.artist,_that.album,_that.genre,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  getLocalSongs,TResult? Function( String query)?  searchSongs,TResult? Function( SortOption option)?  sortSongs,TResult? Function( SongEntity song)?  deleteSong,TResult? Function( SongEntity song,  String title,  String artist,  String album,  String? genre,  String? lyrics)?  editSong,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  getLocalSongs,TResult? Function( String query)?  searchSongs,TResult? Function( SortOption option)?  sortSongs,TResult? Function( SongEntity song)?  deleteSong,TResult? Function( SongEntity song,  String? title,  String? artist,  String? album,  String? genre,  String? year,  Uint8List? artworkBytes)?  editSong,}) {final _that = this;
 switch (_that) {
 case GetLocalSongs() when getLocalSongs != null:
 return getLocalSongs();case SearchSongs() when searchSongs != null:
 return searchSongs(_that.query);case SortSongs() when sortSongs != null:
 return sortSongs(_that.option);case DeleteSongEvent() when deleteSong != null:
 return deleteSong(_that.song);case EditSongEvent() when editSong != null:
-return editSong(_that.song,_that.title,_that.artist,_that.album,_that.genre,_that.lyrics);case _:
+return editSong(_that.song,_that.title,_that.artist,_that.album,_that.genre,_that.year,_that.artworkBytes);case _:
   return null;
 
 }
@@ -438,15 +438,16 @@ $SongEntityCopyWith<$Res> get song {
 
 
 class EditSongEvent implements LocalMusicEvent {
-  const EditSongEvent({required this.song, required this.title, required this.artist, required this.album, this.genre, this.lyrics});
+  const EditSongEvent({required this.song, this.title, this.artist, this.album, this.genre, this.year, this.artworkBytes});
   
 
  final  SongEntity song;
- final  String title;
- final  String artist;
- final  String album;
+ final  String? title;
+ final  String? artist;
+ final  String? album;
  final  String? genre;
- final  String? lyrics;
+ final  String? year;
+ final  Uint8List? artworkBytes;
 
 /// Create a copy of LocalMusicEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -458,16 +459,16 @@ $EditSongEventCopyWith<EditSongEvent> get copyWith => _$EditSongEventCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EditSongEvent&&(identical(other.song, song) || other.song == song)&&(identical(other.title, title) || other.title == title)&&(identical(other.artist, artist) || other.artist == artist)&&(identical(other.album, album) || other.album == album)&&(identical(other.genre, genre) || other.genre == genre)&&(identical(other.lyrics, lyrics) || other.lyrics == lyrics));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EditSongEvent&&(identical(other.song, song) || other.song == song)&&(identical(other.title, title) || other.title == title)&&(identical(other.artist, artist) || other.artist == artist)&&(identical(other.album, album) || other.album == album)&&(identical(other.genre, genre) || other.genre == genre)&&(identical(other.year, year) || other.year == year)&&const DeepCollectionEquality().equals(other.artworkBytes, artworkBytes));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,song,title,artist,album,genre,lyrics);
+int get hashCode => Object.hash(runtimeType,song,title,artist,album,genre,year,const DeepCollectionEquality().hash(artworkBytes));
 
 @override
 String toString() {
-  return 'LocalMusicEvent.editSong(song: $song, title: $title, artist: $artist, album: $album, genre: $genre, lyrics: $lyrics)';
+  return 'LocalMusicEvent.editSong(song: $song, title: $title, artist: $artist, album: $album, genre: $genre, year: $year, artworkBytes: $artworkBytes)';
 }
 
 
@@ -478,7 +479,7 @@ abstract mixin class $EditSongEventCopyWith<$Res> implements $LocalMusicEventCop
   factory $EditSongEventCopyWith(EditSongEvent value, $Res Function(EditSongEvent) _then) = _$EditSongEventCopyWithImpl;
 @useResult
 $Res call({
- SongEntity song, String title, String artist, String album, String? genre, String? lyrics
+ SongEntity song, String? title, String? artist, String? album, String? genre, String? year, Uint8List? artworkBytes
 });
 
 
@@ -495,15 +496,16 @@ class _$EditSongEventCopyWithImpl<$Res>
 
 /// Create a copy of LocalMusicEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? song = null,Object? title = null,Object? artist = null,Object? album = null,Object? genre = freezed,Object? lyrics = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? song = null,Object? title = freezed,Object? artist = freezed,Object? album = freezed,Object? genre = freezed,Object? year = freezed,Object? artworkBytes = freezed,}) {
   return _then(EditSongEvent(
 song: null == song ? _self.song : song // ignore: cast_nullable_to_non_nullable
-as SongEntity,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
-as String,artist: null == artist ? _self.artist : artist // ignore: cast_nullable_to_non_nullable
-as String,album: null == album ? _self.album : album // ignore: cast_nullable_to_non_nullable
-as String,genre: freezed == genre ? _self.genre : genre // ignore: cast_nullable_to_non_nullable
-as String?,lyrics: freezed == lyrics ? _self.lyrics : lyrics // ignore: cast_nullable_to_non_nullable
-as String?,
+as SongEntity,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+as String?,artist: freezed == artist ? _self.artist : artist // ignore: cast_nullable_to_non_nullable
+as String?,album: freezed == album ? _self.album : album // ignore: cast_nullable_to_non_nullable
+as String?,genre: freezed == genre ? _self.genre : genre // ignore: cast_nullable_to_non_nullable
+as String?,year: freezed == year ? _self.year : year // ignore: cast_nullable_to_non_nullable
+as String?,artworkBytes: freezed == artworkBytes ? _self.artworkBytes : artworkBytes // ignore: cast_nullable_to_non_nullable
+as Uint8List?,
   ));
 }
 

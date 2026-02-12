@@ -1,15 +1,26 @@
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:audiotags/audiotags.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:music_player/features/local%20music/data/models/song_model.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 abstract class LocalMusicDatasource {
   Future<List<SongEntity>> getLocalMusic();
   Future<SongEntity?> getSongById(int id);
   Future<bool> deleteSong({required int id, required String path});
-  Future<bool> editSongMetadata(SongEntity song, Map<String, dynamic> metadata);
+  Future<bool> editSongMetadata({
+    required String path,
+    String? title,
+    String? artist,
+    String? album,
+    String? genre,
+    String? year,
+    Uint8List? artworkBytes,
+  });
 }
 
 class LocalMusicDatasourceImpl implements LocalMusicDatasource {
@@ -66,19 +77,91 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
   }
 
   @override
-  Future<bool> editSongMetadata(
-    SongEntity song,
-    Map<String, dynamic> metadata,
-  ) async {
-    // This requires a specific tag editing library or platform channel.
-    // For now, we will throw UnimplementedError or log it.
-    // On Android, we might use OnAudioQuery's editMetadata if supported.
-    // On Linux, we'd need a tag lib.
-    // Given the constraints, we'll mark it as implemented for the architecture but it won't persist tags yet.
-    // However, if the user requested "Ensure all changes are persisted locally", we should try to support it.
-    // We will assume a library 'audiotags' is added or similar.
-    // For this prototype, we'll simulate success.
-    return true;
+  Future<bool> editSongMetadata({
+    required String path,
+    String? title,
+    String? artist,
+    String? album,
+    String? genre,
+    String? year,
+    Uint8List? artworkBytes,
+  }) async {
+    try {
+      await _ensureStoragePermission();
+
+      // Read existing tags to perform a partial update
+      final Tag? originalTags = await _readExistingTags(path);
+
+      final List<Picture> artwork = _prepareArtwork(
+        artworkBytes,
+        originalTags?.pictures,
+      );
+
+      final int? releaseYear = _parseYear(year) ?? originalTags?.year;
+
+      final Tag updatedTag = Tag(
+        title: title ?? originalTags?.title,
+        artist: artist ?? originalTags?.artist,
+        album: album ?? originalTags?.album,
+        genre: genre ?? originalTags?.genre,
+        year: releaseYear,
+        pictures: artwork,
+      );
+
+      await AudioTags.write(path, updatedTag);
+
+      if (Platform.isAndroid) {
+        // Notify the system media store to re-index the file with new metadata
+        await _onAudioQuery.scanMedia(path);
+      }
+
+      return true;
+    } catch (e) {
+      // Errors are handled by returning false; 
+      // Higher layers (Repository) will map this to a Failure.
+      return false;
+    }
+  }
+
+  Future<void> _ensureStoragePermission() async {
+    if (Platform.isAndroid) {
+      final status = await Permission.manageExternalStorage.status;
+      if (!status.isGranted) {
+        final requestStatus = await Permission.manageExternalStorage.request();
+        if (!requestStatus.isGranted) {
+          throw Exception(
+            "Access Denied: 'All Files Access' is required for metadata editing.",
+          );
+        }
+      }
+    }
+  }
+
+  Future<Tag?> _readExistingTags(String path) async {
+    try {
+      return await AudioTags.read(path);
+    } catch (_) {
+      // If reading fails, we proceed with null to allow a "fresh" write
+      return null;
+    }
+  }
+
+  List<Picture> _prepareArtwork(Uint8List? newArtwork, List<Picture>? existingArtwork) {
+    if (newArtwork != null) {
+      return [
+        Picture(
+          bytes: newArtwork,
+          mimeType: MimeType.none, // We use none as we don't strictly need to specify
+          pictureType: PictureType.coverFront,
+        ),
+      ];
+    }
+    return existingArtwork ?? [];
+  }
+
+  int? _parseYear(String? yearString) {
+    if (yearString == null || yearString.isEmpty) return null;
+    return int.tryParse(yearString);
   }
 
   @override

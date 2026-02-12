@@ -4,6 +4,7 @@ import 'package:music_player/features/local%20music/data/datasource/local_music_
 import 'package:music_player/features/local%20music/data/failures/music_failures.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 import 'package:music_player/features/local%20music/domain/repositories/music_repository.dart';
+import 'package:music_player/features/local%20music/domain/usecases/edit_song_metadata.dart';
 
 class MusicRepositoryImpl implements MusicRepository {
   final LocalMusicDatasource _localMusicDatasource;
@@ -47,9 +48,17 @@ class MusicRepositoryImpl implements MusicRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> editSongMetadata(SongEntity song, Map<String, dynamic> metadata) async {
+  Future<Either<Failure, bool>> editSongMetadata(EditSongMetadataParams params) async {
     try {
-      final result = await _localMusicDatasource.editSongMetadata(song, metadata);
+      final result = await _localMusicDatasource.editSongMetadata(
+        path: params.song.path,
+        title: params.title,
+        artist: params.artist,
+        album: params.album,
+        genre: params.genre,
+        year: params.year,
+        artworkBytes: params.artworkBytes,
+      );
        if (result) {
         return const Right(true);
       }

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:music_player/features/local%20music/presentation/managers/local_music_state.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
@@ -11,10 +13,11 @@ class LocalMusicEvent with _$LocalMusicEvent {
   const factory LocalMusicEvent.deleteSong(SongEntity song) = DeleteSongEvent;
   const factory LocalMusicEvent.editSong({
     required SongEntity song,
-    required String title,
-    required String artist,
-    required String album,
+    String? title,
+    String? artist,
+    String? album,
     String? genre,
-    String? lyrics,
+    String? year,
+    Uint8List? artworkBytes,
   }) = EditSongEvent;
 }

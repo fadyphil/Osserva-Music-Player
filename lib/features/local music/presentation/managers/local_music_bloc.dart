@@ -79,7 +79,8 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
         artist: event.artist,
         album: event.album,
         genre: event.genre,
-        lyrics: event.lyrics,
+        year: event.year,
+        artworkBytes: event.artworkBytes,
       ),
     );
     result.fold((failure) => emit(LocalMusicState.failure(failure)), (success) {

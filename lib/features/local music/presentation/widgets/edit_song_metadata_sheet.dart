@@ -25,8 +25,12 @@ class _EditSongMetadataSheetState extends State<EditSongMetadataSheet> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.song.title);
-    _artistController = TextEditingController(text: widget.song.artist == '<unknown>' ? '' : widget.song.artist);
-    _albumController = TextEditingController(text: widget.song.album == '<unknown>' ? '' : widget.song.album);
+    _artistController = TextEditingController(
+      text: widget.song.artist == '<unknown>' ? '' : widget.song.artist,
+    );
+    _albumController = TextEditingController(
+      text: widget.song.album == '<unknown>' ? '' : widget.song.album,
+    );
   }
 
   @override
@@ -40,7 +44,12 @@ class _EditSongMetadataSheetState extends State<EditSongMetadataSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
       decoration: const BoxDecoration(
         color: AppPallete.backgroundColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -85,17 +94,28 @@ class _EditSongMetadataSheetState extends State<EditSongMetadataSheet> {
                   artworkHeight: 80,
                   artworkWidth: 80,
                   artworkFit: BoxFit.cover,
-                  nullArtworkWidget: const Icon(Icons.music_note, color: Colors.white24, size: 40),
+                  nullArtworkWidget: const Icon(
+                    Icons.music_note,
+                    color: Colors.white24,
+                    size: 40,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
               TextButton(
                 onPressed: () {
                   // TODO: Implement Image Picker
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Change Artwork Not Implemented")));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Change Artwork Not Implemented"),
+                    ),
+                  );
                 },
-                child: const Text("Change Artwork", style: TextStyle(color: AppPallete.primaryGreen)),
-              )
+                child: const Text(
+                  "Change Artwork",
+                  style: TextStyle(color: AppPallete.primaryGreen),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -106,7 +126,7 @@ class _EditSongMetadataSheetState extends State<EditSongMetadataSheet> {
           _buildTextField("Artist", _artistController),
           const SizedBox(height: 16),
           _buildTextField("Album", _albumController),
-          
+
           const SizedBox(height: 32),
 
           // Actions
@@ -119,7 +139,9 @@ class _EditSongMetadataSheetState extends State<EditSongMetadataSheet> {
                     foregroundColor: Colors.white,
                     side: const BorderSide(color: Colors.white24),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: const Text("Cancel"),
                 ),
@@ -142,9 +164,14 @@ class _EditSongMetadataSheetState extends State<EditSongMetadataSheet> {
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
-                  child: const Text("Save Changes", style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    "Save Changes",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -158,7 +185,10 @@ class _EditSongMetadataSheetState extends State<EditSongMetadataSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white54, fontSize: 12),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
@@ -170,7 +200,10 @@ class _EditSongMetadataSheetState extends State<EditSongMetadataSheet> {
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
           ),
         ),
       ],
