@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:media_store_plus/media_store_plus.dart';
 import 'package:music_player/features/local%20music/data/models/song_model.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -7,32 +8,68 @@ import 'package:on_audio_query/on_audio_query.dart';
 abstract class LocalMusicDatasource {
   Future<List<SongEntity>> getLocalMusic();
   Future<SongEntity?> getSongById(int id);
-  Future<bool> deleteSong(String path);
+  Future<bool> deleteSong({required int id, required String path});
   Future<bool> editSongMetadata(SongEntity song, Map<String, dynamic> metadata);
 }
 
 class LocalMusicDatasourceImpl implements LocalMusicDatasource {
+  final MediaStore _mediaStore;
   final OnAudioQuery _onAudioQuery;
-  LocalMusicDatasourceImpl(this._onAudioQuery);
+  LocalMusicDatasourceImpl(this._onAudioQuery, this._mediaStore);
 
   @override
-  Future<bool> deleteSong(String path) async {
-    try {
-      final file = File(path);
-      if (await file.exists()) {
-        await file.delete();
-        // Trigger media scan or cache update if possible
-        // On Linux, file deletion is sufficient.
-        return true;
+  Future<bool> deleteSong({required int id, required String path}) async {
+    // 1. Desktop Implementation
+    if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+      try {
+        final file = File(path);
+        if (await file.exists()) {
+          await file.delete();
+          return true;
+        }
+        return false;
+      } catch (e) {
+        throw Exception('Failed to delete on Desktop: $e');
       }
-      return false;
-    } catch (e) {
-      throw Exception('Failed to delete song: $e');
     }
+
+    // 2. Android Implementation
+    if (Platform.isAndroid) {
+      try {
+        // Construct the Content URI using the ID
+        // This URI tells Android EXACTLY which database entry to modify
+        final String uriString = 'content://media/external/audio/media/$id';
+
+        // Use the MediaStore plugin to trigger the native permission popup
+        final result = await _mediaStore.deleteFileUsingUri(
+          uriString: uriString,
+        );
+
+        return result;
+      } catch (e) {
+        // Fallback: Try standard File delete (Works for files YOUR app created)
+        try {
+          final file = File(path);
+          if (await file.exists()) {
+            await file.delete();
+            await _onAudioQuery.scanMedia(path); // Update index
+            return true;
+          }
+        } catch (fallbackError) {
+          // Both deletion attempts failed
+        }
+        return false;
+      }
+    }
+
+    return false;
   }
 
   @override
-  Future<bool> editSongMetadata(SongEntity song, Map<String, dynamic> metadata) async {
+  Future<bool> editSongMetadata(
+    SongEntity song,
+    Map<String, dynamic> metadata,
+  ) async {
     // This requires a specific tag editing library or platform channel.
     // For now, we will throw UnimplementedError or log it.
     // On Android, we might use OnAudioQuery's editMetadata if supported.
@@ -41,7 +78,7 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
     // However, if the user requested "Ensure all changes are persisted locally", we should try to support it.
     // We will assume a library 'audiotags' is added or similar.
     // For this prototype, we'll simulate success.
-    return true; 
+    return true;
   }
 
   @override
@@ -64,7 +101,7 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
         uriType: UriType.EXTERNAL,
         ignoreCase: true,
       );
-      
+
       final match = songs.firstWhere((s) => s.id == id);
       return SongMapper.toEntity(match);
     } catch (e) {
