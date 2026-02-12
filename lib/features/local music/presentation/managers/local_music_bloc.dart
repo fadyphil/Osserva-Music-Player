@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:music_player/core/error/failure.dart';
 import 'package:music_player/core/usecases/usecase.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
@@ -80,14 +82,11 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
         lyrics: event.lyrics,
       ),
     );
-    result.fold(
-      (failure) => emit(LocalMusicState.failure(failure)),
-      (success) {
-        if (success) {
-          add(const GetLocalSongs());
-        }
-      },
-    );
+    result.fold((failure) => emit(LocalMusicState.failure(failure)), (success) {
+      if (success) {
+        add(const GetLocalSongs());
+      }
+    });
   }
 
   Future<void> _onGetLocalSongs(
@@ -101,8 +100,8 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
       _getAllSongPlayCountsUseCase(NoParams()),
     ]);
 
-    final songsResult = results[0] as dynamic;
-    final countsResult = results[1] as dynamic;
+    final songsResult = results[0] as Either<Failure, List<SongEntity>>;
+    final countsResult = results[1] as Either<Failure, Map<int, int>>;
 
     songsResult.fold((failure) => emit(LocalMusicState.failure(failure)), (
       songs,
@@ -113,12 +112,7 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
       );
 
       // Initial Process using defaults
-      final processed = _processSongs(
-        songs as List<SongEntity>,
-        '',
-        SortOption.dateAdded,
-        counts,
-      );
+      final processed = _processSongs(songs, '', SortOption.dateAdded, counts);
 
       emit(
         LocalMusicState.loaded(

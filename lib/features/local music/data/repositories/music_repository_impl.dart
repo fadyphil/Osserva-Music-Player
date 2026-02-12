@@ -34,9 +34,9 @@ class MusicRepositoryImpl implements MusicRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> deleteSong(String path) async {
+  Future<Either<Failure, bool>> deleteSong(int id, String path) async {
     try {
-      final result = await _localMusicDatasource.deleteSong(path);
+      final result = await _localMusicDatasource.deleteSong(id: id, path: path);
       if (result) {
         return const Right(true);
       }

@@ -23,6 +23,6 @@ class DeleteSong implements UseCase<bool, SongEntity> {
     await analyticsRepository.deleteSongAnalytics(params.id);
 
     // 3. Delete File (Last step)
-    return await musicRepository.deleteSong(params.path);
+    return await musicRepository.deleteSong(params.id, params.path);
   }
 }
