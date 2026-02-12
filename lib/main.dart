@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
+import 'package:media_store_plus/media_store_plus.dart';
 import 'package:music_player/core/router/app_router.dart';
 import 'package:music_player/core/theme/app_theme.dart';
 import 'package:music_player/core/usecases/usecase.dart';
@@ -18,6 +19,11 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart'; // Import this
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  if (Platform.isAndroid) {
+    await MediaStore.ensureInitialized();
+    MediaStore.appFolder = "AudioGraphy";
+  }
 
   JustAudioMediaKit.ensureInitialized();
   if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {

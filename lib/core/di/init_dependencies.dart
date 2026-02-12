@@ -1,6 +1,7 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:media_store_plus/media_store_plus.dart';
 import 'package:music_player/core/router/app_router.dart';
 import 'package:music_player/features/analytics/data/datasources/analytics_aggregator.dart';
 import 'package:music_player/features/analytics/data/datasources/analytics_reader.dart';
@@ -86,6 +87,8 @@ Future<void> initDependencies() async {
   // =========================================================
   final sharedPreferences = await SharedPreferences.getInstance();
   final appRouter = AppRouter();
+  final mediaStore = MediaStore();
+  serviceLocator.registerLazySingleton(() => mediaStore);
 
   serviceLocator.registerLazySingleton(() => sharedPreferences);
 
@@ -110,7 +113,7 @@ Future<void> initDependencies() async {
 
   // Data Source: We inject OnAudioQuery into it
   serviceLocator.registerLazySingleton<LocalMusicDatasource>(
-    () => LocalMusicDatasourceImpl(serviceLocator()),
+    () => LocalMusicDatasourceImpl(serviceLocator(), serviceLocator()),
   );
 
   // Repository: We inject the DataSource into it
