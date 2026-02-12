@@ -76,7 +76,6 @@ class SongListTile extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              // HapticFeedback.lightImpact();
               context.read<MusicPlayerBloc>().add(
                 MusicPlayerEvent.initMusicQueue(
                   songs: songList,
@@ -212,14 +211,6 @@ class SongListTile extends StatelessWidget {
             ),
           ),
         ),
-        // .animate(target: 1)
-        // .fadeIn(duration: 300.ms, curve: Curves.easeOut)
-        // .slideY(
-        //   begin: 0.2,
-        //   end: 0,
-        //   duration: 400.ms,
-        //   curve: Curves.easeOutBack,
-        // ),
       ),
     );
   }

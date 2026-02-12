@@ -55,13 +55,15 @@ extension LocalMusicEventPatterns on LocalMusicEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( GetLocalSongs value)?  getLocalSongs,TResult Function( SearchSongs value)?  searchSongs,TResult Function( SortSongs value)?  sortSongs,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( GetLocalSongs value)?  getLocalSongs,TResult Function( SearchSongs value)?  searchSongs,TResult Function( SortSongs value)?  sortSongs,TResult Function( DeleteSongEvent value)?  deleteSong,TResult Function( EditSongEvent value)?  editSong,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case GetLocalSongs() when getLocalSongs != null:
 return getLocalSongs(_that);case SearchSongs() when searchSongs != null:
 return searchSongs(_that);case SortSongs() when sortSongs != null:
-return sortSongs(_that);case _:
+return sortSongs(_that);case DeleteSongEvent() when deleteSong != null:
+return deleteSong(_that);case EditSongEvent() when editSong != null:
+return editSong(_that);case _:
   return orElse();
 
 }
@@ -79,13 +81,15 @@ return sortSongs(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( GetLocalSongs value)  getLocalSongs,required TResult Function( SearchSongs value)  searchSongs,required TResult Function( SortSongs value)  sortSongs,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( GetLocalSongs value)  getLocalSongs,required TResult Function( SearchSongs value)  searchSongs,required TResult Function( SortSongs value)  sortSongs,required TResult Function( DeleteSongEvent value)  deleteSong,required TResult Function( EditSongEvent value)  editSong,}){
 final _that = this;
 switch (_that) {
 case GetLocalSongs():
 return getLocalSongs(_that);case SearchSongs():
 return searchSongs(_that);case SortSongs():
-return sortSongs(_that);case _:
+return sortSongs(_that);case DeleteSongEvent():
+return deleteSong(_that);case EditSongEvent():
+return editSong(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -102,13 +106,15 @@ return sortSongs(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( GetLocalSongs value)?  getLocalSongs,TResult? Function( SearchSongs value)?  searchSongs,TResult? Function( SortSongs value)?  sortSongs,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( GetLocalSongs value)?  getLocalSongs,TResult? Function( SearchSongs value)?  searchSongs,TResult? Function( SortSongs value)?  sortSongs,TResult? Function( DeleteSongEvent value)?  deleteSong,TResult? Function( EditSongEvent value)?  editSong,}){
 final _that = this;
 switch (_that) {
 case GetLocalSongs() when getLocalSongs != null:
 return getLocalSongs(_that);case SearchSongs() when searchSongs != null:
 return searchSongs(_that);case SortSongs() when sortSongs != null:
-return sortSongs(_that);case _:
+return sortSongs(_that);case DeleteSongEvent() when deleteSong != null:
+return deleteSong(_that);case EditSongEvent() when editSong != null:
+return editSong(_that);case _:
   return null;
 
 }
@@ -125,12 +131,14 @@ return sortSongs(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  getLocalSongs,TResult Function( String query)?  searchSongs,TResult Function( SortOption option)?  sortSongs,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  getLocalSongs,TResult Function( String query)?  searchSongs,TResult Function( SortOption option)?  sortSongs,TResult Function( SongEntity song)?  deleteSong,TResult Function( SongEntity song,  String title,  String artist,  String album,  String? genre,  String? lyrics)?  editSong,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case GetLocalSongs() when getLocalSongs != null:
 return getLocalSongs();case SearchSongs() when searchSongs != null:
 return searchSongs(_that.query);case SortSongs() when sortSongs != null:
-return sortSongs(_that.option);case _:
+return sortSongs(_that.option);case DeleteSongEvent() when deleteSong != null:
+return deleteSong(_that.song);case EditSongEvent() when editSong != null:
+return editSong(_that.song,_that.title,_that.artist,_that.album,_that.genre,_that.lyrics);case _:
   return orElse();
 
 }
@@ -148,12 +156,14 @@ return sortSongs(_that.option);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  getLocalSongs,required TResult Function( String query)  searchSongs,required TResult Function( SortOption option)  sortSongs,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  getLocalSongs,required TResult Function( String query)  searchSongs,required TResult Function( SortOption option)  sortSongs,required TResult Function( SongEntity song)  deleteSong,required TResult Function( SongEntity song,  String title,  String artist,  String album,  String? genre,  String? lyrics)  editSong,}) {final _that = this;
 switch (_that) {
 case GetLocalSongs():
 return getLocalSongs();case SearchSongs():
 return searchSongs(_that.query);case SortSongs():
-return sortSongs(_that.option);case _:
+return sortSongs(_that.option);case DeleteSongEvent():
+return deleteSong(_that.song);case EditSongEvent():
+return editSong(_that.song,_that.title,_that.artist,_that.album,_that.genre,_that.lyrics);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -170,12 +180,14 @@ return sortSongs(_that.option);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  getLocalSongs,TResult? Function( String query)?  searchSongs,TResult? Function( SortOption option)?  sortSongs,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  getLocalSongs,TResult? Function( String query)?  searchSongs,TResult? Function( SortOption option)?  sortSongs,TResult? Function( SongEntity song)?  deleteSong,TResult? Function( SongEntity song,  String title,  String artist,  String album,  String? genre,  String? lyrics)?  editSong,}) {final _that = this;
 switch (_that) {
 case GetLocalSongs() when getLocalSongs != null:
 return getLocalSongs();case SearchSongs() when searchSongs != null:
 return searchSongs(_that.query);case SortSongs() when sortSongs != null:
-return sortSongs(_that.option);case _:
+return sortSongs(_that.option);case DeleteSongEvent() when deleteSong != null:
+return deleteSong(_that.song);case EditSongEvent() when editSong != null:
+return editSong(_that.song,_that.title,_that.artist,_that.album,_that.genre,_that.lyrics);case _:
   return null;
 
 }
@@ -345,6 +357,166 @@ as SortOption,
 }
 
 
+}
+
+/// @nodoc
+
+
+class DeleteSongEvent implements LocalMusicEvent {
+  const DeleteSongEvent(this.song);
+  
+
+ final  SongEntity song;
+
+/// Create a copy of LocalMusicEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$DeleteSongEventCopyWith<DeleteSongEvent> get copyWith => _$DeleteSongEventCopyWithImpl<DeleteSongEvent>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DeleteSongEvent&&(identical(other.song, song) || other.song == song));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,song);
+
+@override
+String toString() {
+  return 'LocalMusicEvent.deleteSong(song: $song)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $DeleteSongEventCopyWith<$Res> implements $LocalMusicEventCopyWith<$Res> {
+  factory $DeleteSongEventCopyWith(DeleteSongEvent value, $Res Function(DeleteSongEvent) _then) = _$DeleteSongEventCopyWithImpl;
+@useResult
+$Res call({
+ SongEntity song
+});
+
+
+$SongEntityCopyWith<$Res> get song;
+
+}
+/// @nodoc
+class _$DeleteSongEventCopyWithImpl<$Res>
+    implements $DeleteSongEventCopyWith<$Res> {
+  _$DeleteSongEventCopyWithImpl(this._self, this._then);
+
+  final DeleteSongEvent _self;
+  final $Res Function(DeleteSongEvent) _then;
+
+/// Create a copy of LocalMusicEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? song = null,}) {
+  return _then(DeleteSongEvent(
+null == song ? _self.song : song // ignore: cast_nullable_to_non_nullable
+as SongEntity,
+  ));
+}
+
+/// Create a copy of LocalMusicEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SongEntityCopyWith<$Res> get song {
+  
+  return $SongEntityCopyWith<$Res>(_self.song, (value) {
+    return _then(_self.copyWith(song: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class EditSongEvent implements LocalMusicEvent {
+  const EditSongEvent({required this.song, required this.title, required this.artist, required this.album, this.genre, this.lyrics});
+  
+
+ final  SongEntity song;
+ final  String title;
+ final  String artist;
+ final  String album;
+ final  String? genre;
+ final  String? lyrics;
+
+/// Create a copy of LocalMusicEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$EditSongEventCopyWith<EditSongEvent> get copyWith => _$EditSongEventCopyWithImpl<EditSongEvent>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EditSongEvent&&(identical(other.song, song) || other.song == song)&&(identical(other.title, title) || other.title == title)&&(identical(other.artist, artist) || other.artist == artist)&&(identical(other.album, album) || other.album == album)&&(identical(other.genre, genre) || other.genre == genre)&&(identical(other.lyrics, lyrics) || other.lyrics == lyrics));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,song,title,artist,album,genre,lyrics);
+
+@override
+String toString() {
+  return 'LocalMusicEvent.editSong(song: $song, title: $title, artist: $artist, album: $album, genre: $genre, lyrics: $lyrics)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $EditSongEventCopyWith<$Res> implements $LocalMusicEventCopyWith<$Res> {
+  factory $EditSongEventCopyWith(EditSongEvent value, $Res Function(EditSongEvent) _then) = _$EditSongEventCopyWithImpl;
+@useResult
+$Res call({
+ SongEntity song, String title, String artist, String album, String? genre, String? lyrics
+});
+
+
+$SongEntityCopyWith<$Res> get song;
+
+}
+/// @nodoc
+class _$EditSongEventCopyWithImpl<$Res>
+    implements $EditSongEventCopyWith<$Res> {
+  _$EditSongEventCopyWithImpl(this._self, this._then);
+
+  final EditSongEvent _self;
+  final $Res Function(EditSongEvent) _then;
+
+/// Create a copy of LocalMusicEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? song = null,Object? title = null,Object? artist = null,Object? album = null,Object? genre = freezed,Object? lyrics = freezed,}) {
+  return _then(EditSongEvent(
+song: null == song ? _self.song : song // ignore: cast_nullable_to_non_nullable
+as SongEntity,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+as String,artist: null == artist ? _self.artist : artist // ignore: cast_nullable_to_non_nullable
+as String,album: null == album ? _self.album : album // ignore: cast_nullable_to_non_nullable
+as String,genre: freezed == genre ? _self.genre : genre // ignore: cast_nullable_to_non_nullable
+as String?,lyrics: freezed == lyrics ? _self.lyrics : lyrics // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+/// Create a copy of LocalMusicEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SongEntityCopyWith<$Res> get song {
+  
+  return $SongEntityCopyWith<$Res>(_self.song, (value) {
+    return _then(_self.copyWith(song: value));
+  });
+}
 }
 
 // dart format on
