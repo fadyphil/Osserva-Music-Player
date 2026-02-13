@@ -87,6 +87,14 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
     Uint8List? artworkBytes,
   }) async {
     try {
+      // --- START: ADD THIS CHECK ---
+      // Check if the file format is supported by the audiotags library.
+      final String lowercasedPath = path.toLowerCase();
+      if (lowercasedPath.endsWith('.opus') || lowercasedPath.endsWith('.wav')) {
+        print("Unsupported file format for editing: $path");
+        // Return false to indicate failure without crashing.
+        return false;
+      }
       await _ensureStoragePermission();
 
       // Read existing tags to perform a partial update
@@ -117,8 +125,13 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
 
       return true;
     } catch (e) {
-      // Errors are handled by returning false; 
+      // Errors are handled by returning false;
       // Higher layers (Repository) will map this to a Failure.
+      // FIX #1: Print the actual error to the console for debugging
+      print("--- FAILED TO UPDATE METADATA ---");
+      print("Error: $e");
+      print("File Path: $path");
+      print("---------------------------------");
       return false;
     }
   }
@@ -146,12 +159,16 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
     }
   }
 
-  List<Picture> _prepareArtwork(Uint8List? newArtwork, List<Picture>? existingArtwork) {
+  List<Picture> _prepareArtwork(
+    Uint8List? newArtwork,
+    List<Picture>? existingArtwork,
+  ) {
     if (newArtwork != null) {
       return [
         Picture(
           bytes: newArtwork,
-          mimeType: MimeType.none, // We use none as we don't strictly need to specify
+          mimeType:
+              MimeType.none, // We use none as we don't strictly need to specify
           pictureType: PictureType.coverFront,
         ),
       ];
