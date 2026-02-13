@@ -235,22 +235,6 @@ class LibraryTabShellRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [MusicPlayerPage]
-class MusicPlayerRoute extends PageRouteInfo<void> {
-  const MusicPlayerRoute({List<PageRouteInfo>? children})
-    : super(MusicPlayerRoute.name, initialChildren: children);
-
-  static const String name = 'MusicPlayerRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const MusicPlayerPage();
-    },
-  );
-}
-
-/// generated route for
 /// [OnboardingPage]
 class OnboardingRoute extends PageRouteInfo<OnboardingRouteArgs> {
   OnboardingRoute({

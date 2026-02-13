@@ -1,8 +1,7 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/router/app_router.dart';
+import 'package:music_player/features/music_player/presentation/widgets/music_player_sheet.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../../../core/theme/app_pallete.dart';
 import '../bloc/music_player_bloc.dart';
@@ -72,15 +71,14 @@ class _MiniPlayerState extends State<MiniPlayer> {
 
           return GestureDetector(
             onTap: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) {
-              //       return const MusicPlayerPage();
-              //     },
-              //   ),
-              // );
-              context.router.push(MusicPlayerRoute());
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useRootNavigator: true,
+                useSafeArea: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => const MusicPlayerSheet(),
+              );
             },
             child: Container(
               margin: const EdgeInsets.all(8),

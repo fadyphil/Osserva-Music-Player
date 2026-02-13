@@ -5,7 +5,6 @@ import 'package:music_player/features/home/presentation/pages/home_page.dart';
 import 'package:music_player/features/home/presentation/pages/home_dashboard_page.dart';
 import 'package:music_player/features/home/presentation/pages/home_tab_shell_page.dart';
 import 'package:music_player/features/local%20music/presentation/pages/song_list_page.dart';
-import 'package:music_player/features/music_player/presentation/pages/music_player_page.dart';
 import 'package:music_player/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:music_player/features/onboarding/presentation/pages/user_registration_page.dart';
 import 'package:music_player/features/playlists/presentation/pages/playlist_detail_page.dart';
@@ -80,12 +79,8 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: AnalyticsDashboardRoute.page),
 
         // TAB 3: Profile
-        AutoRoute(page: ProfileRoute.page),
-      ],
-    ),
-
-    // Top-Level Routes (Pushed from Dashboard)
-    // Music Player needs to be full screen
-    AutoRoute(page: MusicPlayerRoute.page),
-  ];
+    AutoRoute(page: ProfileRoute.page),
+  ],
+),
+];
 }
