@@ -91,7 +91,7 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
       // Check if the file format is supported by the audiotags library.
       final String lowercasedPath = path.toLowerCase();
       if (lowercasedPath.endsWith('.opus') || lowercasedPath.endsWith('.wav')) {
-        print("Unsupported file format for editing: $path");
+        // print("Unsupported file format for editing: $path");
         // Return false to indicate failure without crashing.
         return false;
       }
@@ -128,10 +128,10 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
       // Errors are handled by returning false;
       // Higher layers (Repository) will map this to a Failure.
       // FIX #1: Print the actual error to the console for debugging
-      print("--- FAILED TO UPDATE METADATA ---");
-      print("Error: $e");
-      print("File Path: $path");
-      print("---------------------------------");
+      // print("--- FAILED TO UPDATE METADATA ---");
+      // print("Error: $e");
+      // print("File Path: $path");
+      // print("---------------------------------");
       return false;
     }
   }
