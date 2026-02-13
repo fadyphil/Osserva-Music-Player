@@ -160,7 +160,11 @@ Future<void> initDependencies() async {
   );
 
   serviceLocator.registerLazySingleton(
-    () => MusicPlayerBloc(serviceLocator(), serviceLocator()),
+    () => MusicPlayerBloc(
+      serviceLocator(),
+      serviceLocator(),
+      serviceLocator(),
+    ),
   );
 
   // =========================================================

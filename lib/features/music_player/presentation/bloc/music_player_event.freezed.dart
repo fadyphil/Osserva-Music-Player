@@ -61,7 +61,7 @@ extension MusicPlayerEventPatterns on MusicPlayerEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _InitMusicQueue value)?  initMusicQueue,TResult Function( _PlaySong value)?  playSong,TResult Function( _PlaySongById value)?  playSongById,TResult Function( _Pause value)?  pause,TResult Function( _Resume value)?  resume,TResult Function( _Seek value)?  seek,TResult Function( _PreviousSong value)?  playPreviousSong,TResult Function( _NextSong value)?  playNextSong,TResult Function( _ToggleShuffle value)?  toggleShuffle,TResult Function( _CycleLoopMode value)?  cycleLoopMode,TResult Function( _UpdatePosition value)?  updatePosition,TResult Function( _UpdateDuration value)?  updateDuration,TResult Function( _UpdatePlayerState value)?  updatePlayerState,TResult Function( _UpdateShuffleState value)?  updateShuffleState,TResult Function( _UpdateLoopState value)?  updateLoopState,TResult Function( _UpdateCurrentSong value)?  updateCurrentSong,TResult Function( _SongFinished value)?  songFinished,TResult Function( _AddToQueue value)?  addToQueue,TResult Function( _AddToPlaylist value)?  addToPlaylist,TResult Function( _QueueUpdated value)?  queueUpdated,TResult Function( _PlayNext value)?  playNextinQueue,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _InitMusicQueue value)?  initMusicQueue,TResult Function( _PlaySong value)?  playSong,TResult Function( _PlaySongById value)?  playSongById,TResult Function( _Pause value)?  pause,TResult Function( _Resume value)?  resume,TResult Function( _Seek value)?  seek,TResult Function( _PreviousSong value)?  playPreviousSong,TResult Function( _NextSong value)?  playNextSong,TResult Function( _ToggleShuffle value)?  toggleShuffle,TResult Function( _CycleLoopMode value)?  cycleLoopMode,TResult Function( _UpdatePosition value)?  updatePosition,TResult Function( _UpdateDuration value)?  updateDuration,TResult Function( _UpdatePlayerState value)?  updatePlayerState,TResult Function( _UpdateShuffleState value)?  updateShuffleState,TResult Function( _UpdateLoopState value)?  updateLoopState,TResult Function( _UpdateCurrentSong value)?  updateCurrentSong,TResult Function( _UpdatePlayCounts value)?  updatePlayCounts,TResult Function( _SongFinished value)?  songFinished,TResult Function( _AddToQueue value)?  addToQueue,TResult Function( _AddToPlaylist value)?  addToPlaylist,TResult Function( _QueueUpdated value)?  queueUpdated,TResult Function( _PlayNext value)?  playNextinQueue,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _InitMusicQueue() when initMusicQueue != null:
@@ -80,7 +80,8 @@ return updateDuration(_that);case _UpdatePlayerState() when updatePlayerState !=
 return updatePlayerState(_that);case _UpdateShuffleState() when updateShuffleState != null:
 return updateShuffleState(_that);case _UpdateLoopState() when updateLoopState != null:
 return updateLoopState(_that);case _UpdateCurrentSong() when updateCurrentSong != null:
-return updateCurrentSong(_that);case _SongFinished() when songFinished != null:
+return updateCurrentSong(_that);case _UpdatePlayCounts() when updatePlayCounts != null:
+return updatePlayCounts(_that);case _SongFinished() when songFinished != null:
 return songFinished(_that);case _AddToQueue() when addToQueue != null:
 return addToQueue(_that);case _AddToPlaylist() when addToPlaylist != null:
 return addToPlaylist(_that);case _QueueUpdated() when queueUpdated != null:
@@ -103,7 +104,7 @@ return playNextinQueue(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _InitMusicQueue value)  initMusicQueue,required TResult Function( _PlaySong value)  playSong,required TResult Function( _PlaySongById value)  playSongById,required TResult Function( _Pause value)  pause,required TResult Function( _Resume value)  resume,required TResult Function( _Seek value)  seek,required TResult Function( _PreviousSong value)  playPreviousSong,required TResult Function( _NextSong value)  playNextSong,required TResult Function( _ToggleShuffle value)  toggleShuffle,required TResult Function( _CycleLoopMode value)  cycleLoopMode,required TResult Function( _UpdatePosition value)  updatePosition,required TResult Function( _UpdateDuration value)  updateDuration,required TResult Function( _UpdatePlayerState value)  updatePlayerState,required TResult Function( _UpdateShuffleState value)  updateShuffleState,required TResult Function( _UpdateLoopState value)  updateLoopState,required TResult Function( _UpdateCurrentSong value)  updateCurrentSong,required TResult Function( _SongFinished value)  songFinished,required TResult Function( _AddToQueue value)  addToQueue,required TResult Function( _AddToPlaylist value)  addToPlaylist,required TResult Function( _QueueUpdated value)  queueUpdated,required TResult Function( _PlayNext value)  playNextinQueue,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _InitMusicQueue value)  initMusicQueue,required TResult Function( _PlaySong value)  playSong,required TResult Function( _PlaySongById value)  playSongById,required TResult Function( _Pause value)  pause,required TResult Function( _Resume value)  resume,required TResult Function( _Seek value)  seek,required TResult Function( _PreviousSong value)  playPreviousSong,required TResult Function( _NextSong value)  playNextSong,required TResult Function( _ToggleShuffle value)  toggleShuffle,required TResult Function( _CycleLoopMode value)  cycleLoopMode,required TResult Function( _UpdatePosition value)  updatePosition,required TResult Function( _UpdateDuration value)  updateDuration,required TResult Function( _UpdatePlayerState value)  updatePlayerState,required TResult Function( _UpdateShuffleState value)  updateShuffleState,required TResult Function( _UpdateLoopState value)  updateLoopState,required TResult Function( _UpdateCurrentSong value)  updateCurrentSong,required TResult Function( _UpdatePlayCounts value)  updatePlayCounts,required TResult Function( _SongFinished value)  songFinished,required TResult Function( _AddToQueue value)  addToQueue,required TResult Function( _AddToPlaylist value)  addToPlaylist,required TResult Function( _QueueUpdated value)  queueUpdated,required TResult Function( _PlayNext value)  playNextinQueue,}){
 final _that = this;
 switch (_that) {
 case _InitMusicQueue():
@@ -122,7 +123,8 @@ return updateDuration(_that);case _UpdatePlayerState():
 return updatePlayerState(_that);case _UpdateShuffleState():
 return updateShuffleState(_that);case _UpdateLoopState():
 return updateLoopState(_that);case _UpdateCurrentSong():
-return updateCurrentSong(_that);case _SongFinished():
+return updateCurrentSong(_that);case _UpdatePlayCounts():
+return updatePlayCounts(_that);case _SongFinished():
 return songFinished(_that);case _AddToQueue():
 return addToQueue(_that);case _AddToPlaylist():
 return addToPlaylist(_that);case _QueueUpdated():
@@ -144,7 +146,7 @@ return playNextinQueue(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _InitMusicQueue value)?  initMusicQueue,TResult? Function( _PlaySong value)?  playSong,TResult? Function( _PlaySongById value)?  playSongById,TResult? Function( _Pause value)?  pause,TResult? Function( _Resume value)?  resume,TResult? Function( _Seek value)?  seek,TResult? Function( _PreviousSong value)?  playPreviousSong,TResult? Function( _NextSong value)?  playNextSong,TResult? Function( _ToggleShuffle value)?  toggleShuffle,TResult? Function( _CycleLoopMode value)?  cycleLoopMode,TResult? Function( _UpdatePosition value)?  updatePosition,TResult? Function( _UpdateDuration value)?  updateDuration,TResult? Function( _UpdatePlayerState value)?  updatePlayerState,TResult? Function( _UpdateShuffleState value)?  updateShuffleState,TResult? Function( _UpdateLoopState value)?  updateLoopState,TResult? Function( _UpdateCurrentSong value)?  updateCurrentSong,TResult? Function( _SongFinished value)?  songFinished,TResult? Function( _AddToQueue value)?  addToQueue,TResult? Function( _AddToPlaylist value)?  addToPlaylist,TResult? Function( _QueueUpdated value)?  queueUpdated,TResult? Function( _PlayNext value)?  playNextinQueue,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _InitMusicQueue value)?  initMusicQueue,TResult? Function( _PlaySong value)?  playSong,TResult? Function( _PlaySongById value)?  playSongById,TResult? Function( _Pause value)?  pause,TResult? Function( _Resume value)?  resume,TResult? Function( _Seek value)?  seek,TResult? Function( _PreviousSong value)?  playPreviousSong,TResult? Function( _NextSong value)?  playNextSong,TResult? Function( _ToggleShuffle value)?  toggleShuffle,TResult? Function( _CycleLoopMode value)?  cycleLoopMode,TResult? Function( _UpdatePosition value)?  updatePosition,TResult? Function( _UpdateDuration value)?  updateDuration,TResult? Function( _UpdatePlayerState value)?  updatePlayerState,TResult? Function( _UpdateShuffleState value)?  updateShuffleState,TResult? Function( _UpdateLoopState value)?  updateLoopState,TResult? Function( _UpdateCurrentSong value)?  updateCurrentSong,TResult? Function( _UpdatePlayCounts value)?  updatePlayCounts,TResult? Function( _SongFinished value)?  songFinished,TResult? Function( _AddToQueue value)?  addToQueue,TResult? Function( _AddToPlaylist value)?  addToPlaylist,TResult? Function( _QueueUpdated value)?  queueUpdated,TResult? Function( _PlayNext value)?  playNextinQueue,}){
 final _that = this;
 switch (_that) {
 case _InitMusicQueue() when initMusicQueue != null:
@@ -163,7 +165,8 @@ return updateDuration(_that);case _UpdatePlayerState() when updatePlayerState !=
 return updatePlayerState(_that);case _UpdateShuffleState() when updateShuffleState != null:
 return updateShuffleState(_that);case _UpdateLoopState() when updateLoopState != null:
 return updateLoopState(_that);case _UpdateCurrentSong() when updateCurrentSong != null:
-return updateCurrentSong(_that);case _SongFinished() when songFinished != null:
+return updateCurrentSong(_that);case _UpdatePlayCounts() when updatePlayCounts != null:
+return updatePlayCounts(_that);case _SongFinished() when songFinished != null:
 return songFinished(_that);case _AddToQueue() when addToQueue != null:
 return addToQueue(_that);case _AddToPlaylist() when addToPlaylist != null:
 return addToPlaylist(_that);case _QueueUpdated() when queueUpdated != null:
@@ -185,7 +188,7 @@ return playNextinQueue(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<SongEntity> songs,  int currentIndex)?  initMusicQueue,TResult Function( SongEntity song)?  playSong,TResult Function( int songId)?  playSongById,TResult Function()?  pause,TResult Function()?  resume,TResult Function( Duration position)?  seek,TResult Function()?  playPreviousSong,TResult Function()?  playNextSong,TResult Function()?  toggleShuffle,TResult Function()?  cycleLoopMode,TResult Function( Duration position)?  updatePosition,TResult Function( Duration duration)?  updateDuration,TResult Function( bool isPlaying)?  updatePlayerState,TResult Function( bool isShuffleModeEnabled)?  updateShuffleState,TResult Function( int loopMode)?  updateLoopState,TResult Function( SongEntity song)?  updateCurrentSong,TResult Function()?  songFinished,TResult Function( SongEntity song)?  addToQueue,TResult Function( SongEntity song)?  addToPlaylist,TResult Function( List<SongEntity> queue)?  queueUpdated,TResult Function( SongEntity song)?  playNextinQueue,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<SongEntity> songs,  int currentIndex)?  initMusicQueue,TResult Function( SongEntity song)?  playSong,TResult Function( int songId)?  playSongById,TResult Function()?  pause,TResult Function()?  resume,TResult Function( Duration position)?  seek,TResult Function()?  playPreviousSong,TResult Function()?  playNextSong,TResult Function()?  toggleShuffle,TResult Function()?  cycleLoopMode,TResult Function( Duration position)?  updatePosition,TResult Function( Duration duration)?  updateDuration,TResult Function( bool isPlaying)?  updatePlayerState,TResult Function( bool isShuffleModeEnabled)?  updateShuffleState,TResult Function( int loopMode)?  updateLoopState,TResult Function( SongEntity song)?  updateCurrentSong,TResult Function( Map<int, int> playCounts)?  updatePlayCounts,TResult Function()?  songFinished,TResult Function( SongEntity song)?  addToQueue,TResult Function( SongEntity song)?  addToPlaylist,TResult Function( List<SongEntity> queue)?  queueUpdated,TResult Function( SongEntity song)?  playNextinQueue,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _InitMusicQueue() when initMusicQueue != null:
 return initMusicQueue(_that.songs,_that.currentIndex);case _PlaySong() when playSong != null:
@@ -203,7 +206,8 @@ return updateDuration(_that.duration);case _UpdatePlayerState() when updatePlaye
 return updatePlayerState(_that.isPlaying);case _UpdateShuffleState() when updateShuffleState != null:
 return updateShuffleState(_that.isShuffleModeEnabled);case _UpdateLoopState() when updateLoopState != null:
 return updateLoopState(_that.loopMode);case _UpdateCurrentSong() when updateCurrentSong != null:
-return updateCurrentSong(_that.song);case _SongFinished() when songFinished != null:
+return updateCurrentSong(_that.song);case _UpdatePlayCounts() when updatePlayCounts != null:
+return updatePlayCounts(_that.playCounts);case _SongFinished() when songFinished != null:
 return songFinished();case _AddToQueue() when addToQueue != null:
 return addToQueue(_that.song);case _AddToPlaylist() when addToPlaylist != null:
 return addToPlaylist(_that.song);case _QueueUpdated() when queueUpdated != null:
@@ -226,7 +230,7 @@ return playNextinQueue(_that.song);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<SongEntity> songs,  int currentIndex)  initMusicQueue,required TResult Function( SongEntity song)  playSong,required TResult Function( int songId)  playSongById,required TResult Function()  pause,required TResult Function()  resume,required TResult Function( Duration position)  seek,required TResult Function()  playPreviousSong,required TResult Function()  playNextSong,required TResult Function()  toggleShuffle,required TResult Function()  cycleLoopMode,required TResult Function( Duration position)  updatePosition,required TResult Function( Duration duration)  updateDuration,required TResult Function( bool isPlaying)  updatePlayerState,required TResult Function( bool isShuffleModeEnabled)  updateShuffleState,required TResult Function( int loopMode)  updateLoopState,required TResult Function( SongEntity song)  updateCurrentSong,required TResult Function()  songFinished,required TResult Function( SongEntity song)  addToQueue,required TResult Function( SongEntity song)  addToPlaylist,required TResult Function( List<SongEntity> queue)  queueUpdated,required TResult Function( SongEntity song)  playNextinQueue,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<SongEntity> songs,  int currentIndex)  initMusicQueue,required TResult Function( SongEntity song)  playSong,required TResult Function( int songId)  playSongById,required TResult Function()  pause,required TResult Function()  resume,required TResult Function( Duration position)  seek,required TResult Function()  playPreviousSong,required TResult Function()  playNextSong,required TResult Function()  toggleShuffle,required TResult Function()  cycleLoopMode,required TResult Function( Duration position)  updatePosition,required TResult Function( Duration duration)  updateDuration,required TResult Function( bool isPlaying)  updatePlayerState,required TResult Function( bool isShuffleModeEnabled)  updateShuffleState,required TResult Function( int loopMode)  updateLoopState,required TResult Function( SongEntity song)  updateCurrentSong,required TResult Function( Map<int, int> playCounts)  updatePlayCounts,required TResult Function()  songFinished,required TResult Function( SongEntity song)  addToQueue,required TResult Function( SongEntity song)  addToPlaylist,required TResult Function( List<SongEntity> queue)  queueUpdated,required TResult Function( SongEntity song)  playNextinQueue,}) {final _that = this;
 switch (_that) {
 case _InitMusicQueue():
 return initMusicQueue(_that.songs,_that.currentIndex);case _PlaySong():
@@ -244,7 +248,8 @@ return updateDuration(_that.duration);case _UpdatePlayerState():
 return updatePlayerState(_that.isPlaying);case _UpdateShuffleState():
 return updateShuffleState(_that.isShuffleModeEnabled);case _UpdateLoopState():
 return updateLoopState(_that.loopMode);case _UpdateCurrentSong():
-return updateCurrentSong(_that.song);case _SongFinished():
+return updateCurrentSong(_that.song);case _UpdatePlayCounts():
+return updatePlayCounts(_that.playCounts);case _SongFinished():
 return songFinished();case _AddToQueue():
 return addToQueue(_that.song);case _AddToPlaylist():
 return addToPlaylist(_that.song);case _QueueUpdated():
@@ -266,7 +271,7 @@ return playNextinQueue(_that.song);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<SongEntity> songs,  int currentIndex)?  initMusicQueue,TResult? Function( SongEntity song)?  playSong,TResult? Function( int songId)?  playSongById,TResult? Function()?  pause,TResult? Function()?  resume,TResult? Function( Duration position)?  seek,TResult? Function()?  playPreviousSong,TResult? Function()?  playNextSong,TResult? Function()?  toggleShuffle,TResult? Function()?  cycleLoopMode,TResult? Function( Duration position)?  updatePosition,TResult? Function( Duration duration)?  updateDuration,TResult? Function( bool isPlaying)?  updatePlayerState,TResult? Function( bool isShuffleModeEnabled)?  updateShuffleState,TResult? Function( int loopMode)?  updateLoopState,TResult? Function( SongEntity song)?  updateCurrentSong,TResult? Function()?  songFinished,TResult? Function( SongEntity song)?  addToQueue,TResult? Function( SongEntity song)?  addToPlaylist,TResult? Function( List<SongEntity> queue)?  queueUpdated,TResult? Function( SongEntity song)?  playNextinQueue,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<SongEntity> songs,  int currentIndex)?  initMusicQueue,TResult? Function( SongEntity song)?  playSong,TResult? Function( int songId)?  playSongById,TResult? Function()?  pause,TResult? Function()?  resume,TResult? Function( Duration position)?  seek,TResult? Function()?  playPreviousSong,TResult? Function()?  playNextSong,TResult? Function()?  toggleShuffle,TResult? Function()?  cycleLoopMode,TResult? Function( Duration position)?  updatePosition,TResult? Function( Duration duration)?  updateDuration,TResult? Function( bool isPlaying)?  updatePlayerState,TResult? Function( bool isShuffleModeEnabled)?  updateShuffleState,TResult? Function( int loopMode)?  updateLoopState,TResult? Function( SongEntity song)?  updateCurrentSong,TResult? Function( Map<int, int> playCounts)?  updatePlayCounts,TResult? Function()?  songFinished,TResult? Function( SongEntity song)?  addToQueue,TResult? Function( SongEntity song)?  addToPlaylist,TResult? Function( List<SongEntity> queue)?  queueUpdated,TResult? Function( SongEntity song)?  playNextinQueue,}) {final _that = this;
 switch (_that) {
 case _InitMusicQueue() when initMusicQueue != null:
 return initMusicQueue(_that.songs,_that.currentIndex);case _PlaySong() when playSong != null:
@@ -284,7 +289,8 @@ return updateDuration(_that.duration);case _UpdatePlayerState() when updatePlaye
 return updatePlayerState(_that.isPlaying);case _UpdateShuffleState() when updateShuffleState != null:
 return updateShuffleState(_that.isShuffleModeEnabled);case _UpdateLoopState() when updateLoopState != null:
 return updateLoopState(_that.loopMode);case _UpdateCurrentSong() when updateCurrentSong != null:
-return updateCurrentSong(_that.song);case _SongFinished() when songFinished != null:
+return updateCurrentSong(_that.song);case _UpdatePlayCounts() when updatePlayCounts != null:
+return updatePlayCounts(_that.playCounts);case _SongFinished() when songFinished != null:
 return songFinished();case _AddToQueue() when addToQueue != null:
 return addToQueue(_that.song);case _AddToPlaylist() when addToPlaylist != null:
 return addToPlaylist(_that.song);case _QueueUpdated() when queueUpdated != null:
@@ -1269,6 +1275,84 @@ $SongEntityCopyWith<$Res> get song {
     return _then(_self.copyWith(song: value));
   });
 }
+}
+
+/// @nodoc
+
+
+class _UpdatePlayCounts with DiagnosticableTreeMixin implements MusicPlayerEvent {
+  const _UpdatePlayCounts(final  Map<int, int> playCounts): _playCounts = playCounts;
+  
+
+ final  Map<int, int> _playCounts;
+ Map<int, int> get playCounts {
+  if (_playCounts is EqualUnmodifiableMapView) return _playCounts;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_playCounts);
+}
+
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$UpdatePlayCountsCopyWith<_UpdatePlayCounts> get copyWith => __$UpdatePlayCountsCopyWithImpl<_UpdatePlayCounts>(this, _$identity);
+
+
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.updatePlayCounts'))
+    ..add(DiagnosticsProperty('playCounts', playCounts));
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UpdatePlayCounts&&const DeepCollectionEquality().equals(other._playCounts, _playCounts));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_playCounts));
+
+@override
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'MusicPlayerEvent.updatePlayCounts(playCounts: $playCounts)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$UpdatePlayCountsCopyWith<$Res> implements $MusicPlayerEventCopyWith<$Res> {
+  factory _$UpdatePlayCountsCopyWith(_UpdatePlayCounts value, $Res Function(_UpdatePlayCounts) _then) = __$UpdatePlayCountsCopyWithImpl;
+@useResult
+$Res call({
+ Map<int, int> playCounts
+});
+
+
+
+
+}
+/// @nodoc
+class __$UpdatePlayCountsCopyWithImpl<$Res>
+    implements _$UpdatePlayCountsCopyWith<$Res> {
+  __$UpdatePlayCountsCopyWithImpl(this._self, this._then);
+
+  final _UpdatePlayCounts _self;
+  final $Res Function(_UpdatePlayCounts) _then;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? playCounts = null,}) {
+  return _then(_UpdatePlayCounts(
+null == playCounts ? _self._playCounts : playCounts // ignore: cast_nullable_to_non_nullable
+as Map<int, int>,
+  ));
+}
+
+
 }
 
 /// @nodoc

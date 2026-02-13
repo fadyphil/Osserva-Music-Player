@@ -38,6 +38,8 @@ abstract class MusicPlayerEvent with _$MusicPlayerEvent {
       _UpdateLoopState;
   const factory MusicPlayerEvent.updateCurrentSong(SongEntity song) =
       _UpdateCurrentSong;
+  const factory MusicPlayerEvent.updatePlayCounts(Map<int, int> playCounts) =
+      _UpdatePlayCounts;
 
   const factory MusicPlayerEvent.songFinished() = _SongFinished;
 

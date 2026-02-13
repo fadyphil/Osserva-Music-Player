@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:music_player/core/usecases/usecase.dart';
+import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
 import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
 import 'package:music_player/features/local%20music/domain/use%20cases/get_song_by_id_use_case.dart';
 import 'music_player_event.dart';
@@ -8,6 +10,7 @@ import 'music_player_state.dart';
 class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   final AudioPlayerRepository _audioRepository;
   final GetSongByIdUseCase _getSongByIdUseCase;
+  final GetAllSongPlayCounts _getAllSongPlayCounts;
 
   StreamSubscription? _positionSubscription;
   StreamSubscription? _durationSubscription;
@@ -18,8 +21,11 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   StreamSubscription? _loopSubscription;
   StreamSubscription? _queueSubscription;
 
-  MusicPlayerBloc(this._audioRepository, this._getSongByIdUseCase)
-    : super(const MusicPlayerState()) {
+  MusicPlayerBloc(
+    this._audioRepository,
+    this._getSongByIdUseCase,
+    this._getAllSongPlayCounts,
+  ) : super(const MusicPlayerState()) {
     // 1. Setup Listeners
     _positionSubscription = _audioRepository.positionStream.listen((pos) {
       add(MusicPlayerEvent.updatePosition(pos));
@@ -63,6 +69,8 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
     _completionSubscription = _audioRepository.playerCompleteStream.listen((_) {
       add(const MusicPlayerEvent.songFinished());
     });
+
+    _refreshPlayCounts();
 
     // 2. Handle Events
     on<MusicPlayerEvent>((event, emit) async {
@@ -166,12 +174,20 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
           final index = state.queue.indexWhere((s) => s.id == e.song.id);
           final fullSong = index != -1 ? state.queue[index] : e.song;
 
+          // Placeholder: Fetch genre if needed. For now, we assume it's unknown
+          // as SongEntity doesn't have it.
+          const genre = 'Unknown';
+
           emit(
             state.copyWith(
               currentSong: fullSong,
               currentIndex: index != -1 ? index : state.currentIndex,
+              currentGenre: genre,
             ),
           );
+        },
+        updatePlayCounts: (e) async {
+          emit(state.copyWith(playCounts: e.playCounts));
         },
         addToQueue: (e) async {
           try {
@@ -226,6 +242,13 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
           }
         },
       );
+    });
+  }
+
+  Future<void> _refreshPlayCounts() async {
+    final result = await _getAllSongPlayCounts(NoParams());
+    result.fold((_) => null, (counts) {
+      add(MusicPlayerEvent.updatePlayCounts(counts));
     });
   }
 
