@@ -9,23 +9,237 @@ import 'package:music_player/features/local%20music/presentation/managers/local_
 import 'package:music_player/features/local%20music/presentation/widgets/edit_song_metadata_sheet.dart';
 import 'package:music_player/features/playlists/domain/entities/playlist_entity.dart';
 import 'package:music_player/features/playlists/presentation/bloc/playlist_bloc.dart';
-// Actually PlaylistBloc handles 'addSongToPlaylist'. Does it handle remove?
-// 'RemoveSongFromPlaylist' is a usecase. But PlaylistBloc might not expose it globally for *any* playlist.
-// Usually Remove is done inside PlaylistDetail.
-// If we want to remove from *here*, we might need to invoke the usecase or add event to PlaylistBloc.
-// Let's assume PlaylistBloc supports 'removeSongFromPlaylist' or we need to add it.
-// Checking PlaylistBloc... assume it has or we use the UseCase directly? No, clean arch via Bloc.
-// I will assume for now we can only Add, OR I will try to use the Bloc.
-// If 'RemoveSongFromPlaylist' is not in PlaylistBloc, I might need to trigger it differently.
-// Let's check init_dependencies.dart from context...
-// It registered 'RemoveSongFromPlaylist' usecase.
-// It registered 'PlaylistDetailBloc'.
-// 'PlaylistBloc' (the list one) might strictly be for LISTING playlists.
-// However, typically "Add to Playlist" feature implies toggling.
-// I will implement the UI. If I can't remove, I'll just show "Already added" state.
-// But the design shows "Remove from Playlist".
-// I'll implement the UI logic.
+import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
+import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
 
+// --- SHEET 1: Song Actions Menu ---
+class SongActionsSheet extends StatelessWidget {
+  final SongEntity song;
+
+  const SongActionsSheet({super.key, required this.song});
+
+  @override
+  Widget build(BuildContext context) {
+    // We need to capture the BLoCs because showModalBottomSheet might lose context if not careful
+    final localMusicBloc = context.read<LocalMusicBloc>();
+    final favoritesBloc = context.read<FavoritesBloc>();
+    final musicPlayerBloc = context.read<MusicPlayerBloc>();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      decoration: const BoxDecoration(
+        color: AppPallete.backgroundColor,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header: Song Info
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        song.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        song.artist,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: Colors.white54),
+                ),
+              ],
+            ),
+          ),
+          const Divider(color: Colors.white10),
+
+          // 1. Play Next
+          _ActionTile(
+            icon: Icons.playlist_play_rounded,
+            label: "Play Next",
+            onTap: () {
+              musicPlayerBloc.add(MusicPlayerEvent.playNextinQueue(song));
+              Navigator.pop(context);
+            },
+          ),
+
+          // 2. Add to Queue
+          _ActionTile(
+            icon: Icons.queue_music_rounded,
+            label: "Add to Queue",
+            onTap: () {
+              musicPlayerBloc.add(MusicPlayerEvent.addToQueue(song));
+              Navigator.pop(context);
+            },
+          ),
+
+          // 3. Add to Playlist (The Refactored Trigger)
+          _ActionTile(
+            icon: Icons.playlist_add_rounded,
+            label: "Add to Playlist",
+            onTap: () {
+              Navigator.pop(context); // Close actions sheet
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => MultiBlocProvider(
+                  providers: [
+                    BlocProvider.value(value: localMusicBloc),
+                    BlocProvider.value(value: favoritesBloc),
+                  ],
+                  child: AddToPlaylistSheet(song: song),
+                ),
+              );
+            },
+          ),
+
+          // 4. Favorites Toggle
+          BlocBuilder<FavoritesBloc, FavoritesState>(
+            bloc: favoritesBloc,
+            builder: (context, state) {
+              bool isFav = false;
+              state.maybeWhen(
+                loaded: (ids, _) => isFav = ids.contains(song.id),
+                orElse: () {},
+              );
+              return _ActionTile(
+                icon: isFav ? Icons.favorite : Icons.favorite_border,
+                iconColor: isFav ? AppPallete.primaryColor : Colors.white,
+                label: isFav ? "Remove from Favorites" : "Add to Favorites",
+                onTap: () {
+                  favoritesBloc.add(FavoritesEvent.toggleFavorite(song));
+                  Navigator.pop(context);
+                },
+              );
+            },
+          ),
+
+          const Divider(color: Colors.white10),
+
+          // 5. Edit Info
+          _ActionTile(
+            icon: Icons.edit_rounded,
+            label: "Edit Song Info",
+            onTap: () {
+              Navigator.pop(context);
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => BlocProvider.value(
+                  value: localMusicBloc,
+                  child: EditSongMetadataSheet(song: song),
+                ),
+              );
+            },
+          ),
+
+          // 6. Delete
+          _ActionTile(
+            icon: Icons.delete_outline_rounded,
+            label: "Delete from Device",
+            iconColor: AppPallete.destructive,
+            textColor: AppPallete.destructive,
+            onTap: () {
+              Navigator.pop(context);
+              _showDeleteDialog(context, localMusicBloc, song);
+            },
+          ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteDialog(
+    BuildContext context,
+    LocalMusicBloc bloc,
+    SongEntity song,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppPallete.cardColor,
+        title: const Text("Delete Song?", style: TextStyle(color: Colors.white)),
+        content: const Text(
+          "This will permanently delete the file from your device.",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              bloc.add(LocalMusicEvent.deleteSong(song));
+              Navigator.pop(ctx);
+            },
+            child: const Text(
+              "Delete",
+              style: TextStyle(color: AppPallete.destructive),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color? iconColor;
+  final Color? textColor;
+
+  const _ActionTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.iconColor,
+    this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: iconColor ?? Colors.white),
+      title: Text(
+        label,
+        style: TextStyle(
+          color: textColor ?? Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
+}
+
+// --- SHEET 2: Add to Playlist (Selection Only) ---
 class AddToPlaylistSheet extends StatelessWidget {
   final SongEntity song;
 
@@ -38,6 +252,9 @@ class AddToPlaylistSheet extends StatelessWidget {
           serviceLocator<PlaylistBloc>()
             ..add(const PlaylistEvent.loadPlaylists()),
       child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         decoration: const BoxDecoration(
           color: AppPallete.backgroundColor,
@@ -63,29 +280,24 @@ class AddToPlaylistSheet extends StatelessWidget {
                 IconButton(
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.close, color: Colors.white54),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // 2. Create Button
             FilledButton.icon(
               onPressed: () => _showCreatePlaylistDialog(context),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(
-                  0xFF1F2937,
-                ), // Dark blue-grey from image
+                backgroundColor: const Color(0xFF1F2937),
                 foregroundColor: AppPallete.primaryColor,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
                     color: AppPallete.primaryColor.withValues(alpha: 0.3),
                   ),
                 ),
-                elevation: 0,
               ),
               icon: const Icon(Icons.add),
               label: const Text(
@@ -95,44 +307,8 @@ class AddToPlaylistSheet extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // 2.5 Favorite Toggle (Requested Feature)
-            BlocBuilder<FavoritesBloc, FavoritesState>(
-              builder: (context, state) {
-                bool isFav = false;
-                state.maybeWhen(
-                  loaded: (ids, _) => isFav = ids.contains(song.id),
-                  orElse: () {},
-                );
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      isFav ? Icons.favorite : Icons.favorite_border,
-                      color: isFav ? AppPallete.primaryColor : Colors.white54,
-                    ),
-                  ),
-                  title: Text(
-                    isFav ? "Remove from Favorites" : "Add to Favorites",
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
-                  ),
-                  onTap: () {
-                    context.read<FavoritesBloc>().add(
-                      FavoritesEvent.toggleFavorite(song),
-                    );
-                  },
-                );
-              },
-            ),
-
-            const SizedBox(height: 8),
-
             // 3. Lists
-            Flexible(
+            Expanded(
               child: BlocBuilder<PlaylistBloc, PlaylistState>(
                 builder: (context, state) {
                   return state.map(
@@ -152,15 +328,23 @@ class AddToPlaylistSheet extends StatelessWidget {
                           .where((p) => !p.songIds.contains(song.id))
                           .toList();
 
+                      if (allPlaylists.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            "No playlists found.",
+                            style: TextStyle(color: Colors.white54),
+                          ),
+                        );
+                      }
+
                       return ListView(
-                        shrinkWrap: true,
                         physics: const BouncingScrollPhysics(),
                         children: [
                           if (availablePlaylists.isNotEmpty) ...[
                             const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12),
+                              padding: EdgeInsets.symmetric(vertical: 8),
                               child: Text(
-                                "Add to Playlist",
+                                "Select Playlist",
                                 style: TextStyle(
                                   color: Colors.white54,
                                   fontSize: 12,
@@ -180,7 +364,7 @@ class AddToPlaylistSheet extends StatelessWidget {
                             const Padding(
                               padding: EdgeInsets.symmetric(vertical: 12),
                               child: Text(
-                                "Remove from Playlist",
+                                "Already In",
                                 style: TextStyle(
                                   color: Colors.white54,
                                   fontSize: 12,
@@ -195,81 +379,6 @@ class AddToPlaylistSheet extends StatelessWidget {
                               ),
                             ),
                           ],
-
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8),
-                            child: Divider(color: Colors.white10),
-                          ),
-                          ListTile(
-                            leading:
-                                const Icon(Icons.edit, color: Colors.white),
-                            title: const Text(
-                              "Edit Info",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            onTap: () {
-                              final bloc = context.read<LocalMusicBloc>();
-                              Navigator.pop(context);
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                backgroundColor: Colors.transparent,
-                                builder:
-                                    (context) => BlocProvider.value(
-                                      value: bloc,
-                                      child: EditSongMetadataSheet(song: song),
-                                    ),
-                              );
-                            },
-                          ),
-                          ListTile(
-                            leading: const Icon(
-                              Icons.delete,
-                              color: AppPallete.destructive,
-                            ),
-                            title: const Text(
-                              "Delete from device",
-                              style: TextStyle(color: AppPallete.destructive),
-                            ),
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                builder:
-                                    (ctx) => AlertDialog(
-                                      backgroundColor: AppPallete.cardColor,
-                                      title: const Text(
-                                        "Delete Song?",
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                      content: const Text(
-                                        "This will permanently delete the file from your device.",
-                                        style: TextStyle(color: Colors.white70),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(ctx),
-                                          child: const Text("Cancel"),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            context.read<LocalMusicBloc>().add(
-                                              LocalMusicEvent.deleteSong(song),
-                                            );
-                                            Navigator.pop(ctx);
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text(
-                                            "Delete",
-                                            style: TextStyle(
-                                              color: AppPallete.destructive,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                              );
-                            },
-                          ),
                           const SizedBox(height: 24),
                         ],
                       );
@@ -293,10 +402,7 @@ class AddToPlaylistSheet extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'New Playlist',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('New Playlist', style: TextStyle(color: Colors.white)),
         content: TextField(
           controller: nameCtrl,
           autofocus: true,
@@ -315,10 +421,7 @@ class AddToPlaylistSheet extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white54),
-            ),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () {
@@ -367,22 +470,14 @@ class _PlaylistTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(8),
-          image: playlist.imagePath != null
-              ? DecorationImage(
-                  image: NetworkImage(playlist.imagePath!),
-                  fit: BoxFit.cover,
-                )
-              : null,
         ),
-        child: playlist.imagePath == null
-            ? const Icon(Icons.music_note, color: Colors.white24)
-            : null,
+        child: const Icon(Icons.playlist_play_rounded, color: Colors.white24),
       ),
       title: Text(
         playlist.name,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 14,
+          fontSize: 15,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -391,8 +486,8 @@ class _PlaylistTile extends StatelessWidget {
         style: const TextStyle(color: Colors.white54, fontSize: 12),
       ),
       trailing: isAdded
-          ? const Icon(Icons.check, color: AppPallete.primaryColor, size: 20)
-          : const Icon(Icons.playlist_add, color: Colors.white54, size: 20),
+          ? const Icon(Icons.check_circle, color: AppPallete.primaryColor)
+          : const Icon(Icons.add_circle_outline, color: Colors.white24),
       onTap: () {
         if (!isAdded) {
           context.read<PlaylistBloc>().add(
@@ -401,24 +496,8 @@ class _PlaylistTile extends StatelessWidget {
               song: song,
             ),
           );
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Added to ${playlist.name}"),
-              backgroundColor: AppPallete.primaryGreen,
-              duration: const Duration(seconds: 1),
-            ),
-          );
         } else {
-          // Handle Remove if supported, otherwise just show message
-          // context.read<PlaylistBloc>().add(PlaylistEvent.removeSong(playlist.id, song));
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                "Removing from playlists is not yet supported in this view.",
-              ),
-              duration: Duration(seconds: 1),
-            ),
-          );
+          // You could add "Remove from Playlist" logic here if needed
         }
       },
     );

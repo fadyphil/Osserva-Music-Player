@@ -4,9 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:music_player/core/theme/app_pallete.dart';
+import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 import 'package:music_player/features/local%20music/presentation/managers/local_music_bloc.dart';
-import 'package:music_player/features/local%20music/presentation/widgets/song_options_sheet.dart';
 import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
 import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
 import 'package:music_player/features/playlists/presentation/widgets/add_to_playlist_sheet.dart';
@@ -33,42 +33,50 @@ class SongListTile extends StatelessWidget {
         key: ValueKey(song.id),
         groupTag: 0,
         startActionPane: ActionPane(
-          extentRatio: 0.4,
+          extentRatio: 0.3,
           motion: const ScrollMotion(),
           children: [
             SlidableAction(
               onPressed: (context) {
-                showSongOptions(context, song);
+                context.read<MusicPlayerBloc>().add(
+                  MusicPlayerEvent.addToQueue(song),
+                );
               },
-              backgroundColor: const Color(0xFF21B7CA),
+              backgroundColor: AppPallete.primaryColor,
               foregroundColor: Colors.white,
-              icon: Icons.playlist_add,
+              icon: Icons.queue_music,
               label: 'Queue',
             ),
           ],
         ),
         endActionPane: ActionPane(
-          extentRatio: 0.4,
+          extentRatio: 0.3,
           motion: const ScrollMotion(),
           children: [
             SlidableAction(
               onPressed: (context) {
                 final localMusicBloc = context.read<LocalMusicBloc>();
+                final favoritesBloc = context.read<FavoritesBloc>();
+                final musicPlayerBloc = context.read<MusicPlayerBloc>();
                 showModalBottomSheet(
                   context: context,
                   useRootNavigator: true,
                   backgroundColor: Colors.transparent,
                   isScrollControlled: true,
-                  builder: (context) => BlocProvider.value(
-                    value: localMusicBloc,
-                    child: AddToPlaylistSheet(song: song),
+                  builder: (context) => MultiBlocProvider(
+                    providers: [
+                      BlocProvider.value(value: localMusicBloc),
+                      BlocProvider.value(value: favoritesBloc),
+                      BlocProvider.value(value: musicPlayerBloc),
+                    ],
+                    child: SongActionsSheet(song: song),
                   ),
                 );
               },
-              backgroundColor: const Color(0xFF7F58FF),
+              backgroundColor: AppPallete.surface,
               foregroundColor: Colors.white,
-              icon: Icons.add_box,
-              label: 'Playlist',
+              icon: Icons.more_horiz,
+              label: 'Actions',
             ),
           ],
         ),
@@ -86,14 +94,20 @@ class SongListTile extends StatelessWidget {
             onLongPress: () {
               HapticFeedback.mediumImpact();
               final localMusicBloc = context.read<LocalMusicBloc>();
+              final favoritesBloc = context.read<FavoritesBloc>();
+              final musicPlayerBloc = context.read<MusicPlayerBloc>();
               showModalBottomSheet(
                 context: context,
                 useRootNavigator: true,
                 backgroundColor: Colors.transparent,
                 isScrollControlled: true,
-                builder: (context) => BlocProvider.value(
-                  value: localMusicBloc,
-                  child: AddToPlaylistSheet(song: song),
+                builder: (context) => MultiBlocProvider(
+                  providers: [
+                    BlocProvider.value(value: localMusicBloc),
+                    BlocProvider.value(value: favoritesBloc),
+                    BlocProvider.value(value: musicPlayerBloc),
+                  ],
+                  child: SongActionsSheet(song: song),
                 ),
               );
             },
