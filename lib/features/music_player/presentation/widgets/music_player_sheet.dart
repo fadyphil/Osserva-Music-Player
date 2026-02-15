@@ -9,6 +9,7 @@ import '../../../../core/theme/app_pallete.dart';
 import '../bloc/music_player_bloc.dart';
 import '../bloc/music_player_event.dart';
 import '../bloc/music_player_state.dart';
+import 'sleep_timer_sheet.dart';
 
 class MusicPlayerSheet extends StatelessWidget {
   const MusicPlayerSheet({super.key});
@@ -63,10 +64,7 @@ class MusicPlayerSheet extends StatelessWidget {
               selector: (state) => state.currentSong,
               builder: (context, song) {
                 return IconButton(
-                  icon: const Icon(
-                    Icons.more_horiz,
-                    color: AppPallete.white,
-                  ),
+                  icon: const Icon(Icons.more_horiz, color: AppPallete.white),
                   onPressed: () {
                     if (song == null) return;
                     final localMusicBloc = context.read<LocalMusicBloc>();
@@ -449,13 +447,31 @@ class _UtilityIcons extends StatelessWidget {
           icon: const Icon(Icons.queue_music, color: AppPallete.grey, size: 20),
           onPressed: () {},
         ),
-        IconButton(
-          icon: const Icon(
-            Icons.timer_outlined,
-            color: AppPallete.grey,
-            size: 20,
-          ),
-          onPressed: () {},
+        BlocBuilder<MusicPlayerBloc, MusicPlayerState>(
+          builder: (context, state) {
+            final bool isTimerActive =
+                state.timerRemaining != null || state.isEndTrackTimerActive;
+            return IconButton(
+              icon: Icon(
+                Icons.timer_outlined,
+                color: isTimerActive ? AppPallete.accent : AppPallete.grey,
+                size: 20,
+              ),
+              onPressed: () {
+                final musicPlayerBloc = context.read<MusicPlayerBloc>();
+                showModalBottomSheet(
+                  showDragHandle: false,
+                  useRootNavigator: true,
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => BlocProvider.value(
+                    value: musicPlayerBloc,
+                    child: const SleepTimerSheet(),
+                  ),
+                );
+              },
+            );
+          },
         ),
         const Spacer(),
         BlocBuilder<MusicPlayerBloc, MusicPlayerState>(
