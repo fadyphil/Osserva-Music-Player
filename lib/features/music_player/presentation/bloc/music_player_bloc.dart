@@ -78,17 +78,27 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
     on<MusicPlayerEvent>((event, emit) async {
       await event.map(
         initMusicQueue: (e) async {
-          // Optimistic update
-          emit(
-            state.copyWith(
-              queue: e.songs,
-              currentIndex: e.currentIndex,
-              currentSong: e.songs[e.currentIndex],
-              isPlaying: true,
-            ),
-          );
-          // Delegate to Handler
-          await _audioRepository.setQueue(e.songs, e.currentIndex);
+          try {
+            // Optimistic update
+            emit(
+              state.copyWith(
+                queue: e.songs,
+                currentIndex: e.currentIndex,
+                currentSong: e.songs[e.currentIndex],
+                isPlaying: true,
+              ),
+            );
+            // Delegate to Handler
+            await _audioRepository.setQueue(e.songs, e.currentIndex);
+          } catch (e) {
+            // Revert or show error
+            // If "Loading interrupted", it's fine.
+            emit(
+              state.copyWith(
+                errorMessage: "Failed to initialize queue: $e",
+              ),
+            );
+          }
         },
         playSong: (e) async {
           // Play Single Song (Legacy/Specific use case)
@@ -223,6 +233,42 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
                 errorMessage: "Couldn't add song : $e",
               ),
             );
+            emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+          }
+        },
+        removeFromQueue: (e) async {
+          try {
+            await _audioRepository.removeQueueItemAt(e.index);
+            // Success status (optional, maybe no snackbar needed for removal)
+          } catch (e) {
+            emit(
+              state.copyWith(
+                queueActionStatus: QueueStatus.failure,
+                errorMessage: "Failed to remove song: $e",
+              ),
+            );
+            emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+          }
+        },
+        reorderQueue: (e) async {
+          try {
+            await _audioRepository.reorderQueue(e.oldIndex, e.newIndex);
+          } catch (e) {
+             emit(state.copyWith(
+                queueActionStatus: QueueStatus.failure,
+                errorMessage: "Failed to reorder: $e"
+             ));
+             emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+          }
+        },
+        playQueueItem: (e) async {
+          try {
+            await _audioRepository.skipToQueueItem(e.index);
+          } catch (e) {
+            emit(state.copyWith(
+                queueActionStatus: QueueStatus.failure,
+                errorMessage: "Failed to play queue item: $e"
+            ));
             emit(state.copyWith(queueActionStatus: QueueStatus.initial));
           }
         },

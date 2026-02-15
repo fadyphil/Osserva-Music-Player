@@ -61,7 +61,7 @@ extension MusicPlayerEventPatterns on MusicPlayerEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _InitMusicQueue value)?  initMusicQueue,TResult Function( _PlaySong value)?  playSong,TResult Function( _PlaySongById value)?  playSongById,TResult Function( _Pause value)?  pause,TResult Function( _Resume value)?  resume,TResult Function( _Seek value)?  seek,TResult Function( _PreviousSong value)?  playPreviousSong,TResult Function( _NextSong value)?  playNextSong,TResult Function( _ToggleShuffle value)?  toggleShuffle,TResult Function( _CycleLoopMode value)?  cycleLoopMode,TResult Function( _UpdatePosition value)?  updatePosition,TResult Function( _UpdateDuration value)?  updateDuration,TResult Function( _UpdatePlayerState value)?  updatePlayerState,TResult Function( _UpdateShuffleState value)?  updateShuffleState,TResult Function( _UpdateLoopState value)?  updateLoopState,TResult Function( _UpdateCurrentSong value)?  updateCurrentSong,TResult Function( _UpdatePlayCounts value)?  updatePlayCounts,TResult Function( _SongFinished value)?  songFinished,TResult Function( _AddToQueue value)?  addToQueue,TResult Function( _AddToPlaylist value)?  addToPlaylist,TResult Function( _QueueUpdated value)?  queueUpdated,TResult Function( _PlayNext value)?  playNextinQueue,TResult Function( _SetTimer value)?  setTimer,TResult Function( _SetEndTrackTimer value)?  setEndTrackTimer,TResult Function( _CancelTimer value)?  cancelTimer,TResult Function( _TickTimer value)?  tickTimer,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _InitMusicQueue value)?  initMusicQueue,TResult Function( _PlaySong value)?  playSong,TResult Function( _PlaySongById value)?  playSongById,TResult Function( _Pause value)?  pause,TResult Function( _Resume value)?  resume,TResult Function( _Seek value)?  seek,TResult Function( _PreviousSong value)?  playPreviousSong,TResult Function( _NextSong value)?  playNextSong,TResult Function( _ToggleShuffle value)?  toggleShuffle,TResult Function( _CycleLoopMode value)?  cycleLoopMode,TResult Function( _UpdatePosition value)?  updatePosition,TResult Function( _UpdateDuration value)?  updateDuration,TResult Function( _UpdatePlayerState value)?  updatePlayerState,TResult Function( _UpdateShuffleState value)?  updateShuffleState,TResult Function( _UpdateLoopState value)?  updateLoopState,TResult Function( _UpdateCurrentSong value)?  updateCurrentSong,TResult Function( _UpdatePlayCounts value)?  updatePlayCounts,TResult Function( _SongFinished value)?  songFinished,TResult Function( _AddToQueue value)?  addToQueue,TResult Function( _RemoveFromQueue value)?  removeFromQueue,TResult Function( _ReorderQueue value)?  reorderQueue,TResult Function( _PlayQueueItem value)?  playQueueItem,TResult Function( _AddToPlaylist value)?  addToPlaylist,TResult Function( _QueueUpdated value)?  queueUpdated,TResult Function( _PlayNext value)?  playNextinQueue,TResult Function( _SetTimer value)?  setTimer,TResult Function( _SetEndTrackTimer value)?  setEndTrackTimer,TResult Function( _CancelTimer value)?  cancelTimer,TResult Function( _TickTimer value)?  tickTimer,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _InitMusicQueue() when initMusicQueue != null:
@@ -83,7 +83,10 @@ return updateLoopState(_that);case _UpdateCurrentSong() when updateCurrentSong !
 return updateCurrentSong(_that);case _UpdatePlayCounts() when updatePlayCounts != null:
 return updatePlayCounts(_that);case _SongFinished() when songFinished != null:
 return songFinished(_that);case _AddToQueue() when addToQueue != null:
-return addToQueue(_that);case _AddToPlaylist() when addToPlaylist != null:
+return addToQueue(_that);case _RemoveFromQueue() when removeFromQueue != null:
+return removeFromQueue(_that);case _ReorderQueue() when reorderQueue != null:
+return reorderQueue(_that);case _PlayQueueItem() when playQueueItem != null:
+return playQueueItem(_that);case _AddToPlaylist() when addToPlaylist != null:
 return addToPlaylist(_that);case _QueueUpdated() when queueUpdated != null:
 return queueUpdated(_that);case _PlayNext() when playNextinQueue != null:
 return playNextinQueue(_that);case _SetTimer() when setTimer != null:
@@ -108,7 +111,7 @@ return tickTimer(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _InitMusicQueue value)  initMusicQueue,required TResult Function( _PlaySong value)  playSong,required TResult Function( _PlaySongById value)  playSongById,required TResult Function( _Pause value)  pause,required TResult Function( _Resume value)  resume,required TResult Function( _Seek value)  seek,required TResult Function( _PreviousSong value)  playPreviousSong,required TResult Function( _NextSong value)  playNextSong,required TResult Function( _ToggleShuffle value)  toggleShuffle,required TResult Function( _CycleLoopMode value)  cycleLoopMode,required TResult Function( _UpdatePosition value)  updatePosition,required TResult Function( _UpdateDuration value)  updateDuration,required TResult Function( _UpdatePlayerState value)  updatePlayerState,required TResult Function( _UpdateShuffleState value)  updateShuffleState,required TResult Function( _UpdateLoopState value)  updateLoopState,required TResult Function( _UpdateCurrentSong value)  updateCurrentSong,required TResult Function( _UpdatePlayCounts value)  updatePlayCounts,required TResult Function( _SongFinished value)  songFinished,required TResult Function( _AddToQueue value)  addToQueue,required TResult Function( _AddToPlaylist value)  addToPlaylist,required TResult Function( _QueueUpdated value)  queueUpdated,required TResult Function( _PlayNext value)  playNextinQueue,required TResult Function( _SetTimer value)  setTimer,required TResult Function( _SetEndTrackTimer value)  setEndTrackTimer,required TResult Function( _CancelTimer value)  cancelTimer,required TResult Function( _TickTimer value)  tickTimer,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _InitMusicQueue value)  initMusicQueue,required TResult Function( _PlaySong value)  playSong,required TResult Function( _PlaySongById value)  playSongById,required TResult Function( _Pause value)  pause,required TResult Function( _Resume value)  resume,required TResult Function( _Seek value)  seek,required TResult Function( _PreviousSong value)  playPreviousSong,required TResult Function( _NextSong value)  playNextSong,required TResult Function( _ToggleShuffle value)  toggleShuffle,required TResult Function( _CycleLoopMode value)  cycleLoopMode,required TResult Function( _UpdatePosition value)  updatePosition,required TResult Function( _UpdateDuration value)  updateDuration,required TResult Function( _UpdatePlayerState value)  updatePlayerState,required TResult Function( _UpdateShuffleState value)  updateShuffleState,required TResult Function( _UpdateLoopState value)  updateLoopState,required TResult Function( _UpdateCurrentSong value)  updateCurrentSong,required TResult Function( _UpdatePlayCounts value)  updatePlayCounts,required TResult Function( _SongFinished value)  songFinished,required TResult Function( _AddToQueue value)  addToQueue,required TResult Function( _RemoveFromQueue value)  removeFromQueue,required TResult Function( _ReorderQueue value)  reorderQueue,required TResult Function( _PlayQueueItem value)  playQueueItem,required TResult Function( _AddToPlaylist value)  addToPlaylist,required TResult Function( _QueueUpdated value)  queueUpdated,required TResult Function( _PlayNext value)  playNextinQueue,required TResult Function( _SetTimer value)  setTimer,required TResult Function( _SetEndTrackTimer value)  setEndTrackTimer,required TResult Function( _CancelTimer value)  cancelTimer,required TResult Function( _TickTimer value)  tickTimer,}){
 final _that = this;
 switch (_that) {
 case _InitMusicQueue():
@@ -130,7 +133,10 @@ return updateLoopState(_that);case _UpdateCurrentSong():
 return updateCurrentSong(_that);case _UpdatePlayCounts():
 return updatePlayCounts(_that);case _SongFinished():
 return songFinished(_that);case _AddToQueue():
-return addToQueue(_that);case _AddToPlaylist():
+return addToQueue(_that);case _RemoveFromQueue():
+return removeFromQueue(_that);case _ReorderQueue():
+return reorderQueue(_that);case _PlayQueueItem():
+return playQueueItem(_that);case _AddToPlaylist():
 return addToPlaylist(_that);case _QueueUpdated():
 return queueUpdated(_that);case _PlayNext():
 return playNextinQueue(_that);case _SetTimer():
@@ -154,7 +160,7 @@ return tickTimer(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _InitMusicQueue value)?  initMusicQueue,TResult? Function( _PlaySong value)?  playSong,TResult? Function( _PlaySongById value)?  playSongById,TResult? Function( _Pause value)?  pause,TResult? Function( _Resume value)?  resume,TResult? Function( _Seek value)?  seek,TResult? Function( _PreviousSong value)?  playPreviousSong,TResult? Function( _NextSong value)?  playNextSong,TResult? Function( _ToggleShuffle value)?  toggleShuffle,TResult? Function( _CycleLoopMode value)?  cycleLoopMode,TResult? Function( _UpdatePosition value)?  updatePosition,TResult? Function( _UpdateDuration value)?  updateDuration,TResult? Function( _UpdatePlayerState value)?  updatePlayerState,TResult? Function( _UpdateShuffleState value)?  updateShuffleState,TResult? Function( _UpdateLoopState value)?  updateLoopState,TResult? Function( _UpdateCurrentSong value)?  updateCurrentSong,TResult? Function( _UpdatePlayCounts value)?  updatePlayCounts,TResult? Function( _SongFinished value)?  songFinished,TResult? Function( _AddToQueue value)?  addToQueue,TResult? Function( _AddToPlaylist value)?  addToPlaylist,TResult? Function( _QueueUpdated value)?  queueUpdated,TResult? Function( _PlayNext value)?  playNextinQueue,TResult? Function( _SetTimer value)?  setTimer,TResult? Function( _SetEndTrackTimer value)?  setEndTrackTimer,TResult? Function( _CancelTimer value)?  cancelTimer,TResult? Function( _TickTimer value)?  tickTimer,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _InitMusicQueue value)?  initMusicQueue,TResult? Function( _PlaySong value)?  playSong,TResult? Function( _PlaySongById value)?  playSongById,TResult? Function( _Pause value)?  pause,TResult? Function( _Resume value)?  resume,TResult? Function( _Seek value)?  seek,TResult? Function( _PreviousSong value)?  playPreviousSong,TResult? Function( _NextSong value)?  playNextSong,TResult? Function( _ToggleShuffle value)?  toggleShuffle,TResult? Function( _CycleLoopMode value)?  cycleLoopMode,TResult? Function( _UpdatePosition value)?  updatePosition,TResult? Function( _UpdateDuration value)?  updateDuration,TResult? Function( _UpdatePlayerState value)?  updatePlayerState,TResult? Function( _UpdateShuffleState value)?  updateShuffleState,TResult? Function( _UpdateLoopState value)?  updateLoopState,TResult? Function( _UpdateCurrentSong value)?  updateCurrentSong,TResult? Function( _UpdatePlayCounts value)?  updatePlayCounts,TResult? Function( _SongFinished value)?  songFinished,TResult? Function( _AddToQueue value)?  addToQueue,TResult? Function( _RemoveFromQueue value)?  removeFromQueue,TResult? Function( _ReorderQueue value)?  reorderQueue,TResult? Function( _PlayQueueItem value)?  playQueueItem,TResult? Function( _AddToPlaylist value)?  addToPlaylist,TResult? Function( _QueueUpdated value)?  queueUpdated,TResult? Function( _PlayNext value)?  playNextinQueue,TResult? Function( _SetTimer value)?  setTimer,TResult? Function( _SetEndTrackTimer value)?  setEndTrackTimer,TResult? Function( _CancelTimer value)?  cancelTimer,TResult? Function( _TickTimer value)?  tickTimer,}){
 final _that = this;
 switch (_that) {
 case _InitMusicQueue() when initMusicQueue != null:
@@ -176,7 +182,10 @@ return updateLoopState(_that);case _UpdateCurrentSong() when updateCurrentSong !
 return updateCurrentSong(_that);case _UpdatePlayCounts() when updatePlayCounts != null:
 return updatePlayCounts(_that);case _SongFinished() when songFinished != null:
 return songFinished(_that);case _AddToQueue() when addToQueue != null:
-return addToQueue(_that);case _AddToPlaylist() when addToPlaylist != null:
+return addToQueue(_that);case _RemoveFromQueue() when removeFromQueue != null:
+return removeFromQueue(_that);case _ReorderQueue() when reorderQueue != null:
+return reorderQueue(_that);case _PlayQueueItem() when playQueueItem != null:
+return playQueueItem(_that);case _AddToPlaylist() when addToPlaylist != null:
 return addToPlaylist(_that);case _QueueUpdated() when queueUpdated != null:
 return queueUpdated(_that);case _PlayNext() when playNextinQueue != null:
 return playNextinQueue(_that);case _SetTimer() when setTimer != null:
@@ -200,7 +209,7 @@ return tickTimer(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<SongEntity> songs,  int currentIndex)?  initMusicQueue,TResult Function( SongEntity song)?  playSong,TResult Function( int songId)?  playSongById,TResult Function()?  pause,TResult Function()?  resume,TResult Function( Duration position)?  seek,TResult Function()?  playPreviousSong,TResult Function()?  playNextSong,TResult Function()?  toggleShuffle,TResult Function()?  cycleLoopMode,TResult Function( Duration position)?  updatePosition,TResult Function( Duration duration)?  updateDuration,TResult Function( bool isPlaying)?  updatePlayerState,TResult Function( bool isShuffleModeEnabled)?  updateShuffleState,TResult Function( int loopMode)?  updateLoopState,TResult Function( SongEntity song)?  updateCurrentSong,TResult Function( Map<int, int> playCounts)?  updatePlayCounts,TResult Function()?  songFinished,TResult Function( SongEntity song)?  addToQueue,TResult Function( SongEntity song)?  addToPlaylist,TResult Function( List<SongEntity> queue)?  queueUpdated,TResult Function( SongEntity song)?  playNextinQueue,TResult Function( Duration duration)?  setTimer,TResult Function( bool active)?  setEndTrackTimer,TResult Function()?  cancelTimer,TResult Function()?  tickTimer,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<SongEntity> songs,  int currentIndex)?  initMusicQueue,TResult Function( SongEntity song)?  playSong,TResult Function( int songId)?  playSongById,TResult Function()?  pause,TResult Function()?  resume,TResult Function( Duration position)?  seek,TResult Function()?  playPreviousSong,TResult Function()?  playNextSong,TResult Function()?  toggleShuffle,TResult Function()?  cycleLoopMode,TResult Function( Duration position)?  updatePosition,TResult Function( Duration duration)?  updateDuration,TResult Function( bool isPlaying)?  updatePlayerState,TResult Function( bool isShuffleModeEnabled)?  updateShuffleState,TResult Function( int loopMode)?  updateLoopState,TResult Function( SongEntity song)?  updateCurrentSong,TResult Function( Map<int, int> playCounts)?  updatePlayCounts,TResult Function()?  songFinished,TResult Function( SongEntity song)?  addToQueue,TResult Function( int index)?  removeFromQueue,TResult Function( int oldIndex,  int newIndex)?  reorderQueue,TResult Function( int index)?  playQueueItem,TResult Function( SongEntity song)?  addToPlaylist,TResult Function( List<SongEntity> queue)?  queueUpdated,TResult Function( SongEntity song)?  playNextinQueue,TResult Function( Duration duration)?  setTimer,TResult Function( bool active)?  setEndTrackTimer,TResult Function()?  cancelTimer,TResult Function()?  tickTimer,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _InitMusicQueue() when initMusicQueue != null:
 return initMusicQueue(_that.songs,_that.currentIndex);case _PlaySong() when playSong != null:
@@ -221,7 +230,10 @@ return updateLoopState(_that.loopMode);case _UpdateCurrentSong() when updateCurr
 return updateCurrentSong(_that.song);case _UpdatePlayCounts() when updatePlayCounts != null:
 return updatePlayCounts(_that.playCounts);case _SongFinished() when songFinished != null:
 return songFinished();case _AddToQueue() when addToQueue != null:
-return addToQueue(_that.song);case _AddToPlaylist() when addToPlaylist != null:
+return addToQueue(_that.song);case _RemoveFromQueue() when removeFromQueue != null:
+return removeFromQueue(_that.index);case _ReorderQueue() when reorderQueue != null:
+return reorderQueue(_that.oldIndex,_that.newIndex);case _PlayQueueItem() when playQueueItem != null:
+return playQueueItem(_that.index);case _AddToPlaylist() when addToPlaylist != null:
 return addToPlaylist(_that.song);case _QueueUpdated() when queueUpdated != null:
 return queueUpdated(_that.queue);case _PlayNext() when playNextinQueue != null:
 return playNextinQueue(_that.song);case _SetTimer() when setTimer != null:
@@ -246,7 +258,7 @@ return tickTimer();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<SongEntity> songs,  int currentIndex)  initMusicQueue,required TResult Function( SongEntity song)  playSong,required TResult Function( int songId)  playSongById,required TResult Function()  pause,required TResult Function()  resume,required TResult Function( Duration position)  seek,required TResult Function()  playPreviousSong,required TResult Function()  playNextSong,required TResult Function()  toggleShuffle,required TResult Function()  cycleLoopMode,required TResult Function( Duration position)  updatePosition,required TResult Function( Duration duration)  updateDuration,required TResult Function( bool isPlaying)  updatePlayerState,required TResult Function( bool isShuffleModeEnabled)  updateShuffleState,required TResult Function( int loopMode)  updateLoopState,required TResult Function( SongEntity song)  updateCurrentSong,required TResult Function( Map<int, int> playCounts)  updatePlayCounts,required TResult Function()  songFinished,required TResult Function( SongEntity song)  addToQueue,required TResult Function( SongEntity song)  addToPlaylist,required TResult Function( List<SongEntity> queue)  queueUpdated,required TResult Function( SongEntity song)  playNextinQueue,required TResult Function( Duration duration)  setTimer,required TResult Function( bool active)  setEndTrackTimer,required TResult Function()  cancelTimer,required TResult Function()  tickTimer,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<SongEntity> songs,  int currentIndex)  initMusicQueue,required TResult Function( SongEntity song)  playSong,required TResult Function( int songId)  playSongById,required TResult Function()  pause,required TResult Function()  resume,required TResult Function( Duration position)  seek,required TResult Function()  playPreviousSong,required TResult Function()  playNextSong,required TResult Function()  toggleShuffle,required TResult Function()  cycleLoopMode,required TResult Function( Duration position)  updatePosition,required TResult Function( Duration duration)  updateDuration,required TResult Function( bool isPlaying)  updatePlayerState,required TResult Function( bool isShuffleModeEnabled)  updateShuffleState,required TResult Function( int loopMode)  updateLoopState,required TResult Function( SongEntity song)  updateCurrentSong,required TResult Function( Map<int, int> playCounts)  updatePlayCounts,required TResult Function()  songFinished,required TResult Function( SongEntity song)  addToQueue,required TResult Function( int index)  removeFromQueue,required TResult Function( int oldIndex,  int newIndex)  reorderQueue,required TResult Function( int index)  playQueueItem,required TResult Function( SongEntity song)  addToPlaylist,required TResult Function( List<SongEntity> queue)  queueUpdated,required TResult Function( SongEntity song)  playNextinQueue,required TResult Function( Duration duration)  setTimer,required TResult Function( bool active)  setEndTrackTimer,required TResult Function()  cancelTimer,required TResult Function()  tickTimer,}) {final _that = this;
 switch (_that) {
 case _InitMusicQueue():
 return initMusicQueue(_that.songs,_that.currentIndex);case _PlaySong():
@@ -267,7 +279,10 @@ return updateLoopState(_that.loopMode);case _UpdateCurrentSong():
 return updateCurrentSong(_that.song);case _UpdatePlayCounts():
 return updatePlayCounts(_that.playCounts);case _SongFinished():
 return songFinished();case _AddToQueue():
-return addToQueue(_that.song);case _AddToPlaylist():
+return addToQueue(_that.song);case _RemoveFromQueue():
+return removeFromQueue(_that.index);case _ReorderQueue():
+return reorderQueue(_that.oldIndex,_that.newIndex);case _PlayQueueItem():
+return playQueueItem(_that.index);case _AddToPlaylist():
 return addToPlaylist(_that.song);case _QueueUpdated():
 return queueUpdated(_that.queue);case _PlayNext():
 return playNextinQueue(_that.song);case _SetTimer():
@@ -291,7 +306,7 @@ return tickTimer();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<SongEntity> songs,  int currentIndex)?  initMusicQueue,TResult? Function( SongEntity song)?  playSong,TResult? Function( int songId)?  playSongById,TResult? Function()?  pause,TResult? Function()?  resume,TResult? Function( Duration position)?  seek,TResult? Function()?  playPreviousSong,TResult? Function()?  playNextSong,TResult? Function()?  toggleShuffle,TResult? Function()?  cycleLoopMode,TResult? Function( Duration position)?  updatePosition,TResult? Function( Duration duration)?  updateDuration,TResult? Function( bool isPlaying)?  updatePlayerState,TResult? Function( bool isShuffleModeEnabled)?  updateShuffleState,TResult? Function( int loopMode)?  updateLoopState,TResult? Function( SongEntity song)?  updateCurrentSong,TResult? Function( Map<int, int> playCounts)?  updatePlayCounts,TResult? Function()?  songFinished,TResult? Function( SongEntity song)?  addToQueue,TResult? Function( SongEntity song)?  addToPlaylist,TResult? Function( List<SongEntity> queue)?  queueUpdated,TResult? Function( SongEntity song)?  playNextinQueue,TResult? Function( Duration duration)?  setTimer,TResult? Function( bool active)?  setEndTrackTimer,TResult? Function()?  cancelTimer,TResult? Function()?  tickTimer,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<SongEntity> songs,  int currentIndex)?  initMusicQueue,TResult? Function( SongEntity song)?  playSong,TResult? Function( int songId)?  playSongById,TResult? Function()?  pause,TResult? Function()?  resume,TResult? Function( Duration position)?  seek,TResult? Function()?  playPreviousSong,TResult? Function()?  playNextSong,TResult? Function()?  toggleShuffle,TResult? Function()?  cycleLoopMode,TResult? Function( Duration position)?  updatePosition,TResult? Function( Duration duration)?  updateDuration,TResult? Function( bool isPlaying)?  updatePlayerState,TResult? Function( bool isShuffleModeEnabled)?  updateShuffleState,TResult? Function( int loopMode)?  updateLoopState,TResult? Function( SongEntity song)?  updateCurrentSong,TResult? Function( Map<int, int> playCounts)?  updatePlayCounts,TResult? Function()?  songFinished,TResult? Function( SongEntity song)?  addToQueue,TResult? Function( int index)?  removeFromQueue,TResult? Function( int oldIndex,  int newIndex)?  reorderQueue,TResult? Function( int index)?  playQueueItem,TResult? Function( SongEntity song)?  addToPlaylist,TResult? Function( List<SongEntity> queue)?  queueUpdated,TResult? Function( SongEntity song)?  playNextinQueue,TResult? Function( Duration duration)?  setTimer,TResult? Function( bool active)?  setEndTrackTimer,TResult? Function()?  cancelTimer,TResult? Function()?  tickTimer,}) {final _that = this;
 switch (_that) {
 case _InitMusicQueue() when initMusicQueue != null:
 return initMusicQueue(_that.songs,_that.currentIndex);case _PlaySong() when playSong != null:
@@ -312,7 +327,10 @@ return updateLoopState(_that.loopMode);case _UpdateCurrentSong() when updateCurr
 return updateCurrentSong(_that.song);case _UpdatePlayCounts() when updatePlayCounts != null:
 return updatePlayCounts(_that.playCounts);case _SongFinished() when songFinished != null:
 return songFinished();case _AddToQueue() when addToQueue != null:
-return addToQueue(_that.song);case _AddToPlaylist() when addToPlaylist != null:
+return addToQueue(_that.song);case _RemoveFromQueue() when removeFromQueue != null:
+return removeFromQueue(_that.index);case _ReorderQueue() when reorderQueue != null:
+return reorderQueue(_that.oldIndex,_that.newIndex);case _PlayQueueItem() when playQueueItem != null:
+return playQueueItem(_that.index);case _AddToPlaylist() when addToPlaylist != null:
 return addToPlaylist(_that.song);case _QueueUpdated() when queueUpdated != null:
 return queueUpdated(_that.queue);case _PlayNext() when playNextinQueue != null:
 return playNextinQueue(_that.song);case _SetTimer() when setTimer != null:
@@ -1496,6 +1514,224 @@ $SongEntityCopyWith<$Res> get song {
     return _then(_self.copyWith(song: value));
   });
 }
+}
+
+/// @nodoc
+
+
+class _RemoveFromQueue with DiagnosticableTreeMixin implements MusicPlayerEvent {
+  const _RemoveFromQueue(this.index);
+  
+
+ final  int index;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RemoveFromQueueCopyWith<_RemoveFromQueue> get copyWith => __$RemoveFromQueueCopyWithImpl<_RemoveFromQueue>(this, _$identity);
+
+
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.removeFromQueue'))
+    ..add(DiagnosticsProperty('index', index));
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RemoveFromQueue&&(identical(other.index, index) || other.index == index));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,index);
+
+@override
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'MusicPlayerEvent.removeFromQueue(index: $index)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RemoveFromQueueCopyWith<$Res> implements $MusicPlayerEventCopyWith<$Res> {
+  factory _$RemoveFromQueueCopyWith(_RemoveFromQueue value, $Res Function(_RemoveFromQueue) _then) = __$RemoveFromQueueCopyWithImpl;
+@useResult
+$Res call({
+ int index
+});
+
+
+
+
+}
+/// @nodoc
+class __$RemoveFromQueueCopyWithImpl<$Res>
+    implements _$RemoveFromQueueCopyWith<$Res> {
+  __$RemoveFromQueueCopyWithImpl(this._self, this._then);
+
+  final _RemoveFromQueue _self;
+  final $Res Function(_RemoveFromQueue) _then;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? index = null,}) {
+  return _then(_RemoveFromQueue(
+null == index ? _self.index : index // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _ReorderQueue with DiagnosticableTreeMixin implements MusicPlayerEvent {
+  const _ReorderQueue(this.oldIndex, this.newIndex);
+  
+
+ final  int oldIndex;
+ final  int newIndex;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ReorderQueueCopyWith<_ReorderQueue> get copyWith => __$ReorderQueueCopyWithImpl<_ReorderQueue>(this, _$identity);
+
+
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.reorderQueue'))
+    ..add(DiagnosticsProperty('oldIndex', oldIndex))..add(DiagnosticsProperty('newIndex', newIndex));
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReorderQueue&&(identical(other.oldIndex, oldIndex) || other.oldIndex == oldIndex)&&(identical(other.newIndex, newIndex) || other.newIndex == newIndex));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,oldIndex,newIndex);
+
+@override
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'MusicPlayerEvent.reorderQueue(oldIndex: $oldIndex, newIndex: $newIndex)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ReorderQueueCopyWith<$Res> implements $MusicPlayerEventCopyWith<$Res> {
+  factory _$ReorderQueueCopyWith(_ReorderQueue value, $Res Function(_ReorderQueue) _then) = __$ReorderQueueCopyWithImpl;
+@useResult
+$Res call({
+ int oldIndex, int newIndex
+});
+
+
+
+
+}
+/// @nodoc
+class __$ReorderQueueCopyWithImpl<$Res>
+    implements _$ReorderQueueCopyWith<$Res> {
+  __$ReorderQueueCopyWithImpl(this._self, this._then);
+
+  final _ReorderQueue _self;
+  final $Res Function(_ReorderQueue) _then;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? oldIndex = null,Object? newIndex = null,}) {
+  return _then(_ReorderQueue(
+null == oldIndex ? _self.oldIndex : oldIndex // ignore: cast_nullable_to_non_nullable
+as int,null == newIndex ? _self.newIndex : newIndex // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _PlayQueueItem with DiagnosticableTreeMixin implements MusicPlayerEvent {
+  const _PlayQueueItem(this.index);
+  
+
+ final  int index;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$PlayQueueItemCopyWith<_PlayQueueItem> get copyWith => __$PlayQueueItemCopyWithImpl<_PlayQueueItem>(this, _$identity);
+
+
+@override
+void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  properties
+    ..add(DiagnosticsProperty('type', 'MusicPlayerEvent.playQueueItem'))
+    ..add(DiagnosticsProperty('index', index));
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlayQueueItem&&(identical(other.index, index) || other.index == index));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,index);
+
+@override
+String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
+  return 'MusicPlayerEvent.playQueueItem(index: $index)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$PlayQueueItemCopyWith<$Res> implements $MusicPlayerEventCopyWith<$Res> {
+  factory _$PlayQueueItemCopyWith(_PlayQueueItem value, $Res Function(_PlayQueueItem) _then) = __$PlayQueueItemCopyWithImpl;
+@useResult
+$Res call({
+ int index
+});
+
+
+
+
+}
+/// @nodoc
+class __$PlayQueueItemCopyWithImpl<$Res>
+    implements _$PlayQueueItemCopyWith<$Res> {
+  __$PlayQueueItemCopyWithImpl(this._self, this._then);
+
+  final _PlayQueueItem _self;
+  final $Res Function(_PlayQueueItem) _then;
+
+/// Create a copy of MusicPlayerEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? index = null,}) {
+  return _then(_PlayQueueItem(
+null == index ? _self.index : index // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
 }
 
 /// @nodoc

@@ -45,6 +45,10 @@ abstract class MusicPlayerEvent with _$MusicPlayerEvent {
 
   // Queue Management
   const factory MusicPlayerEvent.addToQueue(SongEntity song) = _AddToQueue;
+  const factory MusicPlayerEvent.removeFromQueue(int index) = _RemoveFromQueue;
+  const factory MusicPlayerEvent.reorderQueue(int oldIndex, int newIndex) =
+      _ReorderQueue;
+  const factory MusicPlayerEvent.playQueueItem(int index) = _PlayQueueItem;
   const factory MusicPlayerEvent.addToPlaylist(SongEntity song) =
       _AddToPlaylist;
   const factory MusicPlayerEvent.queueUpdated(List<SongEntity> queue) =
