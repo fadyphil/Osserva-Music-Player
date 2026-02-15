@@ -8,6 +8,9 @@ import 'package:just_audio/just_audio.dart';
 class MusicPlayerHandler extends BaseAudioHandler
     with QueueHandler, SeekHandler {
   final AudioPlayer _player;
+  // ignore: deprecated_member_use
+  late ConcatenatingAudioSource _playlist;
+
   MusicPlayerHandler({AudioPlayer? player})
     : _player = player ?? AudioPlayer() {
     _init();
@@ -15,8 +18,9 @@ class MusicPlayerHandler extends BaseAudioHandler
 
   Future<void> _init() async {
     try {
-      //NOTE: strict replacement for setAudioSource(ConcatenatingAudioSource(...))
-      await _player.setAudioSources([]);
+      // ignore: deprecated_member_use
+      _playlist = ConcatenatingAudioSource(children: []);
+      await _player.setAudioSource(_playlist);
     } catch (e) {
       log('Error setting audio sources: $e');
     }
@@ -256,7 +260,7 @@ class MusicPlayerHandler extends BaseAudioHandler
         source = AudioSource.file(url, tag: mediaItem);
       }
 
-      await _player.addAudioSource(source);
+      await _playlist.add(source);
 
       log('Successfuly added to queue: ${mediaItem.title}');
     } catch (e, stack) {
@@ -280,23 +284,20 @@ class MusicPlayerHandler extends BaseAudioHandler
         );
       }).toList();
 
-      // FIX FOR FIRST SONG BUG:
-      // Force stop the player before loading a completely new list.
-      // This clears the buffer and prevents "ghosting" of the first track.
-      if (_player.playing) {
-        await _player.stop();
+      // Clear existing and add new
+      await _playlist.clear();
+      await _playlist.addAll(sources);
+
+      // Seek to initial index
+      await _player.seek(Duration.zero, index: initialIndex);
+
+      if (!_player.playing) {
+        await _player.play();
       }
-
-      // 3. set sources on player
-      await _player.setAudioSources(
-        sources,
-        initialIndex: initialIndex,
-        initialPosition: Duration.zero,
-      );
-
-      // 4. Ensure plaback starts
-      await _player.play();
     } catch (e, stackTrace) {
+      if (e.toString().contains('Loading interrupted')) {
+        return;
+      }
       log("Error setting queue: $e", stackTrace: stackTrace);
 
       // Broadcast error to UI
@@ -329,16 +330,52 @@ class MusicPlayerHandler extends BaseAudioHandler
 
       final currentIndex = _player.currentIndex;
 
-      if (currentIndex == null || (_player.sequence.isEmpty)) {
-        await _player.setAudioSource(source);
+      if (currentIndex == null || _player.sequence.isEmpty) {
+        await _playlist.add(source);
       } else {
-        final nextIndex = currentIndex + 1;
-        await _player.insertAudioSource(nextIndex, source);
+        await _playlist.insert(currentIndex + 1, source);
       }
 
       log('Successfully inserted next: ${mediaItem.title}');
     } catch (e) {
       log('Error inserting item: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> removeQueueItemAt(int index) async {
+    try {
+      if (index >= 0 && index < _playlist.length) {
+        await _playlist.removeAt(index);
+        log('Successfully removed item at index: $index');
+      } else {
+        log('Error: Index $index out of bounds for removal');
+      }
+    } catch (e) {
+      log('Error removing item at index $index: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> moveQueueItem(int oldIndex, int newIndex) async {
+    try {
+      await _playlist.move(oldIndex, newIndex);
+    } catch (e) {
+      log('Error moving item from $oldIndex to $newIndex: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> skipToQueueItem(int index) async {
+    try {
+      await _player.seek(Duration.zero, index: index);
+      if (!_player.playing) {
+        await _player.play();
+      }
+    } catch (e) {
+      log('Error skipping to item $index: $e');
       rethrow;
     }
   }
