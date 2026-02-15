@@ -21,6 +21,8 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   StreamSubscription? _loopSubscription;
   StreamSubscription? _queueSubscription;
 
+  Timer? _sleepTimer;
+
   MusicPlayerBloc(
     this._audioRepository,
     this._getSongByIdUseCase,
@@ -178,6 +180,9 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
           // as SongEntity doesn't have it.
           const genre = 'Unknown';
 
+          final bool isChangingTrack =
+              state.currentSong != null && state.currentSong!.id != fullSong.id;
+
           emit(
             state.copyWith(
               currentSong: fullSong,
@@ -185,6 +190,11 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
               currentGenre: genre,
             ),
           );
+
+          if (state.isEndTrackTimerActive && isChangingTrack) {
+            add(const MusicPlayerEvent.pause());
+            add(const MusicPlayerEvent.cancelTimer());
+          }
         },
         updatePlayCounts: (e) async {
           emit(state.copyWith(playCounts: e.playCounts));
@@ -241,6 +251,50 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
             emit(state.copyWith(queueActionStatus: QueueStatus.initial));
           }
         },
+        setTimer: (e) async {
+          _sleepTimer?.cancel();
+          emit(
+            state.copyWith(
+              timerRemaining: e.duration,
+              isEndTrackTimerActive: false,
+            ),
+          );
+          _sleepTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+            add(const MusicPlayerEvent.tickTimer());
+          });
+        },
+        setEndTrackTimer: (e) async {
+          _sleepTimer?.cancel();
+          emit(
+            state.copyWith(
+              timerRemaining: null,
+              isEndTrackTimerActive: e.active,
+            ),
+          );
+        },
+        cancelTimer: (_) async {
+          _sleepTimer?.cancel();
+          emit(
+            state.copyWith(
+              timerRemaining: null,
+              isEndTrackTimerActive: false,
+            ),
+          );
+        },
+        tickTimer: (_) async {
+          if (state.timerRemaining != null) {
+            final newDuration =
+                state.timerRemaining! - const Duration(seconds: 1);
+            if (newDuration.isNegative || newDuration == Duration.zero) {
+              _sleepTimer?.cancel();
+              emit(state.copyWith(timerRemaining: Duration.zero));
+              add(const MusicPlayerEvent.pause());
+              add(const MusicPlayerEvent.cancelTimer());
+            } else {
+              emit(state.copyWith(timerRemaining: newDuration));
+            }
+          }
+        },
       );
     });
   }
@@ -254,6 +308,7 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
 
   @override
   Future<void> close() {
+    _sleepTimer?.cancel();
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();
     _playerStateSubscription?.cancel();

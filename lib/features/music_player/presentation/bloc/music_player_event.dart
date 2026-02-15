@@ -50,4 +50,12 @@ abstract class MusicPlayerEvent with _$MusicPlayerEvent {
   const factory MusicPlayerEvent.queueUpdated(List<SongEntity> queue) =
       _QueueUpdated;
   const factory MusicPlayerEvent.playNextinQueue(SongEntity song) = _PlayNext;
+
+  // Sleep Timer
+  const factory MusicPlayerEvent.setTimer({required Duration duration}) =
+      _SetTimer;
+  const factory MusicPlayerEvent.setEndTrackTimer({required bool active}) =
+      _SetEndTrackTimer;
+  const factory MusicPlayerEvent.cancelTimer() = _CancelTimer;
+  const factory MusicPlayerEvent.tickTimer() = _TickTimer;
 }

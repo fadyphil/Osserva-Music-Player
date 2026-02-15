@@ -28,5 +28,9 @@ abstract class MusicPlayerState with _$MusicPlayerState {
     @Default('') String errorMessage,
     @Default({}) Map<int, int> playCounts,
     @Default('') String currentGenre,
+
+    // Sleep Timer
+    Duration? timerRemaining,
+    @Default(false) bool isEndTrackTimerActive,
   }) = _MusicPlayerState;
 }
