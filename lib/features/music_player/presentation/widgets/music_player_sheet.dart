@@ -9,6 +9,7 @@ import '../../../../core/theme/app_pallete.dart';
 import '../bloc/music_player_bloc.dart';
 import '../bloc/music_player_event.dart';
 import '../bloc/music_player_state.dart';
+import 'queue_sheet.dart';
 import 'sleep_timer_sheet.dart';
 
 class MusicPlayerSheet extends StatelessWidget {
@@ -445,7 +446,22 @@ class _UtilityIcons extends StatelessWidget {
         ),
         IconButton(
           icon: const Icon(Icons.queue_music, color: AppPallete.grey, size: 20),
-          onPressed: () {},
+          onPressed: () {
+            final musicPlayerBloc = context.read<MusicPlayerBloc>();
+            showModalBottomSheet(
+              context: context,
+              backgroundColor: Colors.transparent,
+              isScrollControlled: true,
+              useRootNavigator: true,
+              builder: (context) => BlocProvider.value(
+                value: musicPlayerBloc,
+                child: const FractionallySizedBox(
+                  heightFactor: 0.6,
+                  child: QueueSheet(),
+                ),
+              ),
+            );
+          },
         ),
         BlocBuilder<MusicPlayerBloc, MusicPlayerState>(
           builder: (context, state) {
