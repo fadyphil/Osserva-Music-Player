@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:music_player/core/router/app_router.dart';
+import 'package:music_player/core/theme/app_pallete.dart';
 import 'package:music_player/features/artists/domain/entities/artist_entity.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -42,26 +43,46 @@ class ArtistCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Visual Block
-            AspectRatio(
-              aspectRatio: 1.1, // Slightly taller than square or square
-              child: QueryArtworkWidget(
-                artworkBorder: BorderRadius.circular(4),
-                id: topSongId ?? artist.id,
-                type: topSongId != null
-                    ? ArtworkType.AUDIO
-                    : ArtworkType.ARTIST,
-                artworkFit: BoxFit.cover,
-                nullArtworkWidget: DecoratedBox(
+            RepaintBoundary(
+              child: AspectRatio(
+                aspectRatio: 1.2, // Slightly taller than square or square
+                child: Container(
+                  width: double.infinity,
+                  clipBehavior: Clip.hardEdge,
                   decoration: BoxDecoration(
-                    color: Colors.grey[800],
                     borderRadius: BorderRadius.circular(4),
+                    color: AppPallete.surface,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: .3),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
-                  child: Center(
-                    child: Icon(
-                      Icons.music_note,
-                      size: 64,
-                      color: Colors.white.withValues(alpha: 0.2),
+                  child: QueryArtworkWidget(
+                    id: topSongId ?? artist.id,
+                    size: 800,
+                    quality: 100,
+                    type: topSongId != null
+                        ? ArtworkType.AUDIO
+                        : ArtworkType.ARTIST,
+                    artworkFit: BoxFit.cover,
+                    nullArtworkWidget: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[800],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.music_note,
+                          size: 64,
+                          color: Colors.white.withValues(alpha: 0.2),
+                        ),
+                      ),
                     ),
+                    keepOldArtwork: true,
+                    artworkBorder: BorderRadius.zero,
                   ),
                 ),
               ),
