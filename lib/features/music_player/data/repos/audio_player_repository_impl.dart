@@ -15,6 +15,8 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
   @override
   Future<void> setQueue(List<SongEntity> songs, int initialIndex) async {
     final mediaItems = songs.map((song) {
+      final uniqueId = DateTime.now().microsecondsSinceEpoch.toString() +
+          song.id.toString(); // Simple unique ID
       return MediaItem(
         id: song.id.toString(),
         album: song.album,
@@ -26,7 +28,7 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
               )
             : null,
         duration: Duration(milliseconds: song.duration.toInt()),
-        extras: {'url': song.path},
+        extras: {'url': song.path, 'uniqueId': uniqueId},
       );
     }).toList();
 
@@ -35,7 +37,8 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
 
   @override
   Future<void> addQueueItem(SongEntity song) async {
-    // PURE PASS - THROUGH . no  local logic
+    final uniqueId = DateTime.now().microsecondsSinceEpoch.toString() +
+        song.id.toString();
     final item = MediaItem(
       id: song.id.toString(),
       album: song.album,
@@ -45,9 +48,24 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
           ? Uri.parse("content://media/external/audio/albumart/${song.albumId}")
           : null,
       duration: Duration(milliseconds: song.duration.toInt()),
-      extras: {'url': song.path},
+      extras: {'url': song.path, 'uniqueId': uniqueId},
     );
     await _handler.addQueueItem(item);
+  }
+
+  @override
+  Future<void> removeQueueItemAt(int index) async {
+    await _handler.removeQueueItemAt(index);
+  }
+
+  @override
+  Future<void> reorderQueue(int oldIndex, int newIndex) async {
+    await _handler.moveQueueItem(oldIndex, newIndex);
+  }
+
+  @override
+  Future<void> skipToQueueItem(int index) async {
+    await _handler.skipToQueueItem(index);
   }
 
   @override
@@ -106,10 +124,7 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
 
   @override
   Future<void> cycleRepeatMode() async {
-    // This logic relies on reading the current state.
-    // However, AudioHandler streams are async.
-    // Ideally the BLoC manages the "next" state and tells the Repo "set to X".
-    // For now, let's implement a simple Set method.
+    // Logic handled by UI calling setRepeatMode
   }
 
   // STREAMS
@@ -125,17 +140,17 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
 
   @override
   Stream<int> get loopModeStream => _audioHandler.playbackState.map((state) {
-    switch (state.repeatMode) {
-      case AudioServiceRepeatMode.none:
-        return 0;
-      case AudioServiceRepeatMode.all:
-        return 1;
-      case AudioServiceRepeatMode.one:
-        return 2;
-      default:
-        return 0;
-    }
-  }).distinct();
+        switch (state.repeatMode) {
+          case AudioServiceRepeatMode.none:
+            return 0;
+          case AudioServiceRepeatMode.all:
+            return 1;
+          case AudioServiceRepeatMode.one:
+            return 2;
+          default:
+            return 0;
+        }
+      }).distinct();
 
   @override
   Stream<Duration> get positionStream => AudioService.position;
@@ -163,6 +178,7 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
           path: item.extras?['url'] as String? ?? '',
           duration: (item.duration?.inMilliseconds ?? 0).toDouble(),
           size: 0,
+          uniqueId: item.extras?['uniqueId'] as String?,
         );
       });
 
@@ -181,6 +197,7 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
           path: item.extras?['url'] as String? ?? '',
           duration: (item.duration?.inMilliseconds ?? 0).toDouble(),
           size: 0,
+          uniqueId: item.extras?['uniqueId'] as String?,
         );
       }).toList();
     });
@@ -188,6 +205,8 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
 
   @override
   Future<void> playNext(SongEntity song) async {
+    final uniqueId = DateTime.now().microsecondsSinceEpoch.toString() +
+        song.id.toString();
     final item = MediaItem(
       id: song.id.toString(),
       album: song.album,
@@ -196,7 +215,7 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
       artUri: song.albumId != null
           ? Uri.parse("content://media/external/audio/albumart/${song.albumId}")
           : null,
-      extras: {'url': song.path},
+      extras: {'url': song.path, 'uniqueId': uniqueId},
     );
     await (_audioHandler as MusicPlayerHandler).insertNextQueueItem(item);
   }

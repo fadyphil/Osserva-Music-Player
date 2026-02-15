@@ -12,5 +12,7 @@ abstract class SongEntity with _$SongEntity {
     required String path,
     required double duration,
     required int size,
+    // Unique ID for queue management (ephemeral)
+    String? uniqueId,
   }) = _SongEntity;
 }

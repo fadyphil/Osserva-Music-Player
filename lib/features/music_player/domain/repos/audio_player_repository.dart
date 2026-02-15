@@ -4,6 +4,9 @@ abstract class AudioPlayerRepository {
   // Actions
   Future<void> setQueue(List<SongEntity> songs, int initialIndex);
   Future<void> addQueueItem(SongEntity song);
+  Future<void> removeQueueItemAt(int index);
+  Future<void> reorderQueue(int oldIndex, int newIndex);
+  Future<void> skipToQueueItem(int index);
   Future<void> playNext(SongEntity song);
 
   // Legacy / Single Song
