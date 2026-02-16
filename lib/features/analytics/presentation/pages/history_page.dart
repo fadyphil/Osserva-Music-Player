@@ -79,8 +79,9 @@ class HistoryPage extends StatelessWidget {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppPallete.primaryGreen
-                                          .withOpacity(0.2),
+                                      color: AppPallete.primaryGreen.withValues(
+                                        alpha: .2,
+                                      ),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
                                         color: AppPallete.primaryGreen,
