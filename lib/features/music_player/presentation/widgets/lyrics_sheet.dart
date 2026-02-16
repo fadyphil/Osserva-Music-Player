@@ -16,17 +16,7 @@ class LyricsSheet extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Drag Handle
-          const SizedBox(height: 12),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppPallete.grey.withValues(alpha: .5),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 46),
 
           // Header
           Padding(
