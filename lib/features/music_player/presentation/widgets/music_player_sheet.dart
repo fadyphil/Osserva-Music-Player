@@ -432,16 +432,42 @@ class _UtilityIcons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        BlocSelector<MusicPlayerBloc, MusicPlayerState, SongEntity?>(
+          selector: (state) => state.currentSong,
+          builder: (context, currentSong) {
+            return BlocBuilder<FavoritesBloc, FavoritesState>(
+              builder: (context, state) {
+                final isFavorite =
+                    (currentSong != null) &&
+                    state.maybeMap(
+                      loaded: (s) => s.favoriteIds.contains(currentSong.id),
+                      orElse: () => false,
+                    );
+
+                return IconButton(
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? AppPallete.accent : AppPallete.grey,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    if (currentSong != null) {
+                      context.read<FavoritesBloc>().add(
+                        FavoritesEvent.toggleFavorite(currentSong),
+                      );
+                    }
+                  },
+                );
+              },
+            );
+          },
+        ),
         IconButton(
           icon: const Icon(
-            Icons.favorite_border,
+            Icons.text_fields,
             color: AppPallete.grey,
             size: 20,
           ),
-          onPressed: () {},
-        ),
-        IconButton(
-          icon: const Icon(Icons.text_fields, color: AppPallete.grey, size: 20),
           onPressed: () {},
         ),
         IconButton(
