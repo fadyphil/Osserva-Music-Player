@@ -9,6 +9,7 @@ import '../../../../core/theme/app_pallete.dart';
 import '../bloc/music_player_bloc.dart';
 import '../bloc/music_player_event.dart';
 import '../bloc/music_player_state.dart';
+import 'lyrics_sheet.dart';
 import 'queue_sheet.dart';
 import 'sleep_timer_sheet.dart';
 
@@ -462,13 +463,27 @@ class _UtilityIcons extends StatelessWidget {
             );
           },
         ),
-        IconButton(
-          icon: const Icon(
-            Icons.text_fields,
-            color: AppPallete.grey,
-            size: 20,
-          ),
-          onPressed: () {},
+        BlocSelector<MusicPlayerBloc, MusicPlayerState, SongEntity?>(
+          selector: (state) => state.currentSong,
+          builder: (context, currentSong) {
+            return IconButton(
+              icon: const Icon(
+                Icons.text_fields,
+                color: AppPallete.grey,
+                size: 20,
+              ),
+              onPressed: () {
+                if (currentSong != null) {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => LyricsSheet(song: currentSong),
+                  );
+                }
+              },
+            );
+          },
         ),
         IconButton(
           icon: const Icon(Icons.queue_music, color: AppPallete.grey, size: 20),
