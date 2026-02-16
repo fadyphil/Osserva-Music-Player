@@ -14,7 +14,9 @@ class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => serviceLocator<HistoryBloc>()..add(const HistoryEvent.fetchAllHistory()),
+      create: (_) =>
+          serviceLocator<HistoryBloc>()
+            ..add(const HistoryEvent.fetchAllHistory()),
       child: Scaffold(
         backgroundColor: AppPallete.backgroundColor,
         appBar: AppBar(
@@ -31,7 +33,7 @@ class HistoryPage extends StatelessWidget {
                 if (data.allHistory.isEmpty) {
                   return const Center(child: Text('No history yet.'));
                 }
-                
+
                 // Group by Date
                 final grouped = _groupByDate(data.allHistory);
                 final dates = grouped.keys.toList();
@@ -41,7 +43,7 @@ class HistoryPage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final date = dates[index];
                     final logs = grouped[date]!;
-                    
+
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -56,14 +58,46 @@ class HistoryPage extends StatelessWidget {
                             ),
                           ),
                         ),
-                        ...logs.map((log) => ListTile(
-                          leading: const Icon(Icons.music_note, color: Colors.white54),
-                          title: Text(log.songTitle, style: const TextStyle(color: Colors.white)),
-                          subtitle: Text(
-                            '${log.artist} • ${DateFormat('hh:mm a').format(log.timestamp)}',
-                            style: const TextStyle(color: Colors.white54),
+                        ...logs.map(
+                          (log) => ListTile(
+                            leading: const Icon(
+                              Icons.music_note,
+                              color: Colors.white54,
+                            ),
+                            title: Text(
+                              log.songTitle,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              '${log.artist} • ${DateFormat('hh:mm a').format(log.timestamp)}',
+                              style: const TextStyle(color: Colors.white54),
+                            ),
+                            trailing: log.playCount > 1
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppPallete.primaryGreen
+                                          .withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: AppPallete.primaryGreen,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'x${log.playCount}',
+                                      style: const TextStyle(
+                                        color: AppPallete.primaryGreen,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  )
+                                : null,
                           ),
-                        )),
+                        ),
                       ],
                     );
                   },
@@ -79,7 +113,11 @@ class HistoryPage extends StatelessWidget {
   Map<DateTime, List<PlayLog>> _groupByDate(List<PlayLog> logs) {
     final Map<DateTime, List<PlayLog>> map = {};
     for (var log in logs) {
-      final date = DateTime(log.timestamp.year, log.timestamp.month, log.timestamp.day);
+      final date = DateTime(
+        log.timestamp.year,
+        log.timestamp.month,
+        log.timestamp.day,
+      );
       if (!map.containsKey(date)) {
         map[date] = [];
       }
