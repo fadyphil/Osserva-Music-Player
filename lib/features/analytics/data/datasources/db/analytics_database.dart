@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 class AnalyticsDatabase {
   static Database? _database;
   static const String _dbName = 'music_analytics.db';
-  static const int _version = 2; // Bumped version
+  static const int _version = 3; // Bumped version
 
   // Table Names
   static const String tblArtists = 'artists';
@@ -34,13 +34,75 @@ class AnalyticsDatabase {
         await db.execute('PRAGMA foreign_keys = ON');
       },
       onCreate: (db, version) async {
-        await _createV2Schema(db);
+        await _createV3Schema(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           await _migrateV1toV2(db);
         }
+        if (oldVersion < 3) {
+          await _migrateV2toV3(db);
+        }
       },
+    );
+  }
+
+  Future<void> _createV3Schema(DatabaseExecutor db) async {
+    // 1. Dimensions
+    await db.execute(
+      'CREATE TABLE $tblArtists (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE)',
+    );
+    await db.execute(
+      'CREATE TABLE $tblAlbums (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE)',
+    );
+    await db.execute(
+      'CREATE TABLE $tblGenres (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE)',
+    );
+
+    // 2. Song Metadata (Slow Changing Dimension)
+    await db.execute('''
+      CREATE TABLE $tblSongs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        source_id INTEGER, -- Original ID from MediaStore
+        title TEXT,
+        artist_id INTEGER REFERENCES $tblArtists(id),
+        album_id INTEGER REFERENCES $tblAlbums(id),
+        genre_id REFERENCES $tblGenres(id)
+      )
+    ''');
+    // Index source_id for fast lookups during insertion
+    await db.execute('CREATE INDEX idx_songs_source ON $tblSongs (source_id)');
+
+    // 3. Fact Table: Hot Logs (Recent detailed history)
+    await db.execute('''
+      CREATE TABLE $tblPlaybackLogs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        song_id INTEGER REFERENCES $tblSongs(id),
+        timestamp INTEGER,
+        duration_listened INTEGER,
+        is_completed INTEGER,
+        play_count INTEGER DEFAULT 1,
+        time_of_day TEXT
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX idx_logs_timestamp ON $tblPlaybackLogs (timestamp)',
+    );
+
+    // 4. Fact Table: Cold Aggregates (Daily Roll-ups)
+    await db.execute('''
+      CREATE TABLE $tblDailyAggregates (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date_epoch INTEGER, -- Midnight timestamp of the day
+        song_id INTEGER REFERENCES $tblSongs(id),
+        play_count INTEGER,
+        total_duration INTEGER,
+        time_of_day TEXT,
+        UNIQUE(date_epoch, song_id, time_of_day)
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX idx_agg_date ON $tblDailyAggregates (date_epoch)',
     );
   }
 
@@ -158,5 +220,12 @@ class AnalyticsDatabase {
       // 6. Cleanup
       await txn.execute('DROP TABLE playback_logs_v1');
     });
+  }
+
+  Future<void> _migrateV2toV3(Database db) async {
+    // Add play_count column to playback_logs
+    await db.execute(
+      'ALTER TABLE $tblPlaybackLogs ADD COLUMN play_count INTEGER DEFAULT 1',
+    );
   }
 }

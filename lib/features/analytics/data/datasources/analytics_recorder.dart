@@ -40,7 +40,7 @@ class AnalyticsRecorder {
 
       // 2. Ensure Song exists
       // We check if this source_id already exists in our internal map
-      // Note: We don't cache song IDs yet as they depend on other IDs, 
+      // Note: We don't cache song IDs yet as they depend on other IDs,
       // but the dimensions are the heaviest repeated reads.
       final songQuery = await txn.query(
         AnalyticsDatabase.tblSongs,
@@ -63,16 +63,59 @@ class AnalyticsRecorder {
         });
       }
 
-      // 3. Insert Log
-      await txn.insert(AnalyticsDatabase.tblPlaybackLogs, {
-        'song_id': internalSongId,
-        'timestamp': log.timestamp.millisecondsSinceEpoch,
-        'duration_listened': log.durationListenedSeconds,
-        'is_completed': log.isCompleted ? 1 : 0,
-        'time_of_day': log.sessionTimeOfDay,
-      });
+      // 3. Insert or Update Log
+      // Check last log to see if it's the same song
+      final lastLogQuery = await txn.query(
+        AnalyticsDatabase.tblPlaybackLogs,
+        columns: ['id', 'song_id', 'play_count'],
+        orderBy: 'id DESC',
+        limit: 1,
+      );
+
+      bool isConsecutive = false;
+      int? lastLogId;
+      int currentPlayCount = 0;
+
+      if (lastLogQuery.isNotEmpty) {
+        final lastRow = lastLogQuery.first;
+        final lastSongId = lastRow['song_id'] as int;
+        if (lastSongId == internalSongId) {
+          isConsecutive = true;
+          lastLogId = lastRow['id'] as int;
+          currentPlayCount = (lastRow['play_count'] as int?) ?? 1;
+        }
+      }
+
+      if (isConsecutive && lastLogId != null) {
+        // Update existing log
+        await txn.update(
+          AnalyticsDatabase.tblPlaybackLogs,
+          {
+            'timestamp': log.timestamp.millisecondsSinceEpoch,
+            'duration_listened': log
+                .durationListenedSeconds, // Update duration if needed, or maybe accumulate?
+            // Usually history shows the "play" event. unique duration might vary.
+            // For now simply updating timestamp and count.
+            'is_completed': log.isCompleted ? 1 : 0,
+            'time_of_day': log.sessionTimeOfDay,
+            'play_count': currentPlayCount + 1,
+          },
+          where: 'id = ?',
+          whereArgs: [lastLogId],
+        );
+      } else {
+        // Insert new log
+        await txn.insert(AnalyticsDatabase.tblPlaybackLogs, {
+          'song_id': internalSongId,
+          'timestamp': log.timestamp.millisecondsSinceEpoch,
+          'duration_listened': log.durationListenedSeconds,
+          'is_completed': log.isCompleted ? 1 : 0,
+          'play_count': 1,
+          'time_of_day': log.sessionTimeOfDay,
+        });
+      }
     });
-    
+
     _logController.add(null);
   }
 
@@ -96,7 +139,7 @@ class AnalyticsRecorder {
     } else {
       id = await txn.insert(table, {'name': name});
     }
-    
+
     _idCache[cacheKey] = id;
     return id;
   }

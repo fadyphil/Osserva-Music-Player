@@ -298,7 +298,8 @@ class AnalyticsReader {
     final stats = Map<String, dynamic>.from(finalResult.first);
 
     // 2. Get Dominant Time of Day
-    final timeSql = '''
+    final timeSql =
+        '''
       SELECT time_of_day, SUM(cnt) as count
       FROM (
         SELECT time_of_day, COUNT(*) as cnt 
@@ -321,7 +322,7 @@ class AnalyticsReader {
       ORDER BY count DESC
       LIMIT 1
     ''';
-    
+
     final timeResult = await db.rawQuery(timeSql, [artistName, artistName]);
     if (timeResult.isNotEmpty) {
       stats['dominant_time'] = timeResult.first['time_of_day'];
@@ -349,6 +350,7 @@ class AnalyticsReader {
         log.timestamp,
         log.duration_listened,
         log.is_completed,
+        log.play_count,
         log.time_of_day
       FROM ${AnalyticsDatabase.tblPlaybackLogs} log
       JOIN ${AnalyticsDatabase.tblSongs} s ON log.song_id = s.id
@@ -372,6 +374,7 @@ class AnalyticsReader {
         timestamp: DateTime.fromMillisecondsSinceEpoch(row['timestamp'] as int),
         durationListenedSeconds: row['duration_listened'] as int,
         isCompleted: (row['is_completed'] as int) == 1,
+        playCount: (row['play_count'] as int?) ?? 1,
         sessionTimeOfDay: row['time_of_day'] as String,
       );
     }).toList();
