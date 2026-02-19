@@ -43,6 +43,7 @@ import 'package:music_player/features/home/presentation/bloc/home_bloc/home_bloc
 import 'package:music_player/features/profile/data/datasources/profile_local_datasource.dart';
 import 'package:music_player/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:music_player/features/profile/domain/repositories/profile_repository.dart';
+import 'package:music_player/features/profile/domain/usecases/get_achievements.dart';
 import 'package:music_player/features/profile/domain/usecases/get_user_profile.dart';
 import 'package:music_player/features/profile/domain/usecases/update_user_profile.dart';
 import 'package:music_player/features/profile/domain/usecases/clear_cache.dart';
@@ -279,13 +280,16 @@ Future<void> initDependencies() async {
     () => UpdateUserProfile(serviceLocator()),
   );
   serviceLocator.registerLazySingleton(() => ClearCache(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => GetAchievements(serviceLocator()));
 
   serviceLocator.registerFactory(
     () => ProfileBloc(
       getUserProfile: serviceLocator(),
       updateUserProfile: serviceLocator(),
       clearCache: serviceLocator(),
+      getAchievements: serviceLocator(),
       clearAnalytics: serviceLocator(),
+      getGeneralStats: serviceLocator(),
     ),
   );
 

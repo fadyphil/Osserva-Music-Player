@@ -4,7 +4,11 @@ part of 'profile_bloc.dart';
 class ProfileState with _$ProfileState {
   const factory ProfileState.initial() = _Initial;
   const factory ProfileState.loading() = _Loading;
-  const factory ProfileState.loaded(UserEntity user) = _Loaded;
+  const factory ProfileState.loaded({
+    required UserEntity user,
+    required List<AchievementEntity> achievements,
+    required ListeningStats listeningStats,
+  }) = _Loaded;
   const factory ProfileState.cacheCleared() = _CacheCleared;
   const factory ProfileState.error(String message) = _Error;
 }
