@@ -38,14 +38,28 @@ abstract class MusicPlayerEvent with _$MusicPlayerEvent {
       _UpdateLoopState;
   const factory MusicPlayerEvent.updateCurrentSong(SongEntity song) =
       _UpdateCurrentSong;
+  const factory MusicPlayerEvent.updatePlayCounts(Map<int, int> playCounts) =
+      _UpdatePlayCounts;
 
   const factory MusicPlayerEvent.songFinished() = _SongFinished;
 
   // Queue Management
   const factory MusicPlayerEvent.addToQueue(SongEntity song) = _AddToQueue;
+  const factory MusicPlayerEvent.removeFromQueue(int index) = _RemoveFromQueue;
+  const factory MusicPlayerEvent.reorderQueue(int oldIndex, int newIndex) =
+      _ReorderQueue;
+  const factory MusicPlayerEvent.playQueueItem(int index) = _PlayQueueItem;
   const factory MusicPlayerEvent.addToPlaylist(SongEntity song) =
       _AddToPlaylist;
   const factory MusicPlayerEvent.queueUpdated(List<SongEntity> queue) =
       _QueueUpdated;
   const factory MusicPlayerEvent.playNextinQueue(SongEntity song) = _PlayNext;
+
+  // Sleep Timer
+  const factory MusicPlayerEvent.setTimer({required Duration duration}) =
+      _SetTimer;
+  const factory MusicPlayerEvent.setEndTrackTimer({required bool active}) =
+      _SetEndTrackTimer;
+  const factory MusicPlayerEvent.cancelTimer() = _CancelTimer;
+  const factory MusicPlayerEvent.tickTimer() = _TickTimer;
 }

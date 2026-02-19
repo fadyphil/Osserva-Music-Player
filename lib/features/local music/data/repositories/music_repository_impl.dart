@@ -4,6 +4,7 @@ import 'package:music_player/features/local%20music/data/datasource/local_music_
 import 'package:music_player/features/local%20music/data/failures/music_failures.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 import 'package:music_player/features/local%20music/domain/repositories/music_repository.dart';
+import 'package:music_player/features/local%20music/domain/usecases/edit_song_metadata.dart';
 
 class MusicRepositoryImpl implements MusicRepository {
   final LocalMusicDatasource _localMusicDatasource;
@@ -28,6 +29,40 @@ class MusicRepositoryImpl implements MusicRepository {
         return Right(song);
       }
       return const Left(MusicFailures.storageError(message: 'Song not found'));
+    } catch (e) {
+      return Left(MusicFailures.storageError(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> deleteSong(int id, String path) async {
+    try {
+      final result = await _localMusicDatasource.deleteSong(id: id, path: path);
+      if (result) {
+        return const Right(true);
+      }
+      return const Left(MusicFailures.storageError(message: 'Failed to delete song file'));
+    } catch (e) {
+      return Left(MusicFailures.storageError(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> editSongMetadata(EditSongMetadataParams params) async {
+    try {
+      final result = await _localMusicDatasource.editSongMetadata(
+        path: params.song.path,
+        title: params.title,
+        artist: params.artist,
+        album: params.album,
+        genre: params.genre,
+        year: params.year,
+        artworkBytes: params.artworkBytes,
+      );
+       if (result) {
+        return const Right(true);
+      }
+      return const Left(MusicFailures.storageError(message: 'Failed to edit song metadata'));
     } catch (e) {
       return Left(MusicFailures.storageError(message: e.toString()));
     }

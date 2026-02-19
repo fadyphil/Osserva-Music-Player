@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:music_player/core/router/app_router.dart';
+import 'package:music_player/core/theme/app_pallete.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../domain/entities/achievement_entity.dart';
+import '../../../analytics/domain/entities/analytics_stats.dart';
 import '../bloc/profile_bloc.dart';
 
 @RoutePage()
@@ -25,21 +26,46 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Assuming AppPallete.background is the very dark blue/black from screenshots
+    // Assuming AppPallete.surface is the slightly lighter card color
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppPallete.background,
+      appBar: AppBar(
+        backgroundColor: AppPallete.background,
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppPallete.accent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.music_note, color: Colors.white),
+          ),
+        ),
+        title: const Text(
+          "Pulse",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {}, // Drawer or menu action
+          ),
+        ],
+      ),
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: (context, state) {
           state.maybeWhen(
             error: (msg) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(msg)));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(msg),
+                  backgroundColor: AppPallete.destructive,
+                ),
+              );
             },
             cacheCleared: () {
-              // Navigator.of(context).pushAndRemoveUntil(
-              //   MaterialPageRoute(builder: (context) => const OnboardingPage()),
-              //   (route) => false,
-              // );
               context.router.replaceAll([OnboardingRoute()]);
             },
             orElse: () {},
@@ -47,9 +73,17 @@ class _ProfilePageState extends State<ProfilePage> {
         },
         builder: (context, state) {
           return state.maybeWhen(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            loaded: (user) => _ProfileView(user: user),
-            orElse: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(
+              child: CircularProgressIndicator(color: AppPallete.accent),
+            ),
+            loaded: (user, achievements, stats) => _ProfileView(
+              user: user,
+              achievements: achievements,
+              stats: stats,
+            ),
+            orElse: () => const Center(
+              child: CircularProgressIndicator(color: AppPallete.accent),
+            ),
           );
         },
       ),
@@ -59,7 +93,68 @@ class _ProfilePageState extends State<ProfilePage> {
 
 class _ProfileView extends StatelessWidget {
   final UserEntity user;
-  const _ProfileView({required this.user});
+  final List<AchievementEntity> achievements;
+  final ListeningStats stats;
+
+  const _ProfileView({
+    required this.user,
+    required this.achievements,
+    required this.stats,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Profile Header (Image 3)
+          _ProfileHeader(user: user),
+          const SizedBox(height: 32),
+
+          // 2. Navigation Layout Selector (Image 3)
+          const _SectionHeader("Navigation Layout"),
+          const SizedBox(height: 12),
+          _NavigationLayoutSelector(selectedStyle: user.preferredNavBar),
+          const SizedBox(height: 32),
+
+          // 3. Maintenance / Cache (Image 2)
+          const _SectionHeader("Maintenance"),
+          const SizedBox(height: 12),
+          const _MaintenanceSection(),
+          const SizedBox(height: 32),
+
+          // 4. All-Time Stats (Image 2)
+          const _SectionHeader("All-Time Stats"),
+          const SizedBox(height: 12),
+          _AllTimeStatsGrid(stats: stats),
+          const SizedBox(height: 32),
+
+          // 5. Listening Insights (Image 1)
+          const _SectionHeader("Listening Insights"),
+          const SizedBox(height: 12),
+          _ListeningInsightsList(stats: stats),
+          const SizedBox(height: 32),
+
+          // 6. Achievements & Suggestions (Image 4)
+          const _SectionHeader("Achievements"),
+          const SizedBox(height: 12),
+          _AchievementsSection(achievements: achievements),
+          const SizedBox(height: 100), // Bottom padding
+        ],
+      ),
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// SECTION 1: HEADER (Matches Image 3)
+// -----------------------------------------------------------------------------
+class _ProfileHeader extends StatelessWidget {
+  final UserEntity user;
+  const _ProfileHeader({required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -69,344 +164,697 @@ class _ProfileView extends StatelessWidget {
               : FileImage(File(user.avatarUrl)) as ImageProvider)
         : null;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(24, 80, 24, 160),
+    return Row(
       children: [
-        // Avatar & Info
-        Center(
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: () => _showEditDialog(context, user),
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.white10,
-                      backgroundImage: imageProvider,
-                      child: user.avatarUrl.isEmpty
-                          ? const Icon(
-                              Icons.person,
-                              size: 60,
-                              color: Colors.white54,
-                            )
-                          : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Colors.greenAccent,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          color: Colors.black,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                user.username,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                user.email,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white54,
-                  fontFamily: 'monospace',
-                ),
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: () => _showEditDialog(context, user),
-                icon: const Icon(Icons.edit, size: 16),
-                label: const Text("EDIT PROFILE"),
-              ),
-            ],
-          ),
+        CircleAvatar(
+          radius: 40,
+          backgroundColor: AppPallete.surface,
+          backgroundImage: imageProvider,
+          child: user.avatarUrl.isEmpty
+              ? const Icon(
+                  Icons.person_outline,
+                  size: 40,
+                  color: AppPallete.grey,
+                )
+              : null,
         ),
-
-        const SizedBox(height: 48),
-
-        // Section: Customization
-        const _SectionHeader(title: "INTERFACE MODULES"),
-        const SizedBox(height: 16),
-        _NavBarSelector(selectedStyle: user.preferredNavBar),
-
-        const SizedBox(height: 32),
-
-        // Section: System
-        const _SectionHeader(title: "SYSTEM"),
-        const SizedBox(height: 16),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
-          title: const Text(
-            "Clear Cache",
-            style: TextStyle(color: Colors.white),
-          ),
-          subtitle: const Text(
-            "Purge local temporal data",
-            style: TextStyle(color: Colors.white38, fontSize: 12),
-          ),
-          onTap: () => _showClearCacheConfirmation(context),
+        const SizedBox(width: 20),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Your Profile", // Hardcoded per design, or use user.username
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: AppPallete.foreground,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "Offline listener since Jan 2025", // Example static text per design
+              style: TextStyle(
+                color: AppPallete.grey.withValues(alpha: 0.7),
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
+}
 
-  void _showClearCacheConfirmation(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1A1A1A),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24.0),
+// -----------------------------------------------------------------------------
+// SECTION 2: NAVIGATION LAYOUT (Matches Image 3)
+// -----------------------------------------------------------------------------
+class _NavigationLayoutSelector extends StatelessWidget {
+  final NavBarStyle selectedStyle;
+  const _NavigationLayoutSelector({required this.selectedStyle});
+
+  @override
+  Widget build(BuildContext context) {
+    // We map the designs "Default" and "Minimal" to logical enums
+    return Column(
+      children: [
+        _NavLayoutCard(
+          title: "Default",
+          description: "Balanced navigation with all core sections",
+          isSelected:
+              selectedStyle ==
+              NavBarStyle.simple, // Mapping 'simple' to Default
+          preview: const _NavPreviewSkeleton(isMinimal: false),
+          onTap: () {
+            context.read<ProfileBloc>().add(
+              const ProfileEvent.changeNavBarStyle(NavBarStyle.simple),
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+        _NavLayoutCard(
+          title: "Minimal",
+          description: "Focus on music playback and library",
+          isSelected:
+              selectedStyle == NavBarStyle.prism, // Mapping 'prism' to Minimal
+          preview: const _NavPreviewSkeleton(isMinimal: true),
+          onTap: () {
+            context.read<ProfileBloc>().add(
+              const ProfileEvent.changeNavBarStyle(NavBarStyle.prism),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _NavLayoutCard extends StatelessWidget {
+  final String title;
+  final String description;
+  final bool isSelected;
+  final Widget preview;
+  final VoidCallback onTap;
+
+  const _NavLayoutCard({
+    required this.title,
+    required this.description,
+    required this.isSelected,
+    required this.preview,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppPallete.surface.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppPallete.accent : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "CONFIRM PURGE",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                letterSpacing: 1.0,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "This will delete all user data, analytics, and reset the application to its factory state. This action cannot be undone.",
-              style: TextStyle(color: Colors.white70),
-            ),
-            const SizedBox(height: 32),
             Row(
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white24),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Text("CANCEL"),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppPallete.foreground,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      context.read<ProfileBloc>().add(
-                        const ProfileEvent.clearCache(),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Text("PURGE DATA"),
+                if (isSelected) ...[
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.check_circle,
+                    color: AppPallete.accent,
+                    size: 18,
                   ),
-                ),
+                ],
               ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              description,
+              style: const TextStyle(color: AppPallete.grey, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            // Visual Preview Area
+            Container(
+              height: 140,
+              decoration: BoxDecoration(
+                color: AppPallete.background,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppPallete.border.withValues(alpha: 0.3),
+                ),
+              ),
+              child: preview,
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  void _showEditDialog(BuildContext context, UserEntity user) {
-    final nameCtrl = TextEditingController(text: user.username);
-    final emailCtrl = TextEditingController(text: user.email);
-    String currentAvatarPath = user.avatarUrl;
+class _NavPreviewSkeleton extends StatelessWidget {
+  final bool isMinimal;
+  const _NavPreviewSkeleton({required this.isMinimal});
 
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            backgroundColor: const Color(0xFF1A1A1A),
-            title: const Text(
-              "Update Identity",
-              style: TextStyle(color: Colors.white),
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Fake Header
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Container(width: 20, height: 20, color: AppPallete.surface),
+              const Spacer(),
+              Container(width: 20, height: 20, color: AppPallete.surface),
+            ],
+          ),
+        ),
+        // Fake Content Lines
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 8,
+                width: 100,
+                decoration: BoxDecoration(
+                  color: AppPallete.surface,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                height: 8,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppPallete.surface.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                height: 8,
+                width: 180,
+                decoration: BoxDecoration(
+                  color: AppPallete.surface.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Spacer(),
+        // Fake Bottom Bar
+        Container(
+          height: 40,
+          decoration: const BoxDecoration(
+            border: Border(
+              top: BorderSide(color: AppPallete.border, width: 0.5),
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(
+              isMinimal ? 3 : 4,
+              (index) => Icon(
+                Icons.circle,
+                size: 8,
+                color: index == 0 ? AppPallete.accent : AppPallete.grey,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// SECTION 3: MAINTENANCE (Matches Image 2)
+// -----------------------------------------------------------------------------
+class _MaintenanceSection extends StatelessWidget {
+  const _MaintenanceSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppPallete.surface.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppPallete.border.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  onTap: () async {
-                    final ImagePicker picker = ImagePicker();
-                    final XFile? image = await picker.pickImage(
-                      source: ImageSource.gallery,
-                    );
-                    if (image != null) {
-                      setState(() {
-                        currentAvatarPath = image.path;
-                      });
-                      HapticFeedback.lightImpact();
-                    }
-                  },
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.white10,
-                    backgroundImage: currentAvatarPath.isNotEmpty
-                        ? (currentAvatarPath.startsWith('http')
-                              ? NetworkImage(currentAvatarPath)
-                              : FileImage(File(currentAvatarPath))
-                                    as ImageProvider)
-                        : null,
-                    child: currentAvatarPath.isEmpty
-                        ? const Icon(Icons.add_a_photo, color: Colors.white54)
-                        : null,
+                const Text(
+                  "Clear Cache",
+                  style: TextStyle(
+                    color: AppPallete.foreground,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
                   ),
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: nameCtrl,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(labelText: "Username"),
+                const SizedBox(height: 8),
+                const Text(
+                  "Remove cached artwork, waveforms, and temporary analytics data",
+                  style: TextStyle(
+                    color: AppPallete.grey,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
                 ),
-                TextField(
-                  controller: emailCtrl,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(labelText: "Email"),
+                const SizedBox(height: 12),
+                Text(
+                  "Estimated cache size: ~42 MB", // In real app, calculate this
+                  style: TextStyle(
+                    color: AppPallete.grey.withValues(alpha: 0.7),
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text("Cancel"),
+          ),
+          const SizedBox(width: 16),
+          OutlinedButton(
+            onPressed: () {
+              context.read<ProfileBloc>().add(const ProfileEvent.clearCache());
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppPallete.foreground,
+              side: const BorderSide(color: AppPallete.border),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-              TextButton(
-                onPressed: () {
-                  context.read<ProfileBloc>().add(
-                    ProfileEvent.updateProfile(
-                      user.copyWith(
-                        username: nameCtrl.text,
-                        email: emailCtrl.text,
-                        avatarUrl: currentAvatarPath,
-                      ),
-                    ),
-                  );
-                  Navigator.pop(ctx);
-                },
-                child: const Text("Save"),
-              ),
-            ],
-          );
-        },
+            ),
+            child: const Text("Clear"),
+          ),
+        ],
       ),
     );
   }
 }
 
+// -----------------------------------------------------------------------------
+// SECTION 4: ALL-TIME STATS (Matches Image 2)
+// -----------------------------------------------------------------------------
+class _AllTimeStatsGrid extends StatelessWidget {
+  final ListeningStats stats;
+  const _AllTimeStatsGrid({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 1.4,
+      children: [
+        _StatBox(
+          icon: Icons.headset,
+          label: "Total Plays",
+          value: "${stats.totalSongsPlayed}", // e.g. 4,522
+        ),
+        _StatBox(
+          icon: Icons.schedule,
+          label: "Hours Listened",
+          value:
+              "${(stats.totalMinutes / 60).toStringAsFixed(0)}h", // e.g. 301h
+        ),
+        _StatBox(
+          icon: Icons.trending_up,
+          label: "Top Track",
+          value: "Terminal Dreams", // Need a stats.topTrack field
+          subValue: "165 plays",
+        ),
+        _StatBox(
+          icon: Icons.bookmark_outline,
+          label: "Top Genre",
+          value: "Electronic", // Need a stats.topGenre field
+          subValue: "342 plays",
+        ),
+      ],
+    );
+  }
+}
+
+class _StatBox extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final String? subValue;
+
+  const _StatBox({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.subValue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppPallete.surface.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppPallete.border.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: AppPallete.grey),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(color: AppPallete.grey, fontSize: 12),
+              ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppPallete.foreground,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (subValue != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  subValue!,
+                  style: TextStyle(
+                    color: AppPallete.grey.withValues(alpha: 0.6),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// SECTION 5: LISTENING INSIGHTS (Matches Image 1)
+// -----------------------------------------------------------------------------
+class _ListeningInsightsList extends StatelessWidget {
+  final ListeningStats stats;
+  const _ListeningInsightsList({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: const [
+        _InsightCard(
+          icon: Icons.show_chart,
+          title: "Most Active Period",
+          mainText: "Weekday Afternoons",
+          subText: "2-6 PM shows 40% higher activity than average",
+        ),
+        SizedBox(height: 12),
+        _InsightCard(
+          icon: Icons.headphones,
+          title: "Listening Style",
+          mainText: "Deep Focus",
+          subText: "Long sessions with minimal skips. Avg 45min per session",
+        ),
+        SizedBox(height: 12),
+        _InsightCard(
+          icon: Icons.verified_outlined,
+          title: "Top Genre Preference",
+          mainText: "Electronic",
+          subText: "8% of total listening time",
+        ),
+        SizedBox(height: 12),
+        _InsightCard(
+          icon: Icons.calendar_today,
+          title: "Consistency Score",
+          mainText: "High",
+          subText: "Active 6.2 days per week on average",
+        ),
+      ],
+    );
+  }
+}
+
+class _InsightCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String mainText;
+  final String subText;
+
+  const _InsightCard({
+    required this.icon,
+    required this.title,
+    required this.mainText,
+    required this.subText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppPallete.surface.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppPallete.border.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: AppPallete.grey, size: 20),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(color: AppPallete.grey, fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  mainText,
+                  style: const TextStyle(
+                    color: AppPallete.foreground,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subText,
+                  style: TextStyle(
+                    color: AppPallete.grey.withValues(alpha: 0.7),
+                    fontSize: 13,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// SECTION 6: ACHIEVEMENTS & SUGGESTIONS (Matches Image 4)
+// -----------------------------------------------------------------------------
+class _AchievementsSection extends StatelessWidget {
+  final List<AchievementEntity> achievements;
+  const _AchievementsSection({required this.achievements});
+
+  @override
+  Widget build(BuildContext context) {
+    // In a real scenario, use the list. Here mapping to the specific 4 from design
+    final displayAchievements = [
+      (
+        title: "Century Club",
+        sub: "100+ plays on a single track",
+        icon: Icons.verified_outlined,
+      ),
+      (
+        title: "Night Owl",
+        sub: "50+ late night sessions",
+        icon: Icons.nights_stay_outlined,
+      ),
+      (
+        title: "Explorer",
+        sub: "Listened to 5+ genres",
+        icon: Icons.explore_outlined,
+      ),
+      (
+        title: "Streak Master",
+        sub: "30 day listening streak",
+        icon: Icons.local_fire_department_outlined,
+      ),
+    ];
+
+    return Column(
+      children: [
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: 4,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.1,
+          ),
+          itemBuilder: (context, index) {
+            final ach = displayAchievements[index];
+            final bool isUnlocked =
+                index < 3; // Mocking unlocked state based on image colors
+
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppPallete.surface.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppPallete.border.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    ach.icon,
+                    color: isUnlocked
+                        ? AppPallete.accent
+                        : AppPallete.grey.withValues(alpha: 0.3),
+                    size: 28,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    ach.title,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: isUnlocked
+                          ? AppPallete.foreground
+                          : AppPallete.grey,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    ach.sub,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppPallete.grey.withValues(alpha: 0.6),
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 24),
+        // Suggestion Card
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppPallete.accent.withValues(alpha: 0.15),
+                AppPallete.background,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppPallete.accent.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.trending_up, color: AppPallete.accent, size: 24),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Suggested Next Session",
+                      style: TextStyle(
+                        color: AppPallete.foreground,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      "Based on your patterns, you typically listen to Ambient tracks around this time. Your \"Silent Hours\" album might be a good choice.",
+                      style: TextStyle(
+                        color: AppPallete.grey.withValues(alpha: 0.8),
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// HELPER: SECTION HEADERS
+// -----------------------------------------------------------------------------
 class _SectionHeader extends StatelessWidget {
   final String title;
-  const _SectionHeader({required this.title});
+  const _SectionHeader(this.title);
 
   @override
   Widget build(BuildContext context) {
     return Text(
       title,
       style: const TextStyle(
-        color: Colors.white54,
-        fontSize: 12,
-        fontFamily: 'monospace',
-        letterSpacing: 2.0,
+        color: AppPallete.grey,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
       ),
     );
-  }
-}
-
-class _NavBarSelector extends StatelessWidget {
-  final NavBarStyle selectedStyle;
-  const _NavBarSelector({required this.selectedStyle});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 120,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: NavBarStyle.values.map((style) {
-          final isSelected = style == selectedStyle;
-          return GestureDetector(
-            onTap: () {
-              context.read<ProfileBloc>().add(
-                ProfileEvent.changeNavBarStyle(style),
-              );
-            },
-            child: Container(
-              width: 100,
-              margin: const EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Theme.of(
-                        context,
-                      ).colorScheme.primary.withValues(alpha: 0.2)
-                    : Colors.white10,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.transparent,
-                ),
-              ),
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    _getIconForStyle(style),
-                    color: isSelected ? Colors.white : Colors.white54,
-                    size: 32,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    style.name.toUpperCase(),
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.white54,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  IconData _getIconForStyle(NavBarStyle style) {
-    switch (style) {
-      case NavBarStyle.simple:
-        return Icons.crop_square;
-      case NavBarStyle.prism:
-        return Icons.radio_button_checked;
-      case NavBarStyle.neural:
-        return Icons.gesture;
-      case NavBarStyle.gravity:
-        return Icons.anchor;
-    }
   }
 }

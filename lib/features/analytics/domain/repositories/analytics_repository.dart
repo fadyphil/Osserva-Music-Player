@@ -23,6 +23,9 @@ abstract interface class AnalyticsRepository {
   /// Retrieves general statistics (total time, count, time of day dist) for [timeFrame].
   Future<Either<Failure, ListeningStats>> getGeneralStats(TimeFrame timeFrame);
 
+  /// Retrieves specific stats for an artist.
+  Future<Either<Failure, Map<String, dynamic>>> getArtistStats(String artistName);
+
   /// Retrieves a map of song_id to play count for ALL time.
   Future<Either<Failure, Map<int, int>>> getAllSongPlayCounts();
 
@@ -31,6 +34,9 @@ abstract interface class AnalyticsRepository {
 
   /// Clears all analytics data.
   Future<Either<Failure, void>> clearData();
+
+  /// Deletes all logs for a specific song (e.g., when deleting file).
+  Future<Either<Failure, void>> deleteSongAnalytics(int songId);
 
   /// Retrieves the raw playback history (chronological).
   Future<Either<Failure, List<PlayLog>>> getPlaybackHistory({int? limit, int? offset});

@@ -26,17 +26,35 @@ void main() {
     when(
       () => mockPlayer.sequenceStateStream,
     ).thenAnswer((_) => Stream.empty());
-    when(() => mockPlayer.durationStream).thenAnswer((_) => Stream.value(Duration.zero)); // Added
-    when(() => mockPlayer.positionStream).thenAnswer((_) => Stream.value(Duration.zero)); // Added
+    when(() => mockPlayer.durationStream)
+        .thenAnswer((_) => Stream.value(Duration.zero)); // Added
+    when(() => mockPlayer.positionStream)
+        .thenAnswer((_) => Stream.value(Duration.zero)); // Added
+    // NEW STREAMS
+    when(() => mockPlayer.shuffleModeEnabledStream)
+        .thenAnswer((_) => Stream.value(false));
+    when(() => mockPlayer.loopModeStream)
+        .thenAnswer((_) => Stream.value(LoopMode.off));
+    when(() => mockPlayer.playingStream).thenAnswer((_) => Stream.value(false));
+    when(() => mockPlayer.processingStateStream)
+        .thenAnswer((_) => Stream.value(ProcessingState.idle));
+
+    // PROPERTIES
     when(() => mockPlayer.position).thenReturn(Duration.zero);
     when(() => mockPlayer.bufferedPosition).thenReturn(Duration.zero);
     when(() => mockPlayer.speed).thenReturn(1.0);
     when(() => mockPlayer.playing).thenReturn(false);
     when(() => mockPlayer.processingState).thenReturn(ProcessingState.idle);
+    when(() => mockPlayer.shuffleModeEnabled).thenReturn(false);
+    when(() => mockPlayer.loopMode).thenReturn(LoopMode.off);
+    when(() => mockPlayer.currentIndex).thenReturn(0);
+    when(() => mockPlayer.duration).thenReturn(null);
+
     when(
       () => mockPlayer.setAudioSources(
         any(),
         initialIndex: any(named: 'initialIndex'),
+        initialPosition: any(named: 'initialPosition'),
       ),
     ).thenAnswer((_) async => null);
 

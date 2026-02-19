@@ -60,7 +60,7 @@ class TimeOfDayChart extends StatelessWidget {
             LineChartBarData(
               spots: spots,
               isCurved: true,
-              color: AppPallete.electricBlue,
+              color: AppPallete.chart1, // Was electricBlue
               barWidth: 4,
               isStrokeCapRound: true,
               dotData: FlDotData(
@@ -68,9 +68,9 @@ class TimeOfDayChart extends StatelessWidget {
                 getDotPainter: (spot, percent, barData, index) {
                   return FlDotCirclePainter(
                     radius: 6,
-                    color: AppPallete.white,
+                    color: AppPallete.foreground,
                     strokeWidth: 2,
-                    strokeColor: AppPallete.electricBlue,
+                    strokeColor: AppPallete.chart1,
                   );
                 },
               ),
@@ -78,8 +78,8 @@ class TimeOfDayChart extends StatelessWidget {
                 show: true,
                 gradient: LinearGradient(
                   colors: [
-                    AppPallete.electricBlue.withValues(alpha: 0.3),
-                    AppPallete.electricBlue.withValues(alpha: 0.0),
+                    AppPallete.chart1.withValues(alpha: 0.3),
+                    AppPallete.chart1.withValues(alpha: 0.0),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,

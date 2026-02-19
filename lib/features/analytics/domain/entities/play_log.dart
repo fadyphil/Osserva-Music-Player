@@ -7,7 +7,8 @@ DateTime _fromMillis(int date) => DateTime.fromMillisecondsSinceEpoch(date);
 int _toMillis(DateTime date) => date.millisecondsSinceEpoch;
 
 @freezed
-abstract class PlayLog with _$PlayLog { // Make PlayLog abstract
+abstract class PlayLog with _$PlayLog {
+  // Make PlayLog abstract
   const factory PlayLog({
     int? id,
     @JsonKey(name: 'song_id') required int songId,
@@ -15,11 +16,14 @@ abstract class PlayLog with _$PlayLog { // Make PlayLog abstract
     @JsonKey(name: 'artist') required String artist,
     @JsonKey(name: 'album') required String album,
     @JsonKey(name: 'genre') required String genre,
-    @JsonKey(name: 'timestamp', fromJson: _fromMillis, toJson: _toMillis) required DateTime timestamp,
+    @JsonKey(name: 'timestamp', fromJson: _fromMillis, toJson: _toMillis)
+    required DateTime timestamp,
     @JsonKey(name: 'duration_listened') required int durationListenedSeconds,
     @JsonKey(name: 'is_completed') required bool isCompleted,
+    @Default(1) @JsonKey(name: 'play_count') int playCount,
     required String sessionTimeOfDay,
   }) = _PlayLog;
 
-  factory PlayLog.fromJson(Map<String, dynamic> json) => _$PlayLogFromJson(json);
+  factory PlayLog.fromJson(Map<String, dynamic> json) =>
+      _$PlayLogFromJson(json);
 }

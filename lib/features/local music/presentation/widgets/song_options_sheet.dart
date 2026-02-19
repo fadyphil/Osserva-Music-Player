@@ -8,6 +8,7 @@ import 'package:music_player/features/music_player/presentation/bloc/music_playe
 
 void showSongOptions(BuildContext context, SongEntity song) {
   showModalBottomSheet(
+    useRootNavigator: true,
     context: context,
     backgroundColor: const Color(0xFF1E1E1E), // Dark theme color
     shape: const RoundedRectangleBorder(
@@ -75,18 +76,6 @@ void showSongOptions(BuildContext context, SongEntity song) {
               onTap: () {
                 // Add your FavoritesBloc logic here
                 Navigator.pop(context);
-              },
-            ),
-            
-            // Spacer for MiniPlayer/NavBar
-            Builder(
-              builder: (context) {
-                final isPlaying =
-                    context.select((MusicPlayerBloc bloc) => bloc.state.currentSong != null);
-                if (isPlaying) {
-                  return const SizedBox(height: 150);
-                }
-                return const SizedBox(height: 20);
               },
             ),
           ],

@@ -1,8 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:music_player/core/error/failure.dart';
 import 'package:music_player/core/usecases/usecase.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 import 'package:music_player/features/local%20music/domain/use%20cases/get_local_songs_use_case.dart';
+import 'package:music_player/features/local%20music/domain/usecases/delete_song.dart';
+import 'package:music_player/features/local%20music/domain/usecases/edit_song_metadata.dart';
 import 'package:music_player/features/local%20music/presentation/managers/local_music_event.dart';
 import 'package:music_player/features/local%20music/presentation/managers/local_music_state.dart';
 import 'package:stream_transform/stream_transform.dart'; // Add this package
@@ -17,9 +21,15 @@ EventTransformer<E> debounce<E>(Duration duration) {
 class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
   final GetLocalSongsUseCase _getLocalSongsUseCase;
   final GetAllSongPlayCounts _getAllSongPlayCountsUseCase;
+  final DeleteSong _deleteSongUseCase;
+  final EditSongMetadata _editSongMetadataUseCase;
 
-  LocalMusicBloc(this._getLocalSongsUseCase, this._getAllSongPlayCountsUseCase)
-    : super(const LocalMusicState.initial()) {
+  LocalMusicBloc(
+    this._getLocalSongsUseCase,
+    this._getAllSongPlayCountsUseCase,
+    this._deleteSongUseCase,
+    this._editSongMetadataUseCase,
+  ) : super(const LocalMusicState.initial()) {
     // 1. Initial Load
     on<GetLocalSongs>(_onGetLocalSongs);
 
@@ -31,6 +41,53 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
 
     // 3. Sort
     on<SortSongs>(_onSortSongs);
+
+    // 4. Delete
+    on<DeleteSongEvent>(_onDeleteSong);
+
+    // 5. Edit
+    on<EditSongEvent>(_onEditSong);
+  }
+
+  Future<void> _onDeleteSong(
+    DeleteSongEvent event,
+    Emitter<LocalMusicState> emit,
+  ) async {
+    final result = await _deleteSongUseCase(event.song);
+    result.fold(
+      (failure) {
+        // Ideally show a snackbar via listener, but here we might emit failure
+        // For now, let's just log or emit failure if critical
+        emit(LocalMusicState.failure(failure));
+      },
+      (success) {
+        if (success) {
+          add(const GetLocalSongs());
+        }
+      },
+    );
+  }
+
+  Future<void> _onEditSong(
+    EditSongEvent event,
+    Emitter<LocalMusicState> emit,
+  ) async {
+    final result = await _editSongMetadataUseCase(
+      EditSongMetadataParams(
+        song: event.song,
+        title: event.title,
+        artist: event.artist,
+        album: event.album,
+        genre: event.genre,
+        year: event.year,
+        artworkBytes: event.artworkBytes,
+      ),
+    );
+    result.fold((failure) => emit(LocalMusicState.failure(failure)), (success) {
+      if (success) {
+        add(const GetLocalSongs());
+      }
+    });
   }
 
   Future<void> _onGetLocalSongs(
@@ -44,8 +101,8 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
       _getAllSongPlayCountsUseCase(NoParams()),
     ]);
 
-    final songsResult = results[0] as dynamic;
-    final countsResult = results[1] as dynamic;
+    final songsResult = results[0] as Either<Failure, List<SongEntity>>;
+    final countsResult = results[1] as Either<Failure, Map<int, int>>;
 
     songsResult.fold((failure) => emit(LocalMusicState.failure(failure)), (
       songs,
@@ -56,12 +113,7 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
       );
 
       // Initial Process using defaults
-      final processed = _processSongs(
-        songs as List<SongEntity>,
-        '',
-        SortOption.dateAdded,
-        counts,
-      );
+      final processed = _processSongs(songs, '', SortOption.dateAdded, counts);
 
       emit(
         LocalMusicState.loaded(

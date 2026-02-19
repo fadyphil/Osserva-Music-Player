@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../domain/entities/achievement_entity.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../datasources/profile_local_datasource.dart';
 import '../failures/profile_failure.dart';
@@ -35,6 +36,16 @@ class ProfileRepositoryImpl implements ProfileRepository {
     try {
       await _dataSource.clearCache();
       return right(null);
+    } catch (e) {
+      return left(ProfileFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<AchievementEntity>>> getAchievements() async {
+    try {
+      final achievements = await _dataSource.getAchievements();
+      return right(achievements);
     } catch (e) {
       return left(ProfileFailure(e.toString()));
     }

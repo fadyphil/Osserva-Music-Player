@@ -1,17 +1,185 @@
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:audiotags/audiotags.dart';
+import 'package:media_store_plus/media_store_plus.dart';
 import 'package:music_player/features/local%20music/data/models/song_model.dart';
 import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 abstract class LocalMusicDatasource {
   Future<List<SongEntity>> getLocalMusic();
   Future<SongEntity?> getSongById(int id);
+  Future<bool> deleteSong({required int id, required String path});
+  Future<bool> editSongMetadata({
+    required String path,
+    String? title,
+    String? artist,
+    String? album,
+    String? genre,
+    String? year,
+    Uint8List? artworkBytes,
+  });
 }
 
 class LocalMusicDatasourceImpl implements LocalMusicDatasource {
+  final MediaStore _mediaStore;
   final OnAudioQuery _onAudioQuery;
-  LocalMusicDatasourceImpl(this._onAudioQuery);
+  LocalMusicDatasourceImpl(this._onAudioQuery, this._mediaStore);
+
+  @override
+  Future<bool> deleteSong({required int id, required String path}) async {
+    // 1. Desktop Implementation
+    if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+      try {
+        final file = File(path);
+        if (await file.exists()) {
+          await file.delete();
+          return true;
+        }
+        return false;
+      } catch (e) {
+        throw Exception('Failed to delete on Desktop: $e');
+      }
+    }
+
+    // 2. Android Implementation
+    if (Platform.isAndroid) {
+      try {
+        // Construct the Content URI using the ID
+        // This URI tells Android EXACTLY which database entry to modify
+        final String uriString = 'content://media/external/audio/media/$id';
+
+        // Use the MediaStore plugin to trigger the native permission popup
+        final result = await _mediaStore.deleteFileUsingUri(
+          uriString: uriString,
+        );
+
+        return result;
+      } catch (e) {
+        // Fallback: Try standard File delete (Works for files YOUR app created)
+        try {
+          final file = File(path);
+          if (await file.exists()) {
+            await file.delete();
+            await _onAudioQuery.scanMedia(path); // Update index
+            return true;
+          }
+        } catch (fallbackError) {
+          // Both deletion attempts failed
+        }
+        return false;
+      }
+    }
+
+    return false;
+  }
+
+  @override
+  Future<bool> editSongMetadata({
+    required String path,
+    String? title,
+    String? artist,
+    String? album,
+    String? genre,
+    String? year,
+    Uint8List? artworkBytes,
+  }) async {
+    try {
+      // --- START: ADD THIS CHECK ---
+      // Check if the file format is supported by the audiotags library.
+      final String lowercasedPath = path.toLowerCase();
+      if (lowercasedPath.endsWith('.opus') || lowercasedPath.endsWith('.wav')) {
+        // print("Unsupported file format for editing: $path");
+        // Return false to indicate failure without crashing.
+        return false;
+      }
+      await _ensureStoragePermission();
+
+      // Read existing tags to perform a partial update
+      final Tag? originalTags = await _readExistingTags(path);
+
+      final List<Picture> artwork = _prepareArtwork(
+        artworkBytes,
+        originalTags?.pictures,
+      );
+
+      final int? releaseYear = _parseYear(year) ?? originalTags?.year;
+
+      final Tag updatedTag = Tag(
+        title: title ?? originalTags?.title,
+        artist: artist ?? originalTags?.artist,
+        album: album ?? originalTags?.album,
+        genre: genre ?? originalTags?.genre,
+        year: releaseYear,
+        pictures: artwork,
+      );
+
+      await AudioTags.write(path, updatedTag);
+
+      if (Platform.isAndroid) {
+        // Notify the system media store to re-index the file with new metadata
+        await _onAudioQuery.scanMedia(path);
+      }
+
+      return true;
+    } catch (e) {
+      // Errors are handled by returning false;
+      // Higher layers (Repository) will map this to a Failure.
+      // FIX #1: Print the actual error to the console for debugging
+      // print("--- FAILED TO UPDATE METADATA ---");
+      // print("Error: $e");
+      // print("File Path: $path");
+      // print("---------------------------------");
+      return false;
+    }
+  }
+
+  Future<void> _ensureStoragePermission() async {
+    if (Platform.isAndroid) {
+      final status = await Permission.manageExternalStorage.status;
+      if (!status.isGranted) {
+        final requestStatus = await Permission.manageExternalStorage.request();
+        if (!requestStatus.isGranted) {
+          throw Exception(
+            "Access Denied: 'All Files Access' is required for metadata editing.",
+          );
+        }
+      }
+    }
+  }
+
+  Future<Tag?> _readExistingTags(String path) async {
+    try {
+      return await AudioTags.read(path);
+    } catch (_) {
+      // If reading fails, we proceed with null to allow a "fresh" write
+      return null;
+    }
+  }
+
+  List<Picture> _prepareArtwork(
+    Uint8List? newArtwork,
+    List<Picture>? existingArtwork,
+  ) {
+    if (newArtwork != null) {
+      return [
+        Picture(
+          bytes: newArtwork,
+          mimeType:
+              MimeType.none, // We use none as we don't strictly need to specify
+          pictureType: PictureType.coverFront,
+        ),
+      ];
+    }
+    return existingArtwork ?? [];
+  }
+
+  int? _parseYear(String? yearString) {
+    if (yearString == null || yearString.isEmpty) return null;
+    return int.tryParse(yearString);
+  }
 
   @override
   Future<SongEntity?> getSongById(int id) async {
@@ -33,7 +201,7 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
         uriType: UriType.EXTERNAL,
         ignoreCase: true,
       );
-      
+
       final match = songs.firstWhere((s) => s.id == id);
       return SongMapper.toEntity(match);
     } catch (e) {

@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:music_player/core/usecases/usecase.dart';
+import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
 import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
 import 'package:music_player/features/local%20music/domain/use%20cases/get_song_by_id_use_case.dart';
 import 'music_player_event.dart';
@@ -8,6 +10,7 @@ import 'music_player_state.dart';
 class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   final AudioPlayerRepository _audioRepository;
   final GetSongByIdUseCase _getSongByIdUseCase;
+  final GetAllSongPlayCounts _getAllSongPlayCounts;
 
   StreamSubscription? _positionSubscription;
   StreamSubscription? _durationSubscription;
@@ -18,7 +21,13 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   StreamSubscription? _loopSubscription;
   StreamSubscription? _queueSubscription;
 
-  MusicPlayerBloc(this._audioRepository, this._getSongByIdUseCase) : super(const MusicPlayerState()) {
+  Timer? _sleepTimer;
+
+  MusicPlayerBloc(
+    this._audioRepository,
+    this._getSongByIdUseCase,
+    this._getAllSongPlayCounts,
+  ) : super(const MusicPlayerState()) {
     // 1. Setup Listeners
     _positionSubscription = _audioRepository.positionStream.listen((pos) {
       add(MusicPlayerEvent.updatePosition(pos));
@@ -63,31 +72,46 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
       add(const MusicPlayerEvent.songFinished());
     });
 
+    _refreshPlayCounts();
+
     // 2. Handle Events
     on<MusicPlayerEvent>((event, emit) async {
       await event.map(
         initMusicQueue: (e) async {
-          // Optimistic update
-          emit(
-            state.copyWith(
-              queue: e.songs,
-              currentIndex: e.currentIndex,
-              currentSong: e.songs[e.currentIndex],
-              isPlaying: true,
-            ),
-          );
-          // Delegate to Handler
-          await _audioRepository.setQueue(e.songs, e.currentIndex);
+          try {
+            // Optimistic update
+            emit(
+              state.copyWith(
+                queue: e.songs,
+                currentIndex: e.currentIndex,
+                currentSong: e.songs[e.currentIndex],
+                isPlaying: true,
+              ),
+            );
+            // Delegate to Handler
+            await _audioRepository.setQueue(e.songs, e.currentIndex);
+          } catch (e) {
+            // Revert or show error
+            // If "Loading interrupted", it's fine.
+            emit(
+              state.copyWith(
+                errorMessage: "Failed to initialize queue: $e",
+              ),
+            );
+          }
         },
         playSong: (e) async {
           // Play Single Song (Legacy/Specific use case)
           emit(state.copyWith(currentSong: e.song, isPlaying: true));
+          final artworkUri =
+              "content://media/external/audio/media/${e.song.id}/albumart";
           await _audioRepository.playSong(
             e.song.path,
             e.song.title,
             e.song.artist,
             e.song.id.toString(),
             e.song.album,
+            artworkUri,
           );
         },
         playSongById: (e) async {
@@ -162,12 +186,28 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
           final index = state.queue.indexWhere((s) => s.id == e.song.id);
           final fullSong = index != -1 ? state.queue[index] : e.song;
 
+          // Placeholder: Fetch genre if needed. For now, we assume it's unknown
+          // as SongEntity doesn't have it.
+          const genre = 'Unknown';
+
+          final bool isChangingTrack =
+              state.currentSong != null && state.currentSong!.id != fullSong.id;
+
           emit(
             state.copyWith(
               currentSong: fullSong,
               currentIndex: index != -1 ? index : state.currentIndex,
+              currentGenre: genre,
             ),
           );
+
+          if (state.isEndTrackTimerActive && isChangingTrack) {
+            add(const MusicPlayerEvent.pause());
+            add(const MusicPlayerEvent.cancelTimer());
+          }
+        },
+        updatePlayCounts: (e) async {
+          emit(state.copyWith(playCounts: e.playCounts));
         },
         addToQueue: (e) async {
           try {
@@ -196,6 +236,42 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
             emit(state.copyWith(queueActionStatus: QueueStatus.initial));
           }
         },
+        removeFromQueue: (e) async {
+          try {
+            await _audioRepository.removeQueueItemAt(e.index);
+            // Success status (optional, maybe no snackbar needed for removal)
+          } catch (e) {
+            emit(
+              state.copyWith(
+                queueActionStatus: QueueStatus.failure,
+                errorMessage: "Failed to remove song: $e",
+              ),
+            );
+            emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+          }
+        },
+        reorderQueue: (e) async {
+          try {
+            await _audioRepository.reorderQueue(e.oldIndex, e.newIndex);
+          } catch (e) {
+             emit(state.copyWith(
+                queueActionStatus: QueueStatus.failure,
+                errorMessage: "Failed to reorder: $e"
+             ));
+             emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+          }
+        },
+        playQueueItem: (e) async {
+          try {
+            await _audioRepository.skipToQueueItem(e.index);
+          } catch (e) {
+            emit(state.copyWith(
+                queueActionStatus: QueueStatus.failure,
+                errorMessage: "Failed to play queue item: $e"
+            ));
+            emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+          }
+        },
         addToPlaylist: (e) async {
           // Placeholder for Playlist feature
           // Ideally, this would open a dialog in UI, but the Bloc just handles logic.
@@ -221,12 +297,64 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
             emit(state.copyWith(queueActionStatus: QueueStatus.initial));
           }
         },
+        setTimer: (e) async {
+          _sleepTimer?.cancel();
+          emit(
+            state.copyWith(
+              timerRemaining: e.duration,
+              isEndTrackTimerActive: false,
+            ),
+          );
+          _sleepTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+            add(const MusicPlayerEvent.tickTimer());
+          });
+        },
+        setEndTrackTimer: (e) async {
+          _sleepTimer?.cancel();
+          emit(
+            state.copyWith(
+              timerRemaining: null,
+              isEndTrackTimerActive: e.active,
+            ),
+          );
+        },
+        cancelTimer: (_) async {
+          _sleepTimer?.cancel();
+          emit(
+            state.copyWith(
+              timerRemaining: null,
+              isEndTrackTimerActive: false,
+            ),
+          );
+        },
+        tickTimer: (_) async {
+          if (state.timerRemaining != null) {
+            final newDuration =
+                state.timerRemaining! - const Duration(seconds: 1);
+            if (newDuration.isNegative || newDuration == Duration.zero) {
+              _sleepTimer?.cancel();
+              emit(state.copyWith(timerRemaining: Duration.zero));
+              add(const MusicPlayerEvent.pause());
+              add(const MusicPlayerEvent.cancelTimer());
+            } else {
+              emit(state.copyWith(timerRemaining: newDuration));
+            }
+          }
+        },
       );
+    });
+  }
+
+  Future<void> _refreshPlayCounts() async {
+    final result = await _getAllSongPlayCounts(NoParams());
+    result.fold((_) => null, (counts) {
+      add(MusicPlayerEvent.updatePlayCounts(counts));
     });
   }
 
   @override
   Future<void> close() {
+    _sleepTimer?.cancel();
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();
     _playerStateSubscription?.cancel();

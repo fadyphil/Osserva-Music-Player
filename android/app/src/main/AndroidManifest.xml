@@ -1,13 +1,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- 1. PERMISSIONS GO HERE (Directly inside manifest, NOT inside application) -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Add this for Android 11+ File Editing -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
     
+    <!-- Android 13+ Notification Permission -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
     <!-- Android 13+ Audio Permission -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
     
     <!-- Android 12 and below Storage Permissions -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!-- maxSdkVersion="32" ensures we don't ask for this on Android 13+, where it's not needed -->
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
 
     <!-- Service Permissions (If you added them earlier) -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
@@ -18,7 +26,9 @@
     <application
         android:label="AudioGraphy"
         android:name="${applicationName}"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@mipmap/launcher_icon"
+        android:enableOnBackInvokedCallback="true"> 
+
 
         <!-- 3. ACTIVITY STARTS HERE-->
         <activity

@@ -17,7 +17,8 @@ mixin _$MusicPlayerState {
  bool get isPlaying; Duration get position; Duration get duration;// We keep track of the current song path to highlight it in the list
  SongEntity? get currentSong; List<SongEntity> get queue; int get currentIndex; bool get isShuffling; int get loopMode;// 0: Off, 1: All, 2: One
  bool get isPlaylistEnd; bool get isLoading; bool get isPlayerReady; bool get isSeeking; bool get isPlayingFromQueue; bool get isPlayingFromPlaylist;//NEW FIELDS for Feedback
- QueueStatus get queueActionStatus; String get errorMessage;
+ QueueStatus get queueActionStatus; String get errorMessage; Map<int, int> get playCounts; String get currentGenre;// Sleep Timer
+ Duration? get timerRemaining; bool get isEndTrackTimerActive;
 /// Create a copy of MusicPlayerState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $MusicPlayerStateCopyWith<MusicPlayerState> get copyWith => _$MusicPlayerStateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MusicPlayerState&&(identical(other.isPlaying, isPlaying) || other.isPlaying == isPlaying)&&(identical(other.position, position) || other.position == position)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.currentSong, currentSong) || other.currentSong == currentSong)&&const DeepCollectionEquality().equals(other.queue, queue)&&(identical(other.currentIndex, currentIndex) || other.currentIndex == currentIndex)&&(identical(other.isShuffling, isShuffling) || other.isShuffling == isShuffling)&&(identical(other.loopMode, loopMode) || other.loopMode == loopMode)&&(identical(other.isPlaylistEnd, isPlaylistEnd) || other.isPlaylistEnd == isPlaylistEnd)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isPlayerReady, isPlayerReady) || other.isPlayerReady == isPlayerReady)&&(identical(other.isSeeking, isSeeking) || other.isSeeking == isSeeking)&&(identical(other.isPlayingFromQueue, isPlayingFromQueue) || other.isPlayingFromQueue == isPlayingFromQueue)&&(identical(other.isPlayingFromPlaylist, isPlayingFromPlaylist) || other.isPlayingFromPlaylist == isPlayingFromPlaylist)&&(identical(other.queueActionStatus, queueActionStatus) || other.queueActionStatus == queueActionStatus)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MusicPlayerState&&(identical(other.isPlaying, isPlaying) || other.isPlaying == isPlaying)&&(identical(other.position, position) || other.position == position)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.currentSong, currentSong) || other.currentSong == currentSong)&&const DeepCollectionEquality().equals(other.queue, queue)&&(identical(other.currentIndex, currentIndex) || other.currentIndex == currentIndex)&&(identical(other.isShuffling, isShuffling) || other.isShuffling == isShuffling)&&(identical(other.loopMode, loopMode) || other.loopMode == loopMode)&&(identical(other.isPlaylistEnd, isPlaylistEnd) || other.isPlaylistEnd == isPlaylistEnd)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isPlayerReady, isPlayerReady) || other.isPlayerReady == isPlayerReady)&&(identical(other.isSeeking, isSeeking) || other.isSeeking == isSeeking)&&(identical(other.isPlayingFromQueue, isPlayingFromQueue) || other.isPlayingFromQueue == isPlayingFromQueue)&&(identical(other.isPlayingFromPlaylist, isPlayingFromPlaylist) || other.isPlayingFromPlaylist == isPlayingFromPlaylist)&&(identical(other.queueActionStatus, queueActionStatus) || other.queueActionStatus == queueActionStatus)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&const DeepCollectionEquality().equals(other.playCounts, playCounts)&&(identical(other.currentGenre, currentGenre) || other.currentGenre == currentGenre)&&(identical(other.timerRemaining, timerRemaining) || other.timerRemaining == timerRemaining)&&(identical(other.isEndTrackTimerActive, isEndTrackTimerActive) || other.isEndTrackTimerActive == isEndTrackTimerActive));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isPlaying,position,duration,currentSong,const DeepCollectionEquality().hash(queue),currentIndex,isShuffling,loopMode,isPlaylistEnd,isLoading,isPlayerReady,isSeeking,isPlayingFromQueue,isPlayingFromPlaylist,queueActionStatus,errorMessage);
+int get hashCode => Object.hashAll([runtimeType,isPlaying,position,duration,currentSong,const DeepCollectionEquality().hash(queue),currentIndex,isShuffling,loopMode,isPlaylistEnd,isLoading,isPlayerReady,isSeeking,isPlayingFromQueue,isPlayingFromPlaylist,queueActionStatus,errorMessage,const DeepCollectionEquality().hash(playCounts),currentGenre,timerRemaining,isEndTrackTimerActive]);
 
 @override
 String toString() {
-  return 'MusicPlayerState(isPlaying: $isPlaying, position: $position, duration: $duration, currentSong: $currentSong, queue: $queue, currentIndex: $currentIndex, isShuffling: $isShuffling, loopMode: $loopMode, isPlaylistEnd: $isPlaylistEnd, isLoading: $isLoading, isPlayerReady: $isPlayerReady, isSeeking: $isSeeking, isPlayingFromQueue: $isPlayingFromQueue, isPlayingFromPlaylist: $isPlayingFromPlaylist, queueActionStatus: $queueActionStatus, errorMessage: $errorMessage)';
+  return 'MusicPlayerState(isPlaying: $isPlaying, position: $position, duration: $duration, currentSong: $currentSong, queue: $queue, currentIndex: $currentIndex, isShuffling: $isShuffling, loopMode: $loopMode, isPlaylistEnd: $isPlaylistEnd, isLoading: $isLoading, isPlayerReady: $isPlayerReady, isSeeking: $isSeeking, isPlayingFromQueue: $isPlayingFromQueue, isPlayingFromPlaylist: $isPlayingFromPlaylist, queueActionStatus: $queueActionStatus, errorMessage: $errorMessage, playCounts: $playCounts, currentGenre: $currentGenre, timerRemaining: $timerRemaining, isEndTrackTimerActive: $isEndTrackTimerActive)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $MusicPlayerStateCopyWith<$Res>  {
   factory $MusicPlayerStateCopyWith(MusicPlayerState value, $Res Function(MusicPlayerState) _then) = _$MusicPlayerStateCopyWithImpl;
 @useResult
 $Res call({
- bool isPlaying, Duration position, Duration duration, SongEntity? currentSong, List<SongEntity> queue, int currentIndex, bool isShuffling, int loopMode, bool isPlaylistEnd, bool isLoading, bool isPlayerReady, bool isSeeking, bool isPlayingFromQueue, bool isPlayingFromPlaylist, QueueStatus queueActionStatus, String errorMessage
+ bool isPlaying, Duration position, Duration duration, SongEntity? currentSong, List<SongEntity> queue, int currentIndex, bool isShuffling, int loopMode, bool isPlaylistEnd, bool isLoading, bool isPlayerReady, bool isSeeking, bool isPlayingFromQueue, bool isPlayingFromPlaylist, QueueStatus queueActionStatus, String errorMessage, Map<int, int> playCounts, String currentGenre, Duration? timerRemaining, bool isEndTrackTimerActive
 });
 
 
@@ -65,7 +66,7 @@ class _$MusicPlayerStateCopyWithImpl<$Res>
 
 /// Create a copy of MusicPlayerState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isPlaying = null,Object? position = null,Object? duration = null,Object? currentSong = freezed,Object? queue = null,Object? currentIndex = null,Object? isShuffling = null,Object? loopMode = null,Object? isPlaylistEnd = null,Object? isLoading = null,Object? isPlayerReady = null,Object? isSeeking = null,Object? isPlayingFromQueue = null,Object? isPlayingFromPlaylist = null,Object? queueActionStatus = null,Object? errorMessage = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isPlaying = null,Object? position = null,Object? duration = null,Object? currentSong = freezed,Object? queue = null,Object? currentIndex = null,Object? isShuffling = null,Object? loopMode = null,Object? isPlaylistEnd = null,Object? isLoading = null,Object? isPlayerReady = null,Object? isSeeking = null,Object? isPlayingFromQueue = null,Object? isPlayingFromPlaylist = null,Object? queueActionStatus = null,Object? errorMessage = null,Object? playCounts = null,Object? currentGenre = null,Object? timerRemaining = freezed,Object? isEndTrackTimerActive = null,}) {
   return _then(_self.copyWith(
 isPlaying: null == isPlaying ? _self.isPlaying : isPlaying // ignore: cast_nullable_to_non_nullable
 as bool,position: null == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
@@ -83,7 +84,11 @@ as bool,isPlayingFromQueue: null == isPlayingFromQueue ? _self.isPlayingFromQueu
 as bool,isPlayingFromPlaylist: null == isPlayingFromPlaylist ? _self.isPlayingFromPlaylist : isPlayingFromPlaylist // ignore: cast_nullable_to_non_nullable
 as bool,queueActionStatus: null == queueActionStatus ? _self.queueActionStatus : queueActionStatus // ignore: cast_nullable_to_non_nullable
 as QueueStatus,errorMessage: null == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
-as String,
+as String,playCounts: null == playCounts ? _self.playCounts : playCounts // ignore: cast_nullable_to_non_nullable
+as Map<int, int>,currentGenre: null == currentGenre ? _self.currentGenre : currentGenre // ignore: cast_nullable_to_non_nullable
+as String,timerRemaining: freezed == timerRemaining ? _self.timerRemaining : timerRemaining // ignore: cast_nullable_to_non_nullable
+as Duration?,isEndTrackTimerActive: null == isEndTrackTimerActive ? _self.isEndTrackTimerActive : isEndTrackTimerActive // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 /// Create a copy of MusicPlayerState
@@ -180,10 +185,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isPlaying,  Duration position,  Duration duration,  SongEntity? currentSong,  List<SongEntity> queue,  int currentIndex,  bool isShuffling,  int loopMode,  bool isPlaylistEnd,  bool isLoading,  bool isPlayerReady,  bool isSeeking,  bool isPlayingFromQueue,  bool isPlayingFromPlaylist,  QueueStatus queueActionStatus,  String errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isPlaying,  Duration position,  Duration duration,  SongEntity? currentSong,  List<SongEntity> queue,  int currentIndex,  bool isShuffling,  int loopMode,  bool isPlaylistEnd,  bool isLoading,  bool isPlayerReady,  bool isSeeking,  bool isPlayingFromQueue,  bool isPlayingFromPlaylist,  QueueStatus queueActionStatus,  String errorMessage,  Map<int, int> playCounts,  String currentGenre,  Duration? timerRemaining,  bool isEndTrackTimerActive)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MusicPlayerState() when $default != null:
-return $default(_that.isPlaying,_that.position,_that.duration,_that.currentSong,_that.queue,_that.currentIndex,_that.isShuffling,_that.loopMode,_that.isPlaylistEnd,_that.isLoading,_that.isPlayerReady,_that.isSeeking,_that.isPlayingFromQueue,_that.isPlayingFromPlaylist,_that.queueActionStatus,_that.errorMessage);case _:
+return $default(_that.isPlaying,_that.position,_that.duration,_that.currentSong,_that.queue,_that.currentIndex,_that.isShuffling,_that.loopMode,_that.isPlaylistEnd,_that.isLoading,_that.isPlayerReady,_that.isSeeking,_that.isPlayingFromQueue,_that.isPlayingFromPlaylist,_that.queueActionStatus,_that.errorMessage,_that.playCounts,_that.currentGenre,_that.timerRemaining,_that.isEndTrackTimerActive);case _:
   return orElse();
 
 }
@@ -201,10 +206,10 @@ return $default(_that.isPlaying,_that.position,_that.duration,_that.currentSong,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isPlaying,  Duration position,  Duration duration,  SongEntity? currentSong,  List<SongEntity> queue,  int currentIndex,  bool isShuffling,  int loopMode,  bool isPlaylistEnd,  bool isLoading,  bool isPlayerReady,  bool isSeeking,  bool isPlayingFromQueue,  bool isPlayingFromPlaylist,  QueueStatus queueActionStatus,  String errorMessage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isPlaying,  Duration position,  Duration duration,  SongEntity? currentSong,  List<SongEntity> queue,  int currentIndex,  bool isShuffling,  int loopMode,  bool isPlaylistEnd,  bool isLoading,  bool isPlayerReady,  bool isSeeking,  bool isPlayingFromQueue,  bool isPlayingFromPlaylist,  QueueStatus queueActionStatus,  String errorMessage,  Map<int, int> playCounts,  String currentGenre,  Duration? timerRemaining,  bool isEndTrackTimerActive)  $default,) {final _that = this;
 switch (_that) {
 case _MusicPlayerState():
-return $default(_that.isPlaying,_that.position,_that.duration,_that.currentSong,_that.queue,_that.currentIndex,_that.isShuffling,_that.loopMode,_that.isPlaylistEnd,_that.isLoading,_that.isPlayerReady,_that.isSeeking,_that.isPlayingFromQueue,_that.isPlayingFromPlaylist,_that.queueActionStatus,_that.errorMessage);case _:
+return $default(_that.isPlaying,_that.position,_that.duration,_that.currentSong,_that.queue,_that.currentIndex,_that.isShuffling,_that.loopMode,_that.isPlaylistEnd,_that.isLoading,_that.isPlayerReady,_that.isSeeking,_that.isPlayingFromQueue,_that.isPlayingFromPlaylist,_that.queueActionStatus,_that.errorMessage,_that.playCounts,_that.currentGenre,_that.timerRemaining,_that.isEndTrackTimerActive);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -221,10 +226,10 @@ return $default(_that.isPlaying,_that.position,_that.duration,_that.currentSong,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isPlaying,  Duration position,  Duration duration,  SongEntity? currentSong,  List<SongEntity> queue,  int currentIndex,  bool isShuffling,  int loopMode,  bool isPlaylistEnd,  bool isLoading,  bool isPlayerReady,  bool isSeeking,  bool isPlayingFromQueue,  bool isPlayingFromPlaylist,  QueueStatus queueActionStatus,  String errorMessage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isPlaying,  Duration position,  Duration duration,  SongEntity? currentSong,  List<SongEntity> queue,  int currentIndex,  bool isShuffling,  int loopMode,  bool isPlaylistEnd,  bool isLoading,  bool isPlayerReady,  bool isSeeking,  bool isPlayingFromQueue,  bool isPlayingFromPlaylist,  QueueStatus queueActionStatus,  String errorMessage,  Map<int, int> playCounts,  String currentGenre,  Duration? timerRemaining,  bool isEndTrackTimerActive)?  $default,) {final _that = this;
 switch (_that) {
 case _MusicPlayerState() when $default != null:
-return $default(_that.isPlaying,_that.position,_that.duration,_that.currentSong,_that.queue,_that.currentIndex,_that.isShuffling,_that.loopMode,_that.isPlaylistEnd,_that.isLoading,_that.isPlayerReady,_that.isSeeking,_that.isPlayingFromQueue,_that.isPlayingFromPlaylist,_that.queueActionStatus,_that.errorMessage);case _:
+return $default(_that.isPlaying,_that.position,_that.duration,_that.currentSong,_that.queue,_that.currentIndex,_that.isShuffling,_that.loopMode,_that.isPlaylistEnd,_that.isLoading,_that.isPlayerReady,_that.isSeeking,_that.isPlayingFromQueue,_that.isPlayingFromPlaylist,_that.queueActionStatus,_that.errorMessage,_that.playCounts,_that.currentGenre,_that.timerRemaining,_that.isEndTrackTimerActive);case _:
   return null;
 
 }
@@ -236,7 +241,7 @@ return $default(_that.isPlaying,_that.position,_that.duration,_that.currentSong,
 
 
 class _MusicPlayerState implements MusicPlayerState {
-  const _MusicPlayerState({this.isPlaying = false, this.position = Duration.zero, this.duration = Duration.zero, this.currentSong, final  List<SongEntity> queue = const [], this.currentIndex = 0, this.isShuffling = false, this.loopMode = 0, this.isPlaylistEnd = false, this.isLoading = false, this.isPlayerReady = false, this.isSeeking = false, this.isPlayingFromQueue = false, this.isPlayingFromPlaylist = false, this.queueActionStatus = QueueStatus.initial, this.errorMessage = ''}): _queue = queue;
+  const _MusicPlayerState({this.isPlaying = false, this.position = Duration.zero, this.duration = Duration.zero, this.currentSong, final  List<SongEntity> queue = const [], this.currentIndex = 0, this.isShuffling = false, this.loopMode = 0, this.isPlaylistEnd = false, this.isLoading = false, this.isPlayerReady = false, this.isSeeking = false, this.isPlayingFromQueue = false, this.isPlayingFromPlaylist = false, this.queueActionStatus = QueueStatus.initial, this.errorMessage = '', final  Map<int, int> playCounts = const {}, this.currentGenre = '', this.timerRemaining, this.isEndTrackTimerActive = false}): _queue = queue,_playCounts = playCounts;
   
 
 @override@JsonKey() final  bool isPlaying;
@@ -264,6 +269,17 @@ class _MusicPlayerState implements MusicPlayerState {
 //NEW FIELDS for Feedback
 @override@JsonKey() final  QueueStatus queueActionStatus;
 @override@JsonKey() final  String errorMessage;
+ final  Map<int, int> _playCounts;
+@override@JsonKey() Map<int, int> get playCounts {
+  if (_playCounts is EqualUnmodifiableMapView) return _playCounts;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_playCounts);
+}
+
+@override@JsonKey() final  String currentGenre;
+// Sleep Timer
+@override final  Duration? timerRemaining;
+@override@JsonKey() final  bool isEndTrackTimerActive;
 
 /// Create a copy of MusicPlayerState
 /// with the given fields replaced by the non-null parameter values.
@@ -275,16 +291,16 @@ _$MusicPlayerStateCopyWith<_MusicPlayerState> get copyWith => __$MusicPlayerStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MusicPlayerState&&(identical(other.isPlaying, isPlaying) || other.isPlaying == isPlaying)&&(identical(other.position, position) || other.position == position)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.currentSong, currentSong) || other.currentSong == currentSong)&&const DeepCollectionEquality().equals(other._queue, _queue)&&(identical(other.currentIndex, currentIndex) || other.currentIndex == currentIndex)&&(identical(other.isShuffling, isShuffling) || other.isShuffling == isShuffling)&&(identical(other.loopMode, loopMode) || other.loopMode == loopMode)&&(identical(other.isPlaylistEnd, isPlaylistEnd) || other.isPlaylistEnd == isPlaylistEnd)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isPlayerReady, isPlayerReady) || other.isPlayerReady == isPlayerReady)&&(identical(other.isSeeking, isSeeking) || other.isSeeking == isSeeking)&&(identical(other.isPlayingFromQueue, isPlayingFromQueue) || other.isPlayingFromQueue == isPlayingFromQueue)&&(identical(other.isPlayingFromPlaylist, isPlayingFromPlaylist) || other.isPlayingFromPlaylist == isPlayingFromPlaylist)&&(identical(other.queueActionStatus, queueActionStatus) || other.queueActionStatus == queueActionStatus)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MusicPlayerState&&(identical(other.isPlaying, isPlaying) || other.isPlaying == isPlaying)&&(identical(other.position, position) || other.position == position)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.currentSong, currentSong) || other.currentSong == currentSong)&&const DeepCollectionEquality().equals(other._queue, _queue)&&(identical(other.currentIndex, currentIndex) || other.currentIndex == currentIndex)&&(identical(other.isShuffling, isShuffling) || other.isShuffling == isShuffling)&&(identical(other.loopMode, loopMode) || other.loopMode == loopMode)&&(identical(other.isPlaylistEnd, isPlaylistEnd) || other.isPlaylistEnd == isPlaylistEnd)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isPlayerReady, isPlayerReady) || other.isPlayerReady == isPlayerReady)&&(identical(other.isSeeking, isSeeking) || other.isSeeking == isSeeking)&&(identical(other.isPlayingFromQueue, isPlayingFromQueue) || other.isPlayingFromQueue == isPlayingFromQueue)&&(identical(other.isPlayingFromPlaylist, isPlayingFromPlaylist) || other.isPlayingFromPlaylist == isPlayingFromPlaylist)&&(identical(other.queueActionStatus, queueActionStatus) || other.queueActionStatus == queueActionStatus)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&const DeepCollectionEquality().equals(other._playCounts, _playCounts)&&(identical(other.currentGenre, currentGenre) || other.currentGenre == currentGenre)&&(identical(other.timerRemaining, timerRemaining) || other.timerRemaining == timerRemaining)&&(identical(other.isEndTrackTimerActive, isEndTrackTimerActive) || other.isEndTrackTimerActive == isEndTrackTimerActive));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isPlaying,position,duration,currentSong,const DeepCollectionEquality().hash(_queue),currentIndex,isShuffling,loopMode,isPlaylistEnd,isLoading,isPlayerReady,isSeeking,isPlayingFromQueue,isPlayingFromPlaylist,queueActionStatus,errorMessage);
+int get hashCode => Object.hashAll([runtimeType,isPlaying,position,duration,currentSong,const DeepCollectionEquality().hash(_queue),currentIndex,isShuffling,loopMode,isPlaylistEnd,isLoading,isPlayerReady,isSeeking,isPlayingFromQueue,isPlayingFromPlaylist,queueActionStatus,errorMessage,const DeepCollectionEquality().hash(_playCounts),currentGenre,timerRemaining,isEndTrackTimerActive]);
 
 @override
 String toString() {
-  return 'MusicPlayerState(isPlaying: $isPlaying, position: $position, duration: $duration, currentSong: $currentSong, queue: $queue, currentIndex: $currentIndex, isShuffling: $isShuffling, loopMode: $loopMode, isPlaylistEnd: $isPlaylistEnd, isLoading: $isLoading, isPlayerReady: $isPlayerReady, isSeeking: $isSeeking, isPlayingFromQueue: $isPlayingFromQueue, isPlayingFromPlaylist: $isPlayingFromPlaylist, queueActionStatus: $queueActionStatus, errorMessage: $errorMessage)';
+  return 'MusicPlayerState(isPlaying: $isPlaying, position: $position, duration: $duration, currentSong: $currentSong, queue: $queue, currentIndex: $currentIndex, isShuffling: $isShuffling, loopMode: $loopMode, isPlaylistEnd: $isPlaylistEnd, isLoading: $isLoading, isPlayerReady: $isPlayerReady, isSeeking: $isSeeking, isPlayingFromQueue: $isPlayingFromQueue, isPlayingFromPlaylist: $isPlayingFromPlaylist, queueActionStatus: $queueActionStatus, errorMessage: $errorMessage, playCounts: $playCounts, currentGenre: $currentGenre, timerRemaining: $timerRemaining, isEndTrackTimerActive: $isEndTrackTimerActive)';
 }
 
 
@@ -295,7 +311,7 @@ abstract mixin class _$MusicPlayerStateCopyWith<$Res> implements $MusicPlayerSta
   factory _$MusicPlayerStateCopyWith(_MusicPlayerState value, $Res Function(_MusicPlayerState) _then) = __$MusicPlayerStateCopyWithImpl;
 @override @useResult
 $Res call({
- bool isPlaying, Duration position, Duration duration, SongEntity? currentSong, List<SongEntity> queue, int currentIndex, bool isShuffling, int loopMode, bool isPlaylistEnd, bool isLoading, bool isPlayerReady, bool isSeeking, bool isPlayingFromQueue, bool isPlayingFromPlaylist, QueueStatus queueActionStatus, String errorMessage
+ bool isPlaying, Duration position, Duration duration, SongEntity? currentSong, List<SongEntity> queue, int currentIndex, bool isShuffling, int loopMode, bool isPlaylistEnd, bool isLoading, bool isPlayerReady, bool isSeeking, bool isPlayingFromQueue, bool isPlayingFromPlaylist, QueueStatus queueActionStatus, String errorMessage, Map<int, int> playCounts, String currentGenre, Duration? timerRemaining, bool isEndTrackTimerActive
 });
 
 
@@ -312,7 +328,7 @@ class __$MusicPlayerStateCopyWithImpl<$Res>
 
 /// Create a copy of MusicPlayerState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isPlaying = null,Object? position = null,Object? duration = null,Object? currentSong = freezed,Object? queue = null,Object? currentIndex = null,Object? isShuffling = null,Object? loopMode = null,Object? isPlaylistEnd = null,Object? isLoading = null,Object? isPlayerReady = null,Object? isSeeking = null,Object? isPlayingFromQueue = null,Object? isPlayingFromPlaylist = null,Object? queueActionStatus = null,Object? errorMessage = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isPlaying = null,Object? position = null,Object? duration = null,Object? currentSong = freezed,Object? queue = null,Object? currentIndex = null,Object? isShuffling = null,Object? loopMode = null,Object? isPlaylistEnd = null,Object? isLoading = null,Object? isPlayerReady = null,Object? isSeeking = null,Object? isPlayingFromQueue = null,Object? isPlayingFromPlaylist = null,Object? queueActionStatus = null,Object? errorMessage = null,Object? playCounts = null,Object? currentGenre = null,Object? timerRemaining = freezed,Object? isEndTrackTimerActive = null,}) {
   return _then(_MusicPlayerState(
 isPlaying: null == isPlaying ? _self.isPlaying : isPlaying // ignore: cast_nullable_to_non_nullable
 as bool,position: null == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
@@ -330,7 +346,11 @@ as bool,isPlayingFromQueue: null == isPlayingFromQueue ? _self.isPlayingFromQueu
 as bool,isPlayingFromPlaylist: null == isPlayingFromPlaylist ? _self.isPlayingFromPlaylist : isPlayingFromPlaylist // ignore: cast_nullable_to_non_nullable
 as bool,queueActionStatus: null == queueActionStatus ? _self.queueActionStatus : queueActionStatus // ignore: cast_nullable_to_non_nullable
 as QueueStatus,errorMessage: null == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
-as String,
+as String,playCounts: null == playCounts ? _self._playCounts : playCounts // ignore: cast_nullable_to_non_nullable
+as Map<int, int>,currentGenre: null == currentGenre ? _self.currentGenre : currentGenre // ignore: cast_nullable_to_non_nullable
+as String,timerRemaining: freezed == timerRemaining ? _self.timerRemaining : timerRemaining // ignore: cast_nullable_to_non_nullable
+as Duration?,isEndTrackTimerActive: null == isEndTrackTimerActive ? _self.isEndTrackTimerActive : isEndTrackTimerActive // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

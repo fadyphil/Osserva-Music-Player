@@ -5,12 +5,12 @@ import 'package:music_player/core/router/app_router.dart';
 import 'package:music_player/features/music_player/presentation/widgets/mini_player.dart';
 import 'package:music_player/features/profile/domain/entities/user_entity.dart';
 import 'package:music_player/features/profile/presentation/bloc/profile_bloc.dart';
-import 'package:music_player/features/home/presentation/cubit/home_state.dart'; // Need HomeTab enum
+import 'package:music_player/features/home/domain/entities/home_tab.dart'; // Need HomeTab enum
 
 // Import your widgets
 import '../widgets/prism_knob_navigation.dart';
 import '../widgets/neural_string_navigation.dart';
-import '../widgets/simple_animated_nav_bar.dart';
+import '../widgets/pulse_bottom_nav_bar.dart';
 
 @RoutePage()
 class HomePage extends StatelessWidget {
@@ -22,6 +22,8 @@ class HomePage extends StatelessWidget {
       // 1. Define the routes that map to your tabs
       routes: const [
         HomeTabShellRoute(),
+        LibraryTabShellRoute(),
+        ArtistsTabShellRoute(),
         AnalyticsDashboardRoute(),
         ProfileRoute(),
       ],
@@ -33,35 +35,11 @@ class HomePage extends StatelessWidget {
         final tabsRouter = AutoTabsRouter.of(context);
 
         return Scaffold(
-          extendBody: true, // Content goes behind the nav/miniplayer
+          extendBody: false, // Content goes behind the nav/miniplayer
           body: Stack(
             children: [
               // LAYER 1: The Active Page (Replaces IndexedStack)
               child,
-
-              // LAYER 2: Gradient Fade
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: 160,
-                child: IgnorePointer(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withValues(alpha: 0.8),
-                          Colors.black,
-                        ],
-                        stops: const [0.0, 0.6, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
           bottomNavigationBar: Column(
@@ -76,7 +54,7 @@ class HomePage extends StatelessWidget {
                   // Determine User's Preferred Style
                   NavBarStyle style = NavBarStyle.simple;
                   profileState.maybeWhen(
-                    loaded: (user) {
+                    loaded: (user, achievements, stats) {
                       style = user.preferredNavBar;
                     },
                     orElse: () {},
@@ -106,7 +84,7 @@ class HomePage extends StatelessWidget {
                       break;
                     case NavBarStyle.simple:
                     default:
-                      navBar = SimpleAnimatedNavBar(
+                      navBar = PulseBottomNavBar(
                         selectedTab: currentTab,
                         onTabSelected: (tab) {
                           tabsRouter.setActiveIndex(tab.index);

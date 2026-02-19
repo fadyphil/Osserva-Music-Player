@@ -6,11 +6,14 @@
 
 #include "generated_plugin_registrant.h"
 
+#include <audiotags/audiotags_plugin_c_api.h>
 #include <file_selector_windows/file_selector_windows.h>
 #include <flutter_media_metadata/flutter_media_metadata_plugin.h>
 #include <permission_handler_windows/permission_handler_windows_plugin.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
+  AudiotagsPluginCApiRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("AudiotagsPluginCApi"));
   FileSelectorWindowsRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FileSelectorWindows"));
   FlutterMediaMetadataPluginRegisterWithRegistrar(

@@ -24,3 +24,17 @@ plugins {
 }
 
 include(":app")
+gradle.beforeProject {
+    afterEvaluate {
+        // This script runs for every subproject (like audiotags) right after
+        // its own build.gradle file has been evaluated.
+        val android = extensions.findByType(com.android.build.gradle.LibraryExtension::class.java)
+        if (android != null) {
+            // If a library is missing a namespace (required by AGP 8.0+),
+            // we assign one automatically.
+            if (android.namespace == null) {
+                android.namespace = group.toString()
+            }
+        }
+    }
+}

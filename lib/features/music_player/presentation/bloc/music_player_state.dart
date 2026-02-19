@@ -26,5 +26,11 @@ abstract class MusicPlayerState with _$MusicPlayerState {
     //NEW FIELDS for Feedback
     @Default(QueueStatus.initial) QueueStatus queueActionStatus,
     @Default('') String errorMessage,
+    @Default({}) Map<int, int> playCounts,
+    @Default('') String currentGenre,
+
+    // Sleep Timer
+    Duration? timerRemaining,
+    @Default(false) bool isEndTrackTimerActive,
   }) = _MusicPlayerState;
 }

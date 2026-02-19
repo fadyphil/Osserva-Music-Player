@@ -1,8 +1,12 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:media_store_plus/media_store_plus.dart';
 import 'package:music_player/core/router/app_router.dart';
-import 'package:music_player/features/analytics/data/datasources/analytics_local_datasource.dart';
+import 'package:music_player/features/analytics/data/datasources/analytics_aggregator.dart';
+import 'package:music_player/features/analytics/data/datasources/analytics_reader.dart';
+import 'package:music_player/features/analytics/data/datasources/analytics_recorder.dart';
+import 'package:music_player/features/analytics/data/datasources/db/analytics_database.dart';
 import 'package:music_player/features/analytics/data/repositories/analytics_repository_impl.dart';
 import 'package:music_player/features/analytics/domain/repositories/analytics_repository.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_general_stats.dart';
@@ -21,6 +25,8 @@ import 'package:music_player/features/local%20music/data/repositories/music_repo
 import 'package:music_player/features/local%20music/domain/repositories/music_repository.dart';
 import 'package:music_player/features/local%20music/domain/use%20cases/get_local_songs_use_case.dart';
 import 'package:music_player/features/local%20music/domain/use%20cases/get_song_by_id_use_case.dart';
+import 'package:music_player/features/local%20music/domain/usecases/delete_song.dart';
+import 'package:music_player/features/local%20music/domain/usecases/edit_song_metadata.dart';
 import 'package:music_player/features/local%20music/presentation/managers/local_music_bloc.dart';
 import 'package:music_player/features/music_player/data/repos/audio_player_repository_impl.dart';
 import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
@@ -33,10 +39,11 @@ import 'package:music_player/features/onboarding/domain/usecases/check_if_user_i
 import 'package:music_player/features/onboarding/domain/usecases/log_onboarding_complete.dart';
 import 'package:music_player/features/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:music_player/features/onboarding/presentation/cubit/user_registration_cubit.dart';
-import 'package:music_player/features/home/presentation/cubit/home_cubit.dart';
+import 'package:music_player/features/home/presentation/bloc/home_bloc/home_bloc.dart';
 import 'package:music_player/features/profile/data/datasources/profile_local_datasource.dart';
 import 'package:music_player/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:music_player/features/profile/domain/repositories/profile_repository.dart';
+import 'package:music_player/features/profile/domain/usecases/get_achievements.dart';
 import 'package:music_player/features/profile/domain/usecases/get_user_profile.dart';
 import 'package:music_player/features/profile/domain/usecases/update_user_profile.dart';
 import 'package:music_player/features/profile/domain/usecases/clear_cache.dart';
@@ -60,6 +67,14 @@ import 'package:music_player/features/playlists/domain/usecases/get_playlists.da
 import 'package:music_player/features/playlists/domain/usecases/remove_song_from_playlist.dart';
 import 'package:music_player/features/playlists/presentation/bloc/playlist_bloc.dart';
 import 'package:music_player/features/playlists/presentation/bloc/playlist_detail_bloc.dart';
+import 'package:music_player/features/artists/data/datasources/artist_local_datasource.dart';
+import 'package:music_player/features/artists/data/repositories/artist_repository_impl.dart';
+import 'package:music_player/features/artists/domain/repositories/artist_repository.dart';
+import 'package:music_player/features/artists/domain/usecases/get_artists.dart';
+import 'package:music_player/features/artists/domain/usecases/get_artist_songs.dart';
+import 'package:music_player/features/artists/domain/usecases/get_artist_analytics_stats.dart';
+import 'package:music_player/features/artists/presentation/bloc/artists/artists_bloc.dart';
+import 'package:music_player/features/artists/presentation/bloc/artist-details/artist_detail_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -73,6 +88,8 @@ Future<void> initDependencies() async {
   // =========================================================
   final sharedPreferences = await SharedPreferences.getInstance();
   final appRouter = AppRouter();
+  final mediaStore = MediaStore();
+  serviceLocator.registerLazySingleton(() => mediaStore);
 
   serviceLocator.registerLazySingleton(() => sharedPreferences);
 
@@ -97,7 +114,7 @@ Future<void> initDependencies() async {
 
   // Data Source: We inject OnAudioQuery into it
   serviceLocator.registerLazySingleton<LocalMusicDatasource>(
-    () => LocalMusicDatasourceImpl(serviceLocator()),
+    () => LocalMusicDatasourceImpl(serviceLocator(), serviceLocator()),
   );
 
   // Repository: We inject the DataSource into it
@@ -116,12 +133,23 @@ Future<void> initDependencies() async {
   serviceLocator.registerLazySingleton(
     () => GetSongByIdUseCase(serviceLocator()),
   );
+  serviceLocator.registerLazySingleton(
+    () => DeleteSong(serviceLocator(), serviceLocator(), serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => EditSongMetadata(serviceLocator()),
+  );
 
   // =========================================================
   // 4. Presentation Layer (Bloc)
   // =========================================================
   serviceLocator.registerFactory(
-    () => LocalMusicBloc(serviceLocator(), serviceLocator()),
+    () => LocalMusicBloc(
+      serviceLocator(),
+      serviceLocator(),
+      serviceLocator(),
+      serviceLocator(),
+    ),
   );
 
   // =========================================================
@@ -132,18 +160,36 @@ Future<void> initDependencies() async {
     () => AudioPlayerRepositoryImpl(serviceLocator<AudioHandler>()),
   );
 
-  serviceLocator.registerLazySingleton(() => MusicPlayerBloc(serviceLocator(), serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => MusicPlayerBloc(
+      serviceLocator(),
+      serviceLocator(),
+      serviceLocator(),
+    ),
+  );
 
   // =========================================================
   // FEATURE: ANALYTICS
   // =========================================================
-  serviceLocator.registerLazySingleton<AnalyticsLocalDataSource>(
-    () => AnalyticsLocalDataSourceImpl(),
+  serviceLocator.registerLazySingleton(() => AnalyticsDatabase());
+
+  serviceLocator.registerLazySingleton(
+    () => AnalyticsRecorder(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(() => AnalyticsReader(serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => AnalyticsAggregator(serviceLocator()),
   );
 
-  serviceLocator.registerLazySingleton<AnalyticsRepository>(
-    () => AnalyticsRepositoryImpl(serviceLocator()),
-  );
+  serviceLocator.registerLazySingleton<AnalyticsRepository>(() {
+    final repo = AnalyticsRepositoryImpl(
+      recorder: serviceLocator(),
+      reader: serviceLocator(),
+      aggregator: serviceLocator(),
+    );
+    repo.performMaintenance();
+    return repo;
+  });
 
   serviceLocator.registerLazySingleton(() => LogPlayback(serviceLocator()));
   serviceLocator.registerLazySingleton(
@@ -154,8 +200,12 @@ Future<void> initDependencies() async {
   serviceLocator.registerLazySingleton(() => GetTopAlbums(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetTopGenres(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetGeneralStats(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => GetPlaybackHistory(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => WatchPlaybackHistory(serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => GetPlaybackHistory(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => WatchPlaybackHistory(serviceLocator()),
+  );
   serviceLocator.registerLazySingleton(() => ClearAnalytics(serviceLocator()));
 
   serviceLocator.registerLazySingleton(
@@ -212,7 +262,9 @@ Future<void> initDependencies() async {
   // =========================================================
   // FEATURE: HOME
   // =========================================================
-  serviceLocator.registerFactory(() => HomeCubit());
+  serviceLocator.registerFactory(
+    () => HomeBloc(musicRepository: serviceLocator()),
+  );
 
   // =========================================================
   // FEATURE: PROFILE
@@ -228,13 +280,16 @@ Future<void> initDependencies() async {
     () => UpdateUserProfile(serviceLocator()),
   );
   serviceLocator.registerLazySingleton(() => ClearCache(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => GetAchievements(serviceLocator()));
 
   serviceLocator.registerFactory(
     () => ProfileBloc(
       getUserProfile: serviceLocator(),
       updateUserProfile: serviceLocator(),
       clearCache: serviceLocator(),
+      getAchievements: serviceLocator(),
       clearAnalytics: serviceLocator(),
+      getGeneralStats: serviceLocator(),
     ),
   );
 
@@ -253,8 +308,12 @@ Future<void> initDependencies() async {
   serviceLocator.registerLazySingleton(() => DeletePlaylist(serviceLocator()));
   serviceLocator.registerLazySingleton(() => EditPlaylist(serviceLocator()));
   serviceLocator.registerLazySingleton(() => GetPlaylists(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => AddSongToPlaylist(serviceLocator()));
-  serviceLocator.registerLazySingleton(() => RemoveSongFromPlaylist(serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => AddSongToPlaylist(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(
+    () => RemoveSongFromPlaylist(serviceLocator()),
+  );
 
   serviceLocator.registerLazySingleton(
     () => GetPlaylistSongs(
@@ -308,5 +367,27 @@ Future<void> initDependencies() async {
       addFavorite: serviceLocator(),
       removeFavorite: serviceLocator(),
     ),
+  );
+
+  // =========================================================
+  // FEATURE: ARTISTS
+  // =========================================================
+  serviceLocator.registerLazySingleton<ArtistLocalDataSource>(
+    () => ArtistLocalDataSourceImpl(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton<ArtistRepository>(
+    () => ArtistRepositoryImpl(serviceLocator()),
+  );
+  serviceLocator.registerLazySingleton(() => GetArtists(serviceLocator()));
+  serviceLocator.registerLazySingleton(() => GetArtistSongs(serviceLocator()));
+  serviceLocator.registerLazySingleton(
+    () => GetArtistAnalyticsStats(serviceLocator()),
+  );
+
+  serviceLocator.registerFactory(
+    () => ArtistsBloc(serviceLocator(), serviceLocator()),
+  );
+  serviceLocator.registerFactory(
+    () => ArtistDetailBloc(serviceLocator(), serviceLocator()),
   );
 }

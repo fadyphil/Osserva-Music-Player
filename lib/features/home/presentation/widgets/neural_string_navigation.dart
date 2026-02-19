@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../cubit/home_state.dart';
+import 'package:music_player/features/home/domain/entities/home_tab.dart';
 
 class NeuralStringNavigation extends StatefulWidget {
   final HomeTab selectedTab;
@@ -62,11 +62,15 @@ class _NeuralStringNavigationState extends State<NeuralStringNavigation>
   double _getTabPosition(HomeTab tab) {
     switch (tab) {
       case HomeTab.songs:
-        return 0.16; // 1/6
+        return 0.1; 
+      case HomeTab.library:
+        return 0.3;
+      case HomeTab.artists:
+        return 0.5;
       case HomeTab.analytics:
-        return 0.5; // Center
+        return 0.7; 
       case HomeTab.profile:
-        return 0.83; // 5/6
+        return 0.9; 
     }
   }
 
@@ -113,6 +117,18 @@ class _NeuralStringNavigationState extends State<NeuralStringNavigation>
                 label: "FLUX",
                 isSelected: widget.selectedTab == HomeTab.songs,
                 onTap: () => _handleTap(HomeTab.songs),
+              ),
+              _HoloIcon(
+                icon: Icons.library_music,
+                label: "LIB",
+                isSelected: widget.selectedTab == HomeTab.library,
+                onTap: () => _handleTap(HomeTab.library),
+              ),
+              _HoloIcon(
+                icon: Icons.people_outline,
+                label: "ARTIST",
+                isSelected: widget.selectedTab == HomeTab.artists,
+                onTap: () => _handleTap(HomeTab.artists),
               ),
               _HoloIcon(
                 icon: Icons.graphic_eq,

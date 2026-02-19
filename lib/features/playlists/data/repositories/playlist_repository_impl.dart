@@ -85,6 +85,16 @@ class PlaylistRepositoryImpl implements PlaylistRepository {
   }
 
   @override
+  Future<Either<Failure, void>> removeSongFromAllPlaylists(int songId) async {
+    try {
+      await dataSource.removeSongFromAllPlaylists(songId);
+      return const Right(null);
+    } catch (e) {
+      return Left(PlaylistFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<PlaylistEntity>>> getPlaylists() async {
     try {
       final models = await dataSource.getPlaylists();

@@ -23,7 +23,7 @@ class AnalyticsDashboardPage extends StatelessWidget {
           const AnalyticsEvent.loadAnalyticsData(timeFrame: TimeFrame.week),
         ),
       child: Scaffold(
-        backgroundColor: AppPallete.backgroundColor,
+        backgroundColor: AppPallete.background,
         body: const _AnalyticsBody(),
       ),
     );
@@ -42,7 +42,7 @@ class _AnalyticsBody extends StatelessWidget {
             'Insights',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
           ),
-          backgroundColor: AppPallete.backgroundColor,
+          backgroundColor: AppPallete.background,
           floating: true,
           pinned: true,
           elevation: 0,
@@ -60,7 +60,7 @@ class _AnalyticsBody extends StatelessWidget {
               loading: (_) => const SliverFillRemaining(
                 child: Center(
                   child: CircularProgressIndicator(
-                    color: AppPallete.primaryGreen,
+                    color: AppPallete.accent,
                   ),
                 ),
               ),
@@ -68,7 +68,7 @@ class _AnalyticsBody extends StatelessWidget {
                 child: Center(
                   child: Text(
                     'Error: ${f.message}',
-                    style: const TextStyle(color: AppPallete.hotPink),
+                    style: const TextStyle(color: AppPallete.destructive),
                   ),
                 ),
               ),
@@ -82,10 +82,6 @@ class _AnalyticsBody extends StatelessWidget {
   }
 
   Widget _buildDashboard(BuildContext context, dynamic data) {
-    // Note: 'data' is the generated _Loaded class from freezed.
-    // We use dynamic or just let inference handle it, but for clarity in this method signature
-    // we accept dynamic to avoid import issues with private classes,
-    // though strictly we know it has the fields we need.
     return SliverList(
       delegate: SliverChildListDelegate([
         Padding(
@@ -103,7 +99,7 @@ class _AnalyticsBody extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppPallete.white,
+                        color: AppPallete.foreground,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -130,10 +126,10 @@ class _AnalyticsBody extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: AppPallete.white,
+                            color: AppPallete.foreground,
                           ),
                         ),
-                        Icon(Icons.timeline, color: AppPallete.electricBlue),
+                        Icon(Icons.timeline, color: AppPallete.chart1),
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -156,7 +152,7 @@ class _AnalyticsBody extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppPallete.white,
+                        color: AppPallete.foreground,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -173,7 +169,7 @@ class _AnalyticsBody extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: AppPallete.white,
+                  color: AppPallete.foreground,
                 ),
               ),
               const SizedBox(height: 12),
@@ -189,7 +185,7 @@ class _AnalyticsBody extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: AppPallete.white,
+                  color: AppPallete.foreground,
                 ),
               ),
               const SizedBox(height: 12),
@@ -271,12 +267,12 @@ class _TabButton extends StatelessWidget {
         margin: const EdgeInsets.only(right: 12),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppPallete.primaryGreen : AppPallete.cardColor,
+          color: isSelected ? AppPallete.accent : AppPallete.surface,
           borderRadius: BorderRadius.circular(20),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppPallete.primaryGreen.withValues(alpha: 0.4),
+                    color: AppPallete.accent.withValues(alpha: 0.4),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -286,7 +282,7 @@ class _TabButton extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.black : AppPallete.grey,
+            color: isSelected ? Colors.white : AppPallete.grey,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -321,10 +317,10 @@ class _TopSongTile extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppPallete.surfaceLight,
+              color: AppPallete.surface,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.music_note, color: AppPallete.white),
+            child: const Icon(Icons.music_note, color: AppPallete.foreground),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -335,7 +331,7 @@ class _TopSongTile extends StatelessWidget {
                 Text(
                   item.title,
                   style: const TextStyle(
-                    color: AppPallete.white,
+                    color: AppPallete.foreground,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -352,13 +348,13 @@ class _TopSongTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppPallete.surfaceLight,
+              color: AppPallete.surface,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               '${item.count}',
               style: const TextStyle(
-                color: AppPallete.primaryGreen,
+                color: AppPallete.accent,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -387,7 +383,7 @@ class _TopArtistTile extends StatelessWidget {
             height: 40,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: AppPallete.surfaceLight,
+              color: AppPallete.surface,
             ),
             child: const Icon(Icons.person, color: AppPallete.grey, size: 20),
           ),
@@ -396,7 +392,7 @@ class _TopArtistTile extends StatelessWidget {
             child: Text(
               item.title,
               style: const TextStyle(
-                color: AppPallete.white,
+                color: AppPallete.foreground,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
@@ -405,7 +401,7 @@ class _TopArtistTile extends StatelessWidget {
           Text(
             '${item.count} plays',
             style: const TextStyle(
-              color: AppPallete.neonPurple,
+              color: AppPallete.chart2,
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),

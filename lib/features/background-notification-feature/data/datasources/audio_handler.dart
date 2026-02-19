@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:audio_service/audio_service.dart';
@@ -8,106 +9,252 @@ import 'package:just_audio/just_audio.dart';
 class MusicPlayerHandler extends BaseAudioHandler
     with QueueHandler, SeekHandler {
   final AudioPlayer _player;
-  final List<AudioSource> _currentQueue = [];
+
+  /// the [_subscriptions] variable to manage add/dispose of streams
+  /// it holds a  list of subscriptions
+  final _subscriptions = <StreamSubscription>[];
+
   MusicPlayerHandler({AudioPlayer? player})
     : _player = player ?? AudioPlayer() {
     _init();
   }
 
   Future<void> _init() async {
-    try {
-      //NOTE: strict replacement for setAudioSource(ConcatenatingAudioSource(...))
-      await _player.setAudioSources(_currentQueue);
-    } catch (e) {
-      log('Error setting audio sources: $e');
-    }
     _initPlayerListeners();
   }
 
-  // 1. Initialize Listeners:
-  // Sync just_audio events -> audio_service State
-  void _initPlayerListeners() async {
-    // Broadcast the current song details to the Lock Screen / Notification
-    _player.sequenceStateStream.listen((sequenceState) {
-      final sequence = sequenceState.sequence;
-      final items = sequence.map((source) => source.tag as MediaItem).toList();
-      queue.add(items);
-      // Update the "Now Playing" item (displays the title  and artwork of song)
-      final currentSource = sequenceState.currentSource;
-      if (currentSource != null) {
-        mediaItem.add(currentSource.tag as MediaItem);
-      }
+  // ------------------------------------------------------------------------
+  // 1. LISTENERS
+  // ------------------------------------------------------------------------
 
-      // Update the position of the seek bar
-    });
+  void _initPlayerListeners() {
+    // 1. Listen to Playlist Changes (Queue)
+    _subscriptions.add(
+      _player.sequenceStateStream.listen((sequenceState) {
+        final sequence = sequenceState.sequence;
+        final items = sequence
+            .map((source) => source.tag as MediaItem)
+            .toList();
+        queue.add(items);
 
-    _player.durationStream.listen((duration) {
-      final current = mediaItem.value;
-      if (duration != null && current != null) {
-        mediaItem.add(current.copyWith(duration: duration));
-      }
-    });
+        final currentSource = sequenceState.currentSource;
+        if (currentSource != null) {
+          mediaItem.add(currentSource.tag as MediaItem);
+        }
+      }),
+    );
 
-    // Broadcast the Play/Pause/Loading state to the OS
-    _player.playbackEventStream.listen((event) {
-      final playing = _player.playing;
-      
-      // Custom controls for Shuffle and Repeat
-      // NOTE: You must add 'ic_shuffle.xml' and 'ic_repeat.xml' to android/app/src/main/res/drawable/
-      const shuffleControl = MediaControl(
-        androidIcon: 'drawable/ic_shuffle',
-        label: 'Shuffle',
-        action: MediaAction.setShuffleMode,
+    // 2. Listen to Duration
+    _subscriptions.add(
+      _player.durationStream.listen((duration) {
+        final current = mediaItem.value;
+        if (duration != null && current != null) {
+          if (current.duration != duration) {
+            mediaItem.add(current.copyWith(duration: duration));
+          }
+        }
+      }),
+    );
+
+    // 3. LISTEN TO ALL STATE CHANGES
+    // We listen to all 3 streams. If ANY of them fire, we run _broadcastState().
+    // This ensures icons and play/pause state are always in sync.
+    // C. Combined State Streams (Using the loop method I recommended)
+    final stateStreams = [
+      _player.playbackEventStream,
+      _player.processingStateStream,
+      _player.playingStream,
+      _player.shuffleModeEnabledStream,
+      _player.loopModeStream,
+    ];
+
+    for (final stream in stateStreams) {
+      _subscriptions.add(
+        stream.listen((_) {
+          _broadcastState();
+        }),
       );
-      
-      const repeatControl = MediaControl(
+    }
+  }
+
+  Future<void> dispose() async {
+    // 1. Cancel all listeners to stop memory leaks
+    for (final s in _subscriptions) {
+      await s.cancel();
+    }
+    _subscriptions.clear();
+
+    // 2. Dispose of the player resources (decoders, buffers)
+    await _player.dispose();
+
+    log("MusicPlayerHandler disposed and streams canceled.");
+  }
+
+  /// HELPER: Builds the notification state dynamically
+  /// builds the notification
+  void _broadcastState() {
+    final playing = _player.playing;
+    final shuffleMode = _player.shuffleModeEnabled;
+    final loopMode = _player.loopMode;
+    final processingState = _player.processingState;
+
+    // Fix for Duration: If mediaItem has no duration but player does, update it.
+    if (mediaItem.value != null &&
+        mediaItem.value!.duration == null &&
+        _player.duration != null) {
+      mediaItem.add(mediaItem.value!.copyWith(duration: _player.duration));
+    }
+
+    // --- 1. Define Shuffle Button ---
+    final shuffleControl = MediaControl.custom(
+      // Swap icon based on state
+      androidIcon: shuffleMode
+          ? 'drawable/ic_shuffle_on'
+          : 'drawable/ic_shuffle',
+      label: 'Shuffle',
+      name: 'shuffle_mode', // Custom action name
+    );
+
+    // --- 2. Define Repeat Button ---
+    final MediaControl repeatControl;
+    if (loopMode == LoopMode.one) {
+      repeatControl = MediaControl.custom(
+        androidIcon: 'drawable/ic_repeat_one',
+        label: 'Repeat One',
+        name: 'repeat_mode',
+      );
+    } else if (loopMode == LoopMode.all) {
+      repeatControl = MediaControl.custom(
+        androidIcon:
+            'drawable/ic_repeat_on', // Optional: Different icon for Loop All
+        label: 'Repeat All',
+        name: 'repeat_mode',
+      );
+    } else {
+      repeatControl = MediaControl.custom(
         androidIcon: 'drawable/ic_repeat',
-        label: 'Repeat',
-        action: MediaAction.setRepeatMode,
+        label: 'Repeat Off',
+        name: 'repeat_mode',
       );
+    }
 
-      playbackState.add(
-        playbackState.value.copyWith(
-          controls: [
-            shuffleControl,
-            MediaControl.skipToPrevious,
-            if (playing) MediaControl.pause else MediaControl.play,
-            MediaControl.skipToNext,
-            repeatControl,
-          ],
-          systemActions: const {
-            MediaAction.setShuffleMode,
-            MediaAction.seek,
-            MediaAction.seekForward,
-            MediaAction.seekBackward,
-            MediaAction.setRepeatMode,
-          },
-          androidCompactActionIndices: const [0, 1, 2],
-          processingState: {
-            ProcessingState.idle: AudioProcessingState.idle,
-            ProcessingState.loading: AudioProcessingState.loading,
-            ProcessingState.buffering: AudioProcessingState.buffering,
-            ProcessingState.ready: AudioProcessingState.ready,
-            ProcessingState.completed: AudioProcessingState.completed,
-          }[_player.processingState]!,
-          playing: playing,
-          updatePosition: _player.position,
-          bufferedPosition: _player.bufferedPosition,
-          speed: _player.speed,
-          queueIndex: event.currentIndex,
-        ),
-      );
-    });
+    // --- 3. Build the Full List of Controls ---
+    // We recreate the list every time something changes so we don't lose buttons.
+    final controls = [
+      shuffleControl,
+      MediaControl.skipToPrevious,
+      playing ? MediaControl.pause : MediaControl.play,
+      MediaControl.skipToNext,
+      repeatControl,
+    ];
 
-    // CRITICAL: just_audio's playbackEventStream doesn't fire continuously.
-    // We need to bridge the position stream to AudioService so the seek bar works in UI.
-    // However, AudioService calculates position based on 'updatePosition' + 'speed' * (now - updateTime).
-    // So we just need to ensure we emit a state whenever Play/Pause/Seek happens.
-    // _player.playbackEventStream handles this for us.
-    // BUT, we might need to be explicit about the 'playing' state.
+    // --- 4. Broadcast to System ---
+    playbackState.add(
+      playbackState.value.copyWith(
+        controls: controls,
+        // Shows: Prev, Play/Pause, Next in the compact (small) notification
+        androidCompactActionIndices: const [1, 2, 3],
+
+        systemActions: const {
+          MediaAction.setShuffleMode,
+          MediaAction.setRepeatMode,
+          MediaAction.seek,
+          MediaAction.seekForward,
+          MediaAction.seekBackward,
+          MediaAction.play,
+          MediaAction.pause,
+          MediaAction.stop,
+        },
+
+        playing: playing,
+        updatePosition: _player.position,
+        bufferedPosition: _player.bufferedPosition,
+        speed: _player.speed,
+        queueIndex: _player.currentIndex,
+
+        // Inform the OS of the specific modes (important for Android Auto/Bluetooth)
+        shuffleMode: shuffleMode
+            ? AudioServiceShuffleMode.all
+            : AudioServiceShuffleMode.none,
+        repeatMode: loopMode == LoopMode.one
+            ? AudioServiceRepeatMode.one
+            : (loopMode == LoopMode.all
+                  ? AudioServiceRepeatMode.all
+                  : AudioServiceRepeatMode.none),
+        processingState: _getProcessingState(processingState),
+      ),
+    );
+  }
+
+  // Helper function to map states safely without crashing
+  AudioProcessingState _getProcessingState(ProcessingState state) {
+    // 1. Check if the player has an error (AudioService needs to know this)
+    // just_audio keeps state as 'idle' on error, so we check explicitly.
+    /* 
+       Note: just_audio doesn't have a direct 'hasError' boolean on the player 
+       that persists easily in this context without tracking it manually, 
+       but standard mapping is usually sufficient unless you are handling broken URLs.
+    */
+
+    switch (state) {
+      case ProcessingState.idle:
+        return AudioProcessingState.idle;
+      case ProcessingState.loading:
+        return AudioProcessingState.loading;
+      case ProcessingState.buffering:
+        return AudioProcessingState.buffering;
+      case ProcessingState.ready:
+        return AudioProcessingState.ready;
+      case ProcessingState.completed:
+        return AudioProcessingState.completed;
+    }
   }
 
   // 2. Playback Methods (Called by your UI/Repository)
+  // ------------------------------------------------------------------------
+  // 2. QUEUE MANAGEMENT (Using the NEW AudioPlayer Methods)
+  // ------------------------------------------------------------------------
+
+  /// 1. HELPER: Generate AudioSource (With Windows/Linux Fix)
+  AudioSource _createSource(MediaItem item) {
+    final rawUrl = item.extras?['url'] as String?;
+    if (rawUrl == null) throw Exception("Missing URL");
+
+    Uri uri;
+    try {
+      final parsed = Uri.parse(rawUrl);
+      if (parsed.hasScheme &&
+          (parsed.scheme == 'http' || parsed.scheme == 'https')) {
+        uri = parsed;
+      } else {
+        uri = Uri.file(rawUrl);
+      }
+    } catch (e) {
+      uri = Uri.file(rawUrl);
+    }
+    return AudioSource.uri(uri, tag: item);
+  }
+
+  @override
+  Future<dynamic> customAction(
+    String name, [
+    Map<String, dynamic>? extras,
+  ]) async {
+    if (name == 'shuffle_mode') {
+      final mode = _player.shuffleModeEnabled
+          ? AudioServiceShuffleMode.none
+          : AudioServiceShuffleMode.all;
+      await setShuffleMode(mode);
+    } else if (name == 'repeat_mode') {
+      final current = _player.loopMode;
+      final next = {
+        LoopMode.off: AudioServiceRepeatMode.all,
+        LoopMode.all: AudioServiceRepeatMode.one,
+        LoopMode.one: AudioServiceRepeatMode.none,
+      }[current]!;
+      await setRepeatMode(next);
+    }
+  }
 
   @override
   Future<void> play() => _player.play();
@@ -153,37 +300,14 @@ class MusicPlayerHandler extends BaseAudioHandler
   Future<void> addQueueItem(MediaItem mediaItem) async {
     try {
       // Strategy: Always reconstruct the queue to ensure consistency across all platforms.
-      final url = mediaItem.extras?['url'] as String?;
-      if (url == null || url.isEmpty) {
-        throw Exception('Cannot add  to queue : Url is missing');
-      }
+      final source = _createSource(mediaItem);
 
-      final AudioSource source;
-      if (Uri.parse(url).isScheme('content') ||
-          Uri.parse(url).isScheme('file')) {
-        source = AudioSource.uri(Uri.parse(url), tag: mediaItem);
-      } else {
-        source = AudioSource.file(url, tag: mediaItem);
-      }
-
-      _currentQueue.add(source);
-      final currentIndex = _player.currentIndex;
-      final currentPos = _player.position;
-      await _player.setAudioSources(
-        _currentQueue,
-        initialIndex: currentIndex,
-        initialPosition: currentPos,
-      );
+      await _player.addAudioSource(source);
 
       log('Successfuly added to queue: ${mediaItem.title}');
     } catch (e, stack) {
       log('Error adding to queue: $e', stackTrace: stack);
-      if (_currentQueue.isNotEmpty) {
-        final lastItem = _currentQueue.last;
-        if (lastItem is IndexedAudioSource && lastItem.tag is MediaItem) {
-          _currentQueue.removeLast();
-        }
-      }
+
       rethrow;
     }
   }
@@ -194,25 +318,16 @@ class MusicPlayerHandler extends BaseAudioHandler
     required int initialIndex,
   }) async {
     try {
-      // 1. Clear the local queue
+      final sources = items.map(_createSource).toList();
+      await _player.setAudioSources(sources, initialIndex: initialIndex);
 
-      _currentQueue.clear();
-
-      // 2. Rebuild list
-      final sources = items.map((item) {
-        return AudioSource.uri(
-          Uri.parse(item.extras!['url'] as String),
-          tag: item,
-        );
-      }).toList();
-      _currentQueue.addAll(sources);
-
-      // 3. set sources on player
-      await _player.setAudioSources(_currentQueue, initialIndex: initialIndex);
-
-      // 4. Ensure plaback starts
-      await _player.play();
+      if (!_player.playing) {
+        await _player.play();
+      }
     } catch (e, stackTrace) {
+      if (e.toString().contains('Loading interrupted')) {
+        return;
+      }
       log("Error setting queue: $e", stackTrace: stackTrace);
 
       // Broadcast error to UI
@@ -230,43 +345,50 @@ class MusicPlayerHandler extends BaseAudioHandler
   // Add this new method to your Handler
   Future<void> insertNextQueueItem(MediaItem mediaItem) async {
     try {
-      final url = mediaItem.extras?['url'] as String?;
-      if (url == null || url.isEmpty) {
-        throw Exception('Cannot add to queue: Url is missing');
-      }
-
-      final AudioSource source;
-      if (Uri.parse(url).isScheme('content') ||
-          Uri.parse(url).isScheme('file')) {
-        source = AudioSource.uri(Uri.parse(url), tag: mediaItem);
+      final index = _player.currentIndex;
+      final source = _createSource(mediaItem);
+      if (index == null || _player.sequence.isEmpty) {
+        await _player.addAudioSource(source);
       } else {
-        source = AudioSource.file(url, tag: mediaItem);
+        await _player.insertAudioSource(index + 1, source);
       }
-
-      // CALCULATE INSERT POSITION
-      // If nothing is playing, add to start.
-      // If playing, add right after current index.
-      final index = (_player.currentIndex ?? -1) + 1;
-
-      if (index < 0 || index > _currentQueue.length) {
-        _currentQueue.add(source); // Fallback to append
-      } else {
-        _currentQueue.insert(index, source); // Insert specific
-      }
-
-      // Update Player
-      final currentIndex = _player.currentIndex;
-      final currentPos = _player.position;
-
-      await _player.setAudioSources(
-        _currentQueue,
-        initialIndex: currentIndex,
-        initialPosition: currentPos,
-      );
-
       log('Successfully inserted next: ${mediaItem.title}');
     } catch (e) {
       log('Error inserting item: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> removeQueueItemAt(int index) async {
+    try {
+      await _player.removeAudioSourceAt(index);
+      log('Successfully removed item at index: $index');
+    } catch (e) {
+      log('Error removing item at index $index: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> moveQueueItem(int oldIndex, int newIndex) async {
+    try {
+      await _player.moveAudioSource(oldIndex, newIndex);
+      log('Successfully moved item from $oldIndex to $newIndex');
+    } catch (e) {
+      log('Error moving item from $oldIndex to $newIndex: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> skipToQueueItem(int index) async {
+    try {
+      await _player.seek(Duration.zero, index: index);
+      if (!_player.playing) {
+        await _player.play();
+      }
+    } catch (e) {
+      log('Error skipping to item $index: $e');
       rethrow;
     }
   }
@@ -278,6 +400,7 @@ class MusicPlayerHandler extends BaseAudioHandler
     required String artist,
     required String id,
     required String artUri,
+    Duration? duration,
   }) async {
     final item = MediaItem(
       id: id,
@@ -286,6 +409,7 @@ class MusicPlayerHandler extends BaseAudioHandler
       artist: artist,
       artUri: Uri.parse(artUri),
       extras: {'url': uri},
+      duration: duration,
     );
     await setQueueItems(items: [item], initialIndex: 0);
   }

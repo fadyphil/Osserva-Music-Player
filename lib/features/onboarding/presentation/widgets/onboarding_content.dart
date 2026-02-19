@@ -22,8 +22,8 @@ class OnboardingContent extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(40),
-            decoration: BoxDecoration(
-              color: AppPallete.surfaceLight,
+            decoration: const BoxDecoration(
+              color: AppPallete.surface,
               shape: BoxShape.circle,
             ),
             child: Icon(

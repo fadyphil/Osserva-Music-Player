@@ -44,7 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-Detailed-report.md
 GEMINI.md
 # Generated code
 *.g.dart
@@ -55,3 +54,8 @@ data-display-ideas
 
 # Ignore generated problem reports
 android/build/reports/problems/problems-report.html
+
+# Ignore designs and plans
+designs/
+plans/
+Engineering-Codex/

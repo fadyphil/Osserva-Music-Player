@@ -22,13 +22,13 @@ class GenreBarChart extends StatelessWidget {
       );
     }
 
-    // Colors for the bars
+    // Colors for the bars using new Design 2.0 chart palette
     final colors = [
-      AppPallete.neonPurple,
-      AppPallete.hotPink,
-      AppPallete.electricBlue,
-      AppPallete.warmOrange,
-      AppPallete.primaryGreen,
+      AppPallete.chart1,
+      AppPallete.chart2,
+      AppPallete.chart3,
+      AppPallete.chart4,
+      AppPallete.chart5,
     ];
 
     return SizedBox(
@@ -72,7 +72,7 @@ class GenreBarChart extends StatelessWidget {
             drawVerticalLine: false,
             horizontalInterval: 5,
             getDrawingHorizontalLine: (value) => FlLine(
-              color: AppPallete.white.withValues(alpha: 0.05),
+              color: AppPallete.foreground.withValues(alpha: 0.05),
               strokeWidth: 1,
             ),
           ),
@@ -93,7 +93,7 @@ class GenreBarChart extends StatelessWidget {
                   backDrawRodData: BackgroundBarChartRodData(
                     show: true,
                     toY: (genres.map((e) => e.count).fold(0, (p, c) => c > p ? c : p) * 1.2).toDouble(),
-                    color: AppPallete.surfaceLight,
+                    color: AppPallete.surface, // Used to be surfaceLight
                   ),
                 ),
               ],
