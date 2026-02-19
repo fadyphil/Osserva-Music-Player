@@ -54,7 +54,7 @@ class HomePage extends StatelessWidget {
                   // Determine User's Preferred Style
                   NavBarStyle style = NavBarStyle.simple;
                   profileState.maybeWhen(
-                    loaded: (user) {
+                    loaded: (user, achievements, stats) {
                       style = user.preferredNavBar;
                     },
                     orElse: () {},
