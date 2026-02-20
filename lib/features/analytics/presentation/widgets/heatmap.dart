@@ -9,7 +9,10 @@ class HeatmapCard extends StatelessWidget {
     // Generate deterministic pseudo-random data to match the UI's varied heatmap look
     // 0 = no activity, 4 = max activity
     final math.Random random = math.Random(42);
-    final List<int> heatmapData = List.generate(14 * 16, (index) {
+    // 7 days x 28 weeks = 196 days (~6.5 months)
+    final int weeks = 28;
+    final int days = 7;
+    final List<int> heatmapData = List.generate(weeks * days, (index) {
       // Create some "gaps" to simulate the spacing seen in Image 4
       if (index > 100 && index < 120) return 0;
       // Bias towards lower numbers to make the bright blue pop out more
@@ -54,26 +57,29 @@ class HeatmapCard extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // The Grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics:
-                const NeverScrollableScrollPhysics(), // Disable scrolling inside the card
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 14, // Number of columns wide
-              crossAxisSpacing: 4,
-              mainAxisSpacing: 4,
+          // The Grid (GitHub Style: 7 rows for days, scrolling horizontally for weeks)
+          SizedBox(
+            height: 140, // Fits 7 items + spacing
+            child: GridView.builder(
+              scrollDirection: Axis.horizontal,
+              // physics: const NeverScrollableScrollPhysics(), // Allow scrolling if it overflows
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7, // 7 Days (Rows)
+                crossAxisSpacing: 4, // Vertical spacing
+                mainAxisSpacing: 4, // Horizontal spacing
+                childAspectRatio: 1.0, // Square
+              ),
+              itemCount: heatmapData.length,
+              itemBuilder: (context, index) {
+                final intensity = heatmapData[index];
+                return Container(
+                  decoration: BoxDecoration(
+                    color: _getHeatmapColor(intensity),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                );
+              },
             ),
-            itemCount: heatmapData.length,
-            itemBuilder: (context, index) {
-              final intensity = heatmapData[index];
-              return Container(
-                decoration: BoxDecoration(
-                  color: _getHeatmapColor(intensity),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              );
-            },
           ),
 
           const SizedBox(height: 24),
