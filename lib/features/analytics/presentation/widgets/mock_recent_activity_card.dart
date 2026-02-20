@@ -34,7 +34,7 @@ class MockRecentActivityCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF16181D), // Dark card background
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +84,7 @@ class MockRecentActivityCard extends StatelessWidget {
                 Text(
                   data.day,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 12,
                   ),
                 ),
@@ -111,7 +111,7 @@ class MockRecentActivityCard extends StatelessWidget {
                 Container(
                   height: 8,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -125,7 +125,7 @@ class MockRecentActivityCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.orangeAccent.withOpacity(0.4),
+                          color: Colors.orangeAccent.withValues(alpha: 0.4),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -146,7 +146,7 @@ class MockRecentActivityCard extends StatelessWidget {
               '${data.plays} plays',
               textAlign: TextAlign.right,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 12,
               ),
             ),

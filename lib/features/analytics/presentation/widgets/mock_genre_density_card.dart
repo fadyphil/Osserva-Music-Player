@@ -10,7 +10,7 @@ class MockGenreDensityCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1E2128),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,7 +27,7 @@ class MockGenreDensityCard extends StatelessWidget {
           Text(
             'Visual representation of genre dominance',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 12,
             ),
           ),
@@ -92,7 +92,7 @@ class MockGenreDensityCard extends StatelessWidget {
           Text(
             '$plays plays',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 12,
             ),
           ),
@@ -100,7 +100,7 @@ class MockGenreDensityCard extends StatelessWidget {
           Text(
             percentage,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
@@ -123,23 +123,23 @@ class _GenreDensityPainter extends CustomPainter {
     // based on percentages, but here is the geometric layout matching your UI.
 
     // Electronic (Blue - Largest, Right)
-    paint.color = Colors.blue.withOpacity(0.75);
+    paint.color = Colors.blue.withValues(alpha: 0.75);
     canvas.drawCircle(center + const Offset(30, 0), 65, paint);
 
     // Ambient (Purple - Bottom)
-    paint.color = Colors.purpleAccent.withOpacity(0.75);
+    paint.color = Colors.purpleAccent.withValues(alpha: 0.75);
     canvas.drawCircle(center + const Offset(10, 40), 55, paint);
 
     // Indie (Green - Left)
-    paint.color = Colors.green.withOpacity(0.75);
+    paint.color = Colors.green.withValues(alpha: 0.75);
     canvas.drawCircle(center + const Offset(-40, 10), 45, paint);
 
     // Jazz (Yellow/Orange - Top Left)
-    paint.color = const Color(0xFFD4A017).withOpacity(0.8);
+    paint.color = const Color(0xFFD4A017).withValues(alpha: 0.8);
     canvas.drawCircle(center + const Offset(-25, -30), 40, paint);
 
     // Classical (Red - Top)
-    paint.color = Colors.redAccent.withOpacity(0.8);
+    paint.color = Colors.redAccent.withValues(alpha: 0.8);
     canvas.drawCircle(center + const Offset(15, -45), 30, paint);
 
     // Tiny blue dot in center

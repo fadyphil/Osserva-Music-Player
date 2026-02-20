@@ -26,7 +26,7 @@ class MockHeatmapCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF16181D),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,7 +50,7 @@ class MockHeatmapCard extends StatelessWidget {
           Text(
             'Most active period: Weekday afternoons (2-6 PM). Consistent engagement with occasional breaks during holidays.',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 12,
               height: 1.4,
             ),
@@ -89,7 +89,7 @@ class MockHeatmapCard extends StatelessWidget {
               Text(
                 'Less',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   fontSize: 10,
                 ),
               ),
@@ -97,9 +97,9 @@ class MockHeatmapCard extends StatelessWidget {
                 children: [
                   _buildLegendBox(const Color(0xFF1E2128)),
                   const SizedBox(width: 2),
-                  _buildLegendBox(const Color(0xFF0D47A1).withOpacity(0.4)),
+                  _buildLegendBox(const Color(0xFF0D47A1).withValues(alpha: 0.4)),
                   const SizedBox(width: 2),
-                  _buildLegendBox(const Color(0xFF1565C0).withOpacity(0.7)),
+                  _buildLegendBox(const Color(0xFF1565C0).withValues(alpha: 0.7)),
                   const SizedBox(width: 2),
                   _buildLegendBox(const Color(0xFF1976D2)),
                   const SizedBox(width: 2),
@@ -109,7 +109,7 @@ class MockHeatmapCard extends StatelessWidget {
               Text(
                 'More',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   fontSize: 10,
                 ),
               ),
@@ -135,9 +135,9 @@ class MockHeatmapCard extends StatelessWidget {
   Color _getHeatmapColor(int intensity) {
     switch (intensity) {
       case 1:
-        return const Color(0xFF0D47A1).withOpacity(0.4); // Faint Blue
+        return const Color(0xFF0D47A1).withValues(alpha: 0.4); // Faint Blue
       case 2:
-        return const Color(0xFF1565C0).withOpacity(0.7); // Medium Blue
+        return const Color(0xFF1565C0).withValues(alpha: 0.7); // Medium Blue
       case 3:
         return const Color(0xFF1976D2); // Bright Blue
       case 4:

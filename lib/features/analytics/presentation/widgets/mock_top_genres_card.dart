@@ -13,7 +13,7 @@ class MockTopGenresCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF16181D),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,7 +40,7 @@ class MockTopGenresCard extends StatelessWidget {
           Text(
             'Electronic and Ambient dominate (62% combined). Suggests preference for background/focus music during extended listening.',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 12,
               height: 1.4,
             ),
@@ -118,7 +118,7 @@ class MockTopGenresCard extends StatelessWidget {
                   Text(
                     '${(percentage * 100).toStringAsFixed(0)}%',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -127,7 +127,7 @@ class MockTopGenresCard extends StatelessWidget {
                   Text(
                     '$plays plays ($time)',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 12,
                     ),
                   ),
@@ -145,7 +145,7 @@ class MockTopGenresCard extends StatelessWidget {
                 height: 6,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -159,7 +159,7 @@ class MockTopGenresCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(3),
                     boxShadow: [
                       BoxShadow(
-                        color: color.withOpacity(0.4),
+                        color: color.withValues(alpha: 0.4),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),

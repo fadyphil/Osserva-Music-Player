@@ -11,7 +11,7 @@ class MockTemporalDistributionChart extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1E2128), // Dark card background
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,7 +28,7 @@ class MockTemporalDistributionChart extends StatelessWidget {
           Text(
             'Listening patterns across time periods',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 12,
             ),
           ),
@@ -41,7 +41,7 @@ class MockTemporalDistributionChart extends StatelessWidget {
                   show: true,
                   drawVerticalLine: false,
                   getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     strokeWidth: 1,
                   ),
                 ),
@@ -66,7 +66,7 @@ class MockTemporalDistributionChart extends StatelessWidget {
                           child: Text(
                             value.toInt().toString(),
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                               fontSize: 10,
                             ),
                           ),
@@ -148,9 +148,7 @@ class MockTemporalDistributionChart extends StatelessWidget {
       dotData: const FlDotData(show: false),
       belowBarData: BarAreaData(
         show: true,
-        color: color.withOpacity(
-          0.7,
-        ), // Transparency creates the overlap effect
+        color: color.withValues(alpha: 0.7), // Transparency creates the overlap effect
       ),
     );
   }
@@ -169,7 +167,7 @@ class MockTemporalDistributionChart extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12),
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12),
         ),
       ],
     );

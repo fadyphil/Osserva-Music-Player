@@ -39,7 +39,7 @@ class ActivityByTimeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF16181D), // Deep dark background
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +66,7 @@ class ActivityByTimeCard extends StatelessWidget {
           Text(
             'Peak listening: 16:00 - 17:00 (42 plays avg). Strong afternoon preference indicates focus/work sessions.',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 12,
               height: 1.4,
             ),
@@ -100,7 +100,7 @@ class _PolarChartPainter extends CustomPainter {
 
     // 1. Draw concentric grid circles
     final gridPaint = Paint()
-      ..color = Colors.white.withOpacity(0.05)
+      ..color = Colors.white.withValues(alpha: 0.05)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
@@ -130,7 +130,7 @@ class _PolarChartPainter extends CustomPainter {
       // Create a slight gradient effect based on height
       barPaint.color = const Color(
         0xFF1976D2,
-      ).withOpacity(0.6 + (0.4 * normalizedValue));
+      ).withValues(alpha: 0.6 + (0.4 * normalizedValue));
 
       final path = Path();
       path.moveTo(center.dx, center.dy);
