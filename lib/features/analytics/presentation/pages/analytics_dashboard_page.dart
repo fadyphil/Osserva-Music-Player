@@ -11,6 +11,7 @@ import '../widgets/activity_by_time_card.dart';
 import '../widgets/genre_bar_chart.dart';
 import '../widgets/genre_density_card.dart';
 import '../widgets/listening_time_chart.dart';
+import '../widgets/recent_activity_card.dart';
 import '../widgets/temporal_distribution_chart.dart';
 import '../widgets/time_of_day_chart.dart';
 import '../widgets/top_genres_horizontal_bar.dart';
@@ -142,6 +143,8 @@ class _AnalyticsBody extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     const ActivityByTimeCard(),
+                    const SizedBox(height: 16),
+                    const RecentActivityCard(),
                   ],
                 ),
               ),
