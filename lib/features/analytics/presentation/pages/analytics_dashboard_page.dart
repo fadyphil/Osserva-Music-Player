@@ -10,6 +10,7 @@ import '../widgets/analytics_card.dart';
 import '../widgets/activity_by_time_card.dart';
 import '../widgets/genre_bar_chart.dart';
 import '../widgets/genre_density_card.dart';
+import '../widgets/heatmap.dart';
 import '../widgets/listening_time_chart.dart';
 import '../widgets/recent_activity_card.dart';
 import '../widgets/temporal_distribution_chart.dart';
@@ -145,6 +146,8 @@ class _AnalyticsBody extends StatelessWidget {
                     const ActivityByTimeCard(),
                     const SizedBox(height: 16),
                     const RecentActivityCard(),
+                    const SizedBox(height: 16),
+                    const HeatmapCard(),
                   ],
                 ),
               ),
