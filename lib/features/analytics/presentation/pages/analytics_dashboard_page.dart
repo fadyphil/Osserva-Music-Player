@@ -9,6 +9,7 @@ import '../bloc/analytics_bloc.dart';
 import '../widgets/analytics_card.dart';
 import '../widgets/genre_bar_chart.dart';
 import '../widgets/listening_time_chart.dart';
+import '../widgets/temporal_distribution_chart.dart';
 import '../widgets/time_of_day_chart.dart';
 
 @RoutePage()
@@ -139,6 +140,11 @@ class _AnalyticsBody extends StatelessWidget {
                   ],
                 ),
               ),
+
+              const SizedBox(height: 16),
+
+              // 2.5. Temporal Distribution (Hardcoded for visualization)
+              const TemporalDistributionChart(),
 
               const SizedBox(height: 16),
 
