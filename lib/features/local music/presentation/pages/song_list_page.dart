@@ -378,20 +378,16 @@ class _SongListSliverItems extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final song = songs[index];
-          return SongListTile(
-            // Use public widget
-            key: ValueKey(song.id),
-            song: song,
-            index: index,
-            songList: songs,
-          );
-        },
-        childCount: songs.length,
-        addAutomaticKeepAlives: false,
-      ),
+      delegate: SliverChildBuilderDelegate((context, index) {
+        final song = songs[index];
+        return SongListTile(
+          // Use public widget
+          key: ValueKey(song.id),
+          song: song,
+          index: index,
+          songList: songs,
+        );
+      }, childCount: songs.length),
     );
   }
 }

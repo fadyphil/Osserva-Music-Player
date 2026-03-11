@@ -82,7 +82,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 final serviceLocator = GetIt.instance;
 
 Future<void> initDependencies() async {
-  await serviceLocator.reset();
+  // await serviceLocator.reset();
   // =========================================================
   // 1. External (Third Party Libraries)
   // =========================================================
@@ -161,11 +161,7 @@ Future<void> initDependencies() async {
   );
 
   serviceLocator.registerLazySingleton(
-    () => MusicPlayerBloc(
-      serviceLocator(),
-      serviceLocator(),
-      serviceLocator(),
-    ),
+    () => MusicPlayerBloc(serviceLocator(), serviceLocator(), serviceLocator()),
   );
 
   // =========================================================
