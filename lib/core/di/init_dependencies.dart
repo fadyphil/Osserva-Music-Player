@@ -89,19 +89,21 @@ Future<void> initDependencies() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   final appRouter = AppRouter();
   final mediaStore = MediaStore();
+  final audioPlayer = AudioPlayer();
   serviceLocator.registerLazySingleton(() => mediaStore);
 
   serviceLocator.registerLazySingleton(() => sharedPreferences);
 
   serviceLocator.registerLazySingleton(() => OnAudioQuery());
-  serviceLocator.registerLazySingleton(() => AudioPlayer());
+  serviceLocator.registerSingleton<AudioPlayer>(audioPlayer);
   final audioHandler = await AudioService.init(
-    builder: () => MusicPlayerHandler(player: serviceLocator()),
-    config: const AudioServiceConfig(
+    builder: () => MusicPlayerHandler(player: audioPlayer),
+    config: AudioServiceConfig(
       androidNotificationChannelId: 'com.example.music_player.channel.audio',
       androidNotificationChannelName: 'Music Playback',
       androidNotificationOngoing: true,
       androidShowNotificationBadge: false,
+      androidStopForegroundOnPause: false,
     ),
   );
 
