@@ -195,15 +195,19 @@ class LocalMusicDatasourceImpl implements LocalMusicDatasource {
 
     // 2. Use OnAudioQuery for others
     try {
-      final songs = await _onAudioQuery.querySongs(
+      final songs = await _onAudioQuery.queryAudiosFrom(
+        // AudiosFromType.AUDIO_ID,
+        AudiosFromType.ALBUM_ID,
+        id,
         sortType: SongSortType.DATE_ADDED,
-        orderType: OrderType.DESC_OR_GREATER,
-        uriType: UriType.EXTERNAL,
+        orderType: OrderType.ASC_OR_SMALLER,
+        // uriType: UriType.EXTERNAL,
         ignoreCase: true,
       );
+      if (songs.isEmpty) return null;
 
-      final match = songs.firstWhere((s) => s.id == id);
-      return SongMapper.toEntity(match);
+      // final match = songs.firstWhere((s) => s.id == id);
+      return SongMapper.toEntity(songs.first);
     } catch (e) {
       return null;
     }
