@@ -4,6 +4,7 @@ import 'package:music_player/core/usecases/usecase.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
 import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
 import 'package:music_player/features/local%20music/domain/use%20cases/get_song_by_id_use_case.dart';
+import 'package:stream_transform/stream_transform.dart';
 import 'music_player_event.dart';
 import 'music_player_state.dart';
 
@@ -29,9 +30,11 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
     this._getAllSongPlayCounts,
   ) : super(const MusicPlayerState()) {
     // 1. Setup Listeners
-    _positionSubscription = _audioRepository.positionStream.listen((pos) {
-      add(MusicPlayerEvent.updatePosition(pos));
-    });
+    _positionSubscription = _audioRepository.positionStream
+        .throttle(const Duration(milliseconds: 500))
+        .listen((pos) {
+          add(MusicPlayerEvent.updatePosition(pos));
+        });
 
     _durationSubscription = _audioRepository.durationStream.listen((dur) {
       add(MusicPlayerEvent.updateDuration(dur));
@@ -94,9 +97,7 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
             // Revert or show error
             // If "Loading interrupted", it's fine.
             emit(
-              state.copyWith(
-                errorMessage: "Failed to initialize queue: $e",
-              ),
+              state.copyWith(errorMessage: "Failed to initialize queue: $e"),
             );
           }
         },
@@ -254,21 +255,25 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
           try {
             await _audioRepository.reorderQueue(e.oldIndex, e.newIndex);
           } catch (e) {
-             emit(state.copyWith(
+            emit(
+              state.copyWith(
                 queueActionStatus: QueueStatus.failure,
-                errorMessage: "Failed to reorder: $e"
-             ));
-             emit(state.copyWith(queueActionStatus: QueueStatus.initial));
+                errorMessage: "Failed to reorder: $e",
+              ),
+            );
+            emit(state.copyWith(queueActionStatus: QueueStatus.initial));
           }
         },
         playQueueItem: (e) async {
           try {
             await _audioRepository.skipToQueueItem(e.index);
           } catch (e) {
-            emit(state.copyWith(
+            emit(
+              state.copyWith(
                 queueActionStatus: QueueStatus.failure,
-                errorMessage: "Failed to play queue item: $e"
-            ));
+                errorMessage: "Failed to play queue item: $e",
+              ),
+            );
             emit(state.copyWith(queueActionStatus: QueueStatus.initial));
           }
         },
@@ -321,10 +326,7 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
         cancelTimer: (_) async {
           _sleepTimer?.cancel();
           emit(
-            state.copyWith(
-              timerRemaining: null,
-              isEndTrackTimerActive: false,
-            ),
+            state.copyWith(timerRemaining: null, isEndTrackTimerActive: false),
           );
         },
         tickTimer: (_) async {
