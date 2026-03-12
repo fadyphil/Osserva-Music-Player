@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_shuffle,
+                @drawable/ic_shuffle_on,
+                @drawable/ic_repeat,
+                @drawable/ic_repeat_on,
+                @drawable/ic_repeat_one"/>
