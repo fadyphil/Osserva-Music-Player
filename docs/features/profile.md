@@ -1,6 +1,6 @@
 ---
 title: User Profile Management
-description: How to manage your user identity and application settings.
+description: How to manage your user identity, application settings, and cache.
 tags: [feature, profile, settings, user-guide]
 ---
 
@@ -47,8 +47,20 @@ This action will remove all locally stored application data, including:
 User profile information and navigation preferences are stored locally using `shared_preferences`.
 
 ### State Management
--   `ProfileBloc` manages the user's profile state and handles updates.
+The feature is driven by `ProfileBloc`.
 
-### Logic
--   `GetUserProfile` and `UpdateUserProfile` use cases handle the business logic for profile data.
--   `ClearCache` use case orchestrates the deletion of various local data stores (profile, analytics).
+### Code Example: Clearing Cache
+```dart
+// IMPORTS
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:music_player/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:music_player/features/profile/presentation/bloc/profile_event.dart';
+
+// LOGIC
+void triggerCacheClear(BuildContext context) {
+  // Dispatches the event to wipe all local data
+  context.read<ProfileBloc>().add(
+    const ProfileEvent.clearCache(),
+  );
+}
+```

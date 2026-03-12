@@ -1,51 +1,66 @@
 ---
-title: Music Player Controls
-description: How to use the core playback controls, queue management, and player settings.
-tags: [feature, music-player, user-guide]
+title: Music Player Feature
+description: Documentation for the core playback engine, queue management, and UI controls.
+tags: [feature, audio, bloc, state-management]
 ---
 
-# Music Player Controls
+# Music Player Feature
 
-> **Context/Prerequisite:** A song must be playing or paused to interact with the full music player. The mini-player is visible when a queue is active.
+> **Context:** This feature manages the foreground UI and BLoC state for audio playback. It interacts with the `Background Audio` service.
 
 ## Overview
-The Music Player is the central hub for audio playback. It offers comprehensive controls for the current song, queue management, and settings like shuffle and repeat modes.
+The **Music Player** feature serves as the visual interface for the audio engine. It orchestrates user intents (Play, Pause, Seek) and visualizes the current playback state (Progress, Metadata, Queue).
 
-## Accessing the Full Player
+## Architecture
 
-The full player can be accessed from anywhere in the app by tapping on the **Mini Player** at the bottom of the screen.
+This feature follows the **Clean Architecture** pattern:
 
-## Core Playback Controls
+*   **Presentation:** `MusicPlayerBloc` receives UI events and maps them to Use Cases.
+*   **Domain:** Use Cases like `PlaySong`, `ToggleShuffle` abstract the logic.
+*   **Data:** Repositories interact with the `AudioHandler` (Background Service).
 
-On the full player screen, you will find:
--   **Play/Pause Button:** Toggles playback.
--   **Previous Button:** Skips to the previous song in the queue.
--   **Next Button:** Skips to the next song in the queue.
--   **Seek Bar:** Drag the slider to jump to any point in the current song.
+## Usage Guide (How-To)
 
-## Queue Management
+### Controlling Playback Programmatically
+To control the player from anywhere in the app, dispatch events to the `MusicPlayerBloc`.
 
-The player maintains a dynamic queue of songs.
--   **Swipe on Mini Player:** You can quickly skip to the next/previous song by swiping left/right on the mini-player.
--   **Adding Songs:** Songs can be added to the queue from the local music list (left swipe action).
+### Code Example: Controlling the Player
+```dart
+// IMPORTS
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
+import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
 
-## Player Settings
+// LOGIC
+void togglePlayback(BuildContext context) {
+  // Dispatches a simple event to toggle state
+  context.read<MusicPlayerBloc>().add(
+    const MusicPlayerEvent.togglePlayPause(),
+  );
+}
 
-### Shuffle Mode
--   **Icon:** `Shuffle` icon (often two overlapping arrows).
--   **Function:** Toggles shuffle mode. When active, songs will play in a random order.
+void playSpecificSong(BuildContext context, SongEntity song) {
+  // Starts playback of a new song
+  context.read<MusicPlayerBloc>().add(
+    MusicPlayerEvent.playSong(song: song),
+  );
+}
+```
 
-### Repeat Mode
--   **Icon:** `Repeat` icon (a circular arrow).
--   **Function:** Toggles through different repeat modes:
-    1.  **Repeat Off:** No repetition.
-    2.  **Repeat All:** Repeats the entire queue once it finishes.
-    3.  **Repeat One:** Repeats the current song indefinitely.
+## Reference: Events
 
-## Technical Details (Reference)
+The `MusicPlayerEvent` union class defines all possible interactions.
 
-### Audio Engine
-The player leverages `just_audio` and `audio_service` for robust background playback and integration with system media controls (lock screen, notifications).
+| Event | Description |
+| :--- | :--- |
+| `playSong({required SongEntity song})` | Starts playing a specific song immediately. |
+| `toggleShuffle()` | Toggles the shuffle mode in the underlying service. |
+| `cycleLoopMode()` | Cycles between Off -> All -> One. |
+| `reorderQueue(oldIndex, newIndex)` | Drag-and-drop queue management. |
+| `addToQueue(SongEntity song)` | Appends a song to the end of the current queue. |
 
-### State Management
-The player's state (current song, playback position, play/pause status, shuffle/repeat modes) is managed by `MusicPlayerBloc`.
+## UI Components
+
+*   **`MusicPlayerPage`:** The full-screen immersive player with physics-based drag-to-dismiss.
+*   **`MiniPlayer`:** The persistent bottom bar shown when audio is active but the player is minimized.
+*   **`QueueSheet`:** A modal bottom sheet displaying the current playlist.

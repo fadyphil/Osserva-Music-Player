@@ -7,9 +7,15 @@ import '../../domain/entities/analytics_enums.dart';
 import '../../domain/entities/analytics_stats.dart';
 import '../bloc/analytics_bloc.dart';
 import '../widgets/analytics_card.dart';
+import '../widgets/activity_by_time_card.dart';
 import '../widgets/genre_bar_chart.dart';
+import '../widgets/genre_density_card.dart';
+import '../widgets/heatmap.dart';
 import '../widgets/listening_time_chart.dart';
+import '../widgets/recent_activity_card.dart';
+import '../widgets/temporal_distribution_chart.dart';
 import '../widgets/time_of_day_chart.dart';
+import '../widgets/top_genres_horizontal_bar.dart';
 
 @RoutePage()
 class AnalyticsDashboardPage extends StatelessWidget {
@@ -136,9 +142,25 @@ class _AnalyticsBody extends StatelessWidget {
                     TimeOfDayChart(
                       distribution: data.stats.timeOfDayDistribution,
                     ),
+                    const SizedBox(height: 16),
+                    const ActivityByTimeCard(),
+                    const SizedBox(height: 16),
+                    const RecentActivityCard(),
+                    const SizedBox(height: 16),
+                    const HeatmapCard(),
                   ],
                 ),
               ),
+
+              const SizedBox(height: 16),
+
+              // 2.5. Temporal Distribution (Hardcoded for visualization)
+              const TemporalDistributionChart(),
+
+              const SizedBox(height: 16),
+
+              // 2.6. Genre Density (Hardcoded for visualization)
+              const GenreDensityCard(),
 
               const SizedBox(height: 16),
 
@@ -157,6 +179,8 @@ class _AnalyticsBody extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     GenreBarChart(genres: data.topGenres),
+                    const SizedBox(height: 20),
+                    const TopGenresCard(),
                   ],
                 ),
               ),
