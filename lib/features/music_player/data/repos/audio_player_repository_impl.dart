@@ -12,33 +12,57 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
   // Helper to access custom methods of our handler
   MusicPlayerHandler get _handler => _audioHandler as MusicPlayerHandler;
 
+  // @override
+  // Future<void> setQueue(List<SongEntity> songs, int initialIndex) async {
+  //   final mediaItems = songs.map((song) {
+  //     final uniqueId =
+  //         DateTime.now().microsecondsSinceEpoch.toString() +
+  //         song.id.toString(); // Simple unique ID
+  //     return MediaItem(
+  //       id: song.id.toString(),
+  //       album: song.album,
+  //       title: song.title,
+  //       artist: song.artist,
+  //       artUri: song.albumId != null
+  //           ? Uri.parse(
+  //               "content://media/external/audio/albumart/${song.albumId}",
+  //             )
+  //           : null,
+  //       duration: Duration(milliseconds: song.duration.toInt()),
+  //       extras: {'url': song.path, 'uniqueId': uniqueId},
+  //     );
+  //   }).toList();
+
+  //   await _handler.setQueueItems(items: mediaItems, initialIndex: initialIndex);
+  // }
+
+  /// Here is the new suggested method by claude to make sure that each song has its unique id since the old commented one was doing a great job but the problem was that the map() function is sync so in AOT it is so fast that it can give multiple songgs the same "unique id" which defeats the while purpose of a unuique id , so this implementation below solves that problem.///
   @override
   Future<void> setQueue(List<SongEntity> songs, int initialIndex) async {
-    final mediaItems = songs.map((song) {
-      final uniqueId = DateTime.now().microsecondsSinceEpoch.toString() +
-          song.id.toString(); // Simple unique ID
+    final mediaItems = songs.asMap().entries.map((entry) {
+      final index = entry.key;
+      final song = entry.value;
       return MediaItem(
         id: song.id.toString(),
-        album: song.album,
         title: song.title,
         artist: song.artist,
+        album: song.album,
         artUri: song.albumId != null
             ? Uri.parse(
                 "content://media/external/audio/albumart/${song.albumId}",
               )
             : null,
         duration: Duration(milliseconds: song.duration.toInt()),
-        extras: {'url': song.path, 'uniqueId': uniqueId},
+        extras: {'url': song.path, 'uniqueId': '${song.id}_$index'},
       );
     }).toList();
-
     await _handler.setQueueItems(items: mediaItems, initialIndex: initialIndex);
   }
 
   @override
   Future<void> addQueueItem(SongEntity song) async {
-    final uniqueId = DateTime.now().microsecondsSinceEpoch.toString() +
-        song.id.toString();
+    final uniqueId =
+        DateTime.now().microsecondsSinceEpoch.toString() + song.id.toString();
     final item = MediaItem(
       id: song.id.toString(),
       album: song.album,
@@ -140,17 +164,17 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
 
   @override
   Stream<int> get loopModeStream => _audioHandler.playbackState.map((state) {
-        switch (state.repeatMode) {
-          case AudioServiceRepeatMode.none:
-            return 0;
-          case AudioServiceRepeatMode.all:
-            return 1;
-          case AudioServiceRepeatMode.one:
-            return 2;
-          default:
-            return 0;
-        }
-      }).distinct();
+    switch (state.repeatMode) {
+      case AudioServiceRepeatMode.none:
+        return 0;
+      case AudioServiceRepeatMode.all:
+        return 1;
+      case AudioServiceRepeatMode.one:
+        return 2;
+      default:
+        return 0;
+    }
+  }).distinct();
 
   @override
   Stream<Duration> get positionStream => AudioService.position;
@@ -160,10 +184,9 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
       _audioHandler.mediaItem.map((item) => item?.duration ?? Duration.zero);
 
   @override
-  Stream<void> get playerCompleteStream => _audioHandler.playbackState
-      .where((state) => state.processingState == AudioProcessingState.completed)
-      .map((event) => null)
-      .distinct();
+  Stream<void> get playerCompleteStream => _audioHandler.playbackState.where(
+    (state) => state.processingState == AudioProcessingState.completed,
+  );
 
   @override
   Stream<SongEntity?> get currentSongStream =>
@@ -205,8 +228,8 @@ class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
 
   @override
   Future<void> playNext(SongEntity song) async {
-    final uniqueId = DateTime.now().microsecondsSinceEpoch.toString() +
-        song.id.toString();
+    final uniqueId =
+        DateTime.now().microsecondsSinceEpoch.toString() + song.id.toString();
     final item = MediaItem(
       id: song.id.toString(),
       album: song.album,
