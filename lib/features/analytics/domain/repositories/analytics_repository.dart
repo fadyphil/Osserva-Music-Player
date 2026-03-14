@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:music_player/features/analytics/domain/entities/artist_stats.dart';
 import '../../../../core/error/failure.dart';
 import '../entities/analytics_enums.dart';
 import '../entities/analytics_stats.dart';
@@ -9,22 +10,34 @@ abstract interface class AnalyticsRepository {
   Future<Either<Failure, void>> logEvent(PlayLog log);
 
   /// Retrieves the top [limit] songs for the given [timeFrame].
-  Future<Either<Failure, List<TopItem>>> getTopSongs(TimeFrame timeFrame, {int limit = 10});
+  Future<Either<Failure, List<TopItem>>> getTopSongs(
+    TimeFrame timeFrame, {
+    int limit = 10,
+  });
 
   /// Retrieves the top [limit] artists for the given [timeFrame].
-  Future<Either<Failure, List<TopItem>>> getTopArtists(TimeFrame timeFrame, {int limit = 10});
+  Future<Either<Failure, List<TopItem>>> getTopArtists(
+    TimeFrame timeFrame, {
+    int limit = 10,
+  });
 
   /// Retrieves the top [limit] albums for the given [timeFrame].
-  Future<Either<Failure, List<TopItem>>> getTopAlbums(TimeFrame timeFrame, {int limit = 10});
-  
-   /// Retrieves the top [limit] genres for the given [timeFrame].
-  Future<Either<Failure, List<TopItem>>> getTopGenres(TimeFrame timeFrame, {int limit = 10});
+  Future<Either<Failure, List<TopItem>>> getTopAlbums(
+    TimeFrame timeFrame, {
+    int limit = 10,
+  });
+
+  /// Retrieves the top [limit] genres for the given [timeFrame].
+  Future<Either<Failure, List<TopItem>>> getTopGenres(
+    TimeFrame timeFrame, {
+    int limit = 10,
+  });
 
   /// Retrieves general statistics (total time, count, time of day dist) for [timeFrame].
   Future<Either<Failure, ListeningStats>> getGeneralStats(TimeFrame timeFrame);
 
   /// Retrieves specific stats for an artist.
-  Future<Either<Failure, Map<String, dynamic>>> getArtistStats(String artistName);
+  Future<Either<Failure, ArtistStats>> getArtistStats(String artistName);
 
   /// Retrieves a map of song_id to play count for ALL time.
   Future<Either<Failure, Map<int, int>>> getAllSongPlayCounts();
@@ -39,7 +52,10 @@ abstract interface class AnalyticsRepository {
   Future<Either<Failure, void>> deleteSongAnalytics(int songId);
 
   /// Retrieves the raw playback history (chronological).
-  Future<Either<Failure, List<PlayLog>>> getPlaybackHistory({int? limit, int? offset});
+  Future<Either<Failure, List<PlayLog>>> getPlaybackHistory({
+    int? limit,
+    int? offset,
+  });
 
   /// Stream that emits an event whenever a new playback log is added.
   Stream<void> get playbackStream;

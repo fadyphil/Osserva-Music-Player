@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:fpdart/fpdart.dart';
+import 'package:music_player/features/analytics/domain/entities/artist_stats.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/entities/analytics_enums.dart';
 import '../../domain/entities/analytics_stats.dart';
@@ -46,7 +47,8 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
   @override
   Future<Either<Failure, ListeningStats>> getGeneralStats(
-      TimeFrame timeFrame) async {
+    TimeFrame timeFrame,
+  ) async {
     try {
       final result = await reader.getGeneralStats(timeFrame);
       return Right(result);
@@ -56,8 +58,7 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getArtistStats(
-      String artistName) async {
+  Future<Either<Failure, ArtistStats>> getArtistStats(String artistName) async {
     try {
       final result = await reader.getArtistStats(artistName);
       return Right(result);
@@ -77,8 +78,10 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Either<Failure, List<TopItem>>> getTopAlbums(TimeFrame timeFrame,
-      {int limit = 10}) async {
+  Future<Either<Failure, List<TopItem>>> getTopAlbums(
+    TimeFrame timeFrame, {
+    int limit = 10,
+  }) async {
     try {
       final result = await reader.getTopAlbums(timeFrame, limit);
       return Right(result);
@@ -88,8 +91,10 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Either<Failure, List<TopItem>>> getTopArtists(TimeFrame timeFrame,
-      {int limit = 10}) async {
+  Future<Either<Failure, List<TopItem>>> getTopArtists(
+    TimeFrame timeFrame, {
+    int limit = 10,
+  }) async {
     try {
       final result = await reader.getTopArtists(timeFrame, limit);
       return Right(result);
@@ -99,8 +104,10 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Either<Failure, List<TopItem>>> getTopGenres(TimeFrame timeFrame,
-      {int limit = 10}) async {
+  Future<Either<Failure, List<TopItem>>> getTopGenres(
+    TimeFrame timeFrame, {
+    int limit = 10,
+  }) async {
     try {
       final result = await reader.getTopGenres(timeFrame, limit);
       return Right(result);
@@ -110,8 +117,10 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Either<Failure, List<TopItem>>> getTopSongs(TimeFrame timeFrame,
-      {int limit = 10}) async {
+  Future<Either<Failure, List<TopItem>>> getTopSongs(
+    TimeFrame timeFrame, {
+    int limit = 10,
+  }) async {
     try {
       final result = await reader.getTopSongs(timeFrame, limit);
       return Right(result);
@@ -146,7 +155,7 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
       // Need to implement in Recorder/Reader. Assuming recorder has it or we add it.
       // I'll assume we need to add it to Recorder.
       // For now, I'll just mock call it, I need to add it to AnalyticsRecorder.
-      await recorder.deleteSongLogs(songId); 
+      await recorder.deleteSongLogs(songId);
       return const Right(null);
     } catch (e) {
       return Left(AnalyticsFailure('Failed to delete song analytics: $e'));
@@ -154,11 +163,15 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Either<Failure, List<PlayLog>>> getPlaybackHistory(
-      {int? limit, int? offset}) async {
+  Future<Either<Failure, List<PlayLog>>> getPlaybackHistory({
+    int? limit,
+    int? offset,
+  }) async {
     try {
-      final result =
-          await reader.getPlaybackHistory(limit: limit, offset: offset);
+      final result = await reader.getPlaybackHistory(
+        limit: limit,
+        offset: offset,
+      );
       return Right(result);
     } catch (e) {
       return Left(AnalyticsFailure('Failed to fetch playback history: $e'));
