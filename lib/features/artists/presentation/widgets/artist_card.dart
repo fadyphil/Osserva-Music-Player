@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:music_player/core/router/app_router.dart';
 import 'package:music_player/core/theme/app_pallete.dart';
+import 'package:music_player/features/analytics/domain/entities/artist_stats.dart';
 import 'package:music_player/features/artists/domain/entities/artist_entity.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -9,14 +10,14 @@ class ArtistCard extends StatelessWidget {
   final ArtistEntity artist;
 
   const ArtistCard({super.key, required this.artist});
+
   @override
   Widget build(BuildContext context) {
-    final analytics = artist.analytics;
-    final int? topSongId = analytics?['top_song_id'] as int?;
-    final int totalSeconds = analytics?['total_duration'] as int? ?? 0;
+    final ArtistStats? analytics = artist.analytics;
+    final int totalSeconds = analytics?.totalDurationSeconds ?? 0;
     final int hours = totalSeconds ~/ 3600;
-    final int sessions = analytics?['sessions'] as int? ?? 0;
-    final String? dominantTime = analytics?['dominant_time'] as String?;
+    final int sessions = analytics?.sessions ?? 0;
+    final String? dominantTime = analytics?.dominantTimeOfDay;
 
     String description = "Collection of listening memories";
     if (hours > 0) {
@@ -42,10 +43,9 @@ class ArtistCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Visual Block
             RepaintBoundary(
               child: AspectRatio(
-                aspectRatio: 1.2, // Slightly taller than square or square
+                aspectRatio: 1.2,
                 child: Container(
                   width: double.infinity,
                   clipBehavior: Clip.hardEdge,
@@ -61,12 +61,10 @@ class ArtistCard extends StatelessWidget {
                     ],
                   ),
                   child: QueryArtworkWidget(
-                    id: topSongId ?? artist.id,
+                    id: artist.id,
                     size: 800,
                     quality: 100,
-                    type: topSongId != null
-                        ? ArtworkType.AUDIO
-                        : ArtworkType.ARTIST,
+                    type: ArtworkType.ARTIST,
                     artworkFit: BoxFit.cover,
                     nullArtworkWidget: DecoratedBox(
                       decoration: BoxDecoration(
@@ -88,7 +86,6 @@ class ArtistCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            // Artist Name
             Text(
               artist.name,
               style: Theme.of(
@@ -96,7 +93,6 @@ class ArtistCard extends StatelessWidget {
               ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            // Poetic Description
             Text(
               description,
               style: Theme.of(

@@ -64,11 +64,10 @@ class ArtistDetailPage extends StatelessWidget {
                   ),
                   loaded: (songs, analytics) {
                     final int totalSeconds =
-                        analytics?['total_duration'] as int? ?? 0;
+                        analytics?.totalDurationSeconds ?? 0;
                     final int hours = totalSeconds ~/ 3600;
-                    final int sessions = analytics?['sessions'] as int? ?? 0;
-                    final String? dominantTime =
-                        analytics?['dominant_time'] as String?;
+                    final int sessions = analytics?.sessions ?? 0;
+                    final String? dominantTime = analytics?.dominantTimeOfDay;
                     final int songCount = songs.length;
 
                     String description = "Collection of listening memories";
@@ -84,6 +83,7 @@ class ArtistDetailPage extends StatelessWidget {
                             "$sessions sessions with this voice—an evolving relationship.";
                       }
                     }
+                    // ... rest of the widget tree unchanged
 
                     return SliverMainAxisGroup(
                       slivers: [
