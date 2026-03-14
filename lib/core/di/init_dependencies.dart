@@ -161,7 +161,7 @@ Future<void> initDependencies() async {
     () => AudioPlayerRepositoryImpl(serviceLocator<AudioHandler>()),
   );
 
-  serviceLocator.registerLazySingleton(
+  serviceLocator.registerFactory(
     () => MusicPlayerBloc(serviceLocator(), serviceLocator(), serviceLocator()),
   );
 
