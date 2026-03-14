@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:music_player/features/local%20music/domain/repositories/music_repository.dart';
+import 'package:music_player/features/local_music/domain/repositories/music_repository.dart';
 
 part 'home_event.dart';
 part 'home_state.dart';
@@ -10,8 +10,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final MusicRepository _musicRepository;
 
   HomeBloc({required MusicRepository musicRepository})
-      : _musicRepository = musicRepository,
-        super(const HomeState.initial()) {
+    : _musicRepository = musicRepository,
+      super(const HomeState.initial()) {
     on<_LoadHomeData>(_onLoadHomeData);
   }
 
@@ -23,17 +23,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     final result = await _musicRepository.getLocalSongs();
 
-    result.fold(
-      (failure) => emit(HomeState.failure(failure.message)),
-      (songs) {
-        final trackCount = songs.length;
-        final greeting = _getGreeting();
-        emit(HomeState.loaded(
-          trackCount: trackCount,
-          greeting: greeting,
-        ));
-      },
-    );
+    result.fold((failure) => emit(HomeState.failure(failure.message)), (songs) {
+      final trackCount = songs.length;
+      final greeting = _getGreeting();
+      emit(HomeState.loaded(trackCount: trackCount, greeting: greeting));
+    });
   }
 
   String _getGreeting() {

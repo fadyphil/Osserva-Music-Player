@@ -67,7 +67,7 @@ class AnalyticsRecorder {
       // Check last log to see if it's the same song
       final lastLogQuery = await txn.query(
         AnalyticsDatabase.tblPlaybackLogs,
-        columns: ['id', 'song_id', 'play_count'],
+        columns: ['id', 'song_id', 'play_count', 'duration_listened'],
         orderBy: 'id DESC',
         limit: 1,
       );
@@ -79,7 +79,11 @@ class AnalyticsRecorder {
       if (lastLogQuery.isNotEmpty) {
         final lastRow = lastLogQuery.first;
         final lastSongId = lastRow['song_id'] as int;
-        if (lastSongId == internalSongId) {
+        final lastTimeStamp = (lastRow['timestamp'] as int?) ?? 0;
+        final ageMs = DateTime.now().millisecondsSinceEpoch - lastTimeStamp;
+        // Only consider consecutive if same song AND within the last 10 minutes
+
+        if (lastSongId == internalSongId && ageMs < 10 * 60 * 1000) {
           isConsecutive = true;
           lastLogId = lastRow['id'] as int;
           currentPlayCount = (lastRow['play_count'] as int?) ?? 1;
@@ -87,13 +91,17 @@ class AnalyticsRecorder {
       }
 
       if (isConsecutive && lastLogId != null) {
+        final existingDuration =
+            (lastLogQuery.first['duration_listened'] as int?) ?? 0;
         // Update existing log
         await txn.update(
           AnalyticsDatabase.tblPlaybackLogs,
           {
             'timestamp': log.timestamp.millisecondsSinceEpoch,
-            'duration_listened': log
-                .durationListenedSeconds, // Update duration if needed, or maybe accumulate?
+            'duration_listened':
+                existingDuration +
+                log.durationListenedSeconds, //new comment: this accumalates the duration
+            // old comment: Update duration if needed, or maybe accumulate?
             // Usually history shows the "play" event. unique duration might vary.
             // For now simply updating timestamp and count.
             'is_completed': log.isCompleted ? 1 : 0,

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/local%20music/presentation/managers/local_music_bloc.dart';
-import 'package:music_player/features/local%20music/presentation/managers/local_music_event.dart';
-import 'package:music_player/features/local%20music/presentation/managers/local_music_state.dart';
-import 'package:music_player/features/local%20music/presentation/widgets/song_list_tile.dart';
 import 'package:music_player/features/library/presentation/widgets/library_stats_row.dart';
+import 'package:music_player/features/local_music/presentation/managers/local_music_bloc.dart';
+import 'package:music_player/features/local_music/presentation/managers/local_music_event.dart';
+import 'package:music_player/features/local_music/presentation/managers/local_music_state.dart';
+import 'package:music_player/features/local_music/presentation/widgets/song_list_tile.dart';
 
 class LibraryTracksSlivers extends StatefulWidget {
   const LibraryTracksSlivers({super.key});
@@ -65,12 +65,12 @@ class _LibraryTracksSliversState extends State<LibraryTracksSlivers> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      context
-                          .read<LocalMusicBloc>()
-                          .add(const LocalMusicEvent.getLocalSongs());
+                      context.read<LocalMusicBloc>().add(
+                        const LocalMusicEvent.getLocalSongs(),
+                      );
                     },
                     child: const Text("Retry"),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -93,8 +93,8 @@ class _LibraryTracksSliversState extends State<LibraryTracksSlivers> {
                       controller: _searchController,
                       onChanged: (query) {
                         context.read<LocalMusicBloc>().add(
-                              LocalMusicEvent.searchSongs(query),
-                            );
+                          LocalMusicEvent.searchSongs(query),
+                        );
                       },
                       style: const TextStyle(color: Colors.white, fontSize: 15),
                       decoration: InputDecoration(
@@ -109,19 +109,23 @@ class _LibraryTracksSliversState extends State<LibraryTracksSlivers> {
                         ),
                         suffixIcon: hasSearch
                             ? IconButton(
-                                icon: const Icon(Icons.close,
-                                    color: Colors.white54, size: 18),
+                                icon: const Icon(
+                                  Icons.close,
+                                  color: Colors.white54,
+                                  size: 18,
+                                ),
                                 onPressed: () {
                                   context.read<LocalMusicBloc>().add(
-                                        const LocalMusicEvent.searchSongs(''),
-                                      );
+                                    const LocalMusicEvent.searchSongs(''),
+                                  );
                                 },
                               )
                             : null,
                         filled: true,
                         fillColor: AppPallete.cardColor,
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 16),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -194,8 +198,11 @@ class _LibraryTracksSliversState extends State<LibraryTracksSlivers> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.search_off_rounded,
-                              size: 64, color: Colors.white.withValues(alpha: 0.1)),
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 64,
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
                           const SizedBox(height: 16),
                           const Text(
                             "No matching tracks found",
@@ -205,8 +212,8 @@ class _LibraryTracksSliversState extends State<LibraryTracksSlivers> {
                           TextButton(
                             onPressed: () {
                               context.read<LocalMusicBloc>().add(
-                                    const LocalMusicEvent.searchSongs(''),
-                                  );
+                                const LocalMusicEvent.searchSongs(''),
+                              );
                             },
                             child: const Text("Clear Search"),
                           ),
@@ -216,19 +223,16 @@ class _LibraryTracksSliversState extends State<LibraryTracksSlivers> {
                   )
                 else
                   SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final song = songs[index];
-                        return SongListTile(
-                          key: ValueKey(song.id),
-                          song: song,
-                          index: index,
-                          songList: songs,
-                          playCount: loadedState.playCounts[song.id] ?? 0,
-                        );
-                      },
-                      childCount: songs.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final song = songs[index];
+                      return SongListTile(
+                        key: ValueKey(song.id),
+                        song: song,
+                        index: index,
+                        songList: songs,
+                        playCount: loadedState.playCounts[song.id] ?? 0,
+                      );
+                    }, childCount: songs.length),
                   ),
 
                 // Bottom Padding for MiniPlayer

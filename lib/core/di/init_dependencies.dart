@@ -6,6 +6,7 @@ import 'package:music_player/core/router/app_router.dart';
 import 'package:music_player/features/analytics/data/datasources/analytics_aggregator.dart';
 import 'package:music_player/features/analytics/data/datasources/analytics_reader.dart';
 import 'package:music_player/features/analytics/data/datasources/analytics_recorder.dart';
+import 'package:music_player/features/analytics/data/datasources/audio_analytics_tracker.dart';
 import 'package:music_player/features/analytics/data/datasources/db/analytics_database.dart';
 import 'package:music_player/features/analytics/data/repositories/analytics_repository_impl.dart';
 import 'package:music_player/features/analytics/domain/repositories/analytics_repository.dart';
@@ -16,18 +17,18 @@ import 'package:music_player/features/analytics/domain/usecases/watch_playback_h
 import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
 import 'package:music_player/features/analytics/domain/usecases/log_playback.dart';
 import 'package:music_player/features/analytics/domain/usecases/clear_analytics.dart';
-import 'package:music_player/features/analytics/domain/services/music_analytics_service.dart';
 import 'package:music_player/features/analytics/presentation/bloc/analytics_bloc.dart';
 import 'package:music_player/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
-import 'package:music_player/features/background-notification-feature/data/datasources/audio_handler.dart';
-import 'package:music_player/features/local%20music/data/datasource/local_music_datasource.dart';
-import 'package:music_player/features/local%20music/data/repositories/music_repository_impl.dart';
-import 'package:music_player/features/local%20music/domain/repositories/music_repository.dart';
-import 'package:music_player/features/local%20music/domain/use%20cases/get_local_songs_use_case.dart';
-import 'package:music_player/features/local%20music/domain/use%20cases/get_song_by_id_use_case.dart';
-import 'package:music_player/features/local%20music/domain/usecases/delete_song.dart';
-import 'package:music_player/features/local%20music/domain/usecases/edit_song_metadata.dart';
-import 'package:music_player/features/local%20music/presentation/managers/local_music_bloc.dart';
+import 'package:music_player/features/artists/presentation/bloc/artist_details/artist_detail_bloc.dart';
+import 'package:music_player/features/background_notification/data/datasources/audio_handler.dart';
+import 'package:music_player/features/local_music/data/datasource/local_music_datasource.dart';
+import 'package:music_player/features/local_music/data/repositories/music_repository_impl.dart';
+import 'package:music_player/features/local_music/domain/repositories/music_repository.dart';
+import 'package:music_player/features/local_music/domain/usecases/delete_song.dart';
+import 'package:music_player/features/local_music/domain/usecases/edit_song_metadata.dart';
+import 'package:music_player/features/local_music/domain/usecases/usecases/get_local_songs_use_case.dart';
+import 'package:music_player/features/local_music/domain/usecases/usecases/get_song_by_id_use_case.dart';
+import 'package:music_player/features/local_music/presentation/managers/local_music_bloc.dart';
 import 'package:music_player/features/music_player/data/repos/audio_player_repository_impl.dart';
 import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
 import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
@@ -74,7 +75,6 @@ import 'package:music_player/features/artists/domain/usecases/get_artists.dart';
 import 'package:music_player/features/artists/domain/usecases/get_artist_songs.dart';
 import 'package:music_player/features/artists/domain/usecases/get_artist_analytics_stats.dart';
 import 'package:music_player/features/artists/presentation/bloc/artists/artists_bloc.dart';
-import 'package:music_player/features/artists/presentation/bloc/artist-details/artist_detail_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -103,7 +103,6 @@ Future<void> initDependencies() async {
       androidNotificationChannelName: 'Music Playback',
       androidNotificationOngoing: true,
       androidShowNotificationBadge: false,
-      androidStopForegroundOnPause: false,
     ),
   );
 
@@ -206,8 +205,12 @@ Future<void> initDependencies() async {
   );
   serviceLocator.registerLazySingleton(() => ClearAnalytics(serviceLocator()));
 
+  // Replace the MusicAnalyticsService block with this:
   serviceLocator.registerLazySingleton(
-    () => MusicAnalyticsService(serviceLocator(), serviceLocator()),
+    () => AudioAnalyticsTracker(
+      serviceLocator<AudioPlayer>(),
+      serviceLocator<LogPlayback>(),
+    ),
   );
 
   serviceLocator.registerFactory(
@@ -388,4 +391,7 @@ Future<void> initDependencies() async {
   serviceLocator.registerFactory(
     () => ArtistDetailBloc(serviceLocator(), serviceLocator()),
   );
+
+  // Initialize the tracker — must come after AudioPlayer and LogPlayback are registered
+  serviceLocator<AudioAnalyticsTracker>().init();
 }

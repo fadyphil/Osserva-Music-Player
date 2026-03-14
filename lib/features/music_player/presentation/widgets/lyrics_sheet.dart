@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
 import '../../../../core/theme/app_pallete.dart';
-import '../../../../features/local music/domain/entities/song_entity.dart';
 
 class LyricsSheet extends StatelessWidget {
   final SongEntity song;

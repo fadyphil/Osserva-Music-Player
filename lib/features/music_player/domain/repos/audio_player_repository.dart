@@ -1,4 +1,4 @@
-import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
+import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
 
 abstract class AudioPlayerRepository {
   // Actions

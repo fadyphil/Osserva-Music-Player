@@ -3,7 +3,7 @@ import 'package:music_player/core/error/failure.dart';
 import 'package:music_player/features/favorites/data/datasources/favorites_local_datasource.dart';
 import 'package:music_player/features/favorites/domain/failures/favorites_failure.dart';
 import 'package:music_player/features/favorites/domain/repositories/favorites_repository.dart';
-import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
+import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
 
 class FavoritesRepositoryImpl implements FavoritesRepository {
   final FavoritesLocalDataSource dataSource;

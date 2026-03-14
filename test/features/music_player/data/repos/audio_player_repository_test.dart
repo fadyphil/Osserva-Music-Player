@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:music_player/features/background-notification-feature/data/datasources/audio_handler.dart';
-import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
+import 'package:music_player/features/background_notification/data/datasources/audio_handler.dart';
+import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
 import 'package:music_player/features/music_player/data/repos/audio_player_repository_impl.dart';
 
 class MockAudioHandler extends Mock implements MusicPlayerHandler {}
