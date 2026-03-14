@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_player/core/usecases/usecase.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
-import 'package:music_player/features/local_music/domain/usecases/usecases/get_song_by_id_use_case.dart';
+import 'package:music_player/features/local_music/domain/usecases/get_song_by_id_use_case.dart';
 import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'music_player_event.dart';

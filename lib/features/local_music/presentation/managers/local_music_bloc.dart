@@ -1,12 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fpdart/fpdart.dart';
-import 'package:music_player/core/error/failure.dart';
 import 'package:music_player/core/usecases/usecase.dart';
 import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
 import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
 import 'package:music_player/features/local_music/domain/usecases/delete_song.dart';
 import 'package:music_player/features/local_music/domain/usecases/edit_song_metadata.dart';
-import 'package:music_player/features/local_music/domain/usecases/usecases/get_local_songs_use_case.dart';
+import 'package:music_player/features/local_music/domain/usecases/get_local_songs_use_case.dart';
 import 'package:music_player/features/local_music/presentation/managers/local_music_event.dart';
 import 'package:music_player/features/local_music/presentation/managers/local_music_state.dart';
 import 'package:stream_transform/stream_transform.dart'; // Add this package
@@ -96,13 +94,10 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
   ) async {
     emit(const LocalMusicState.loading());
 
-    final results = await Future.wait([
+    final (songsResult, countsResult) = await (
       _getLocalSongsUseCase(NoParams()),
       _getAllSongPlayCountsUseCase(NoParams()),
-    ]);
-
-    final songsResult = results[0] as Either<Failure, List<SongEntity>>;
-    final countsResult = results[1] as Either<Failure, Map<int, int>>;
+    ).wait;
 
     songsResult.fold((failure) => emit(LocalMusicState.failure(failure)), (
       songs,

@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:music_player/features/analytics/presentation/pages/analytics_dashboard_page_new.dart';
+import 'package:music_player/features/analytics/presentation/pages/analytics_dashboard_page.dart';
 import 'package:music_player/features/favorites/presentation/pages/favorites_page.dart';
 import 'package:music_player/features/home/presentation/pages/home_page.dart';
 import 'package:music_player/features/home/presentation/pages/home_dashboard_page.dart';

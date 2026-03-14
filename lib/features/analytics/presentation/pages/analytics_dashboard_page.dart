@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/features/analytics/presentation/widgets/genre_bar_chart.dart';
 import 'package:music_player/features/analytics/presentation/widgets/listening_time_chart.dart';
 import 'package:music_player/features/analytics/presentation/widgets/new_widgets/activity_by_time_card.dart';
 import 'package:music_player/features/analytics/presentation/widgets/new_widgets/genre_density_card.dart';
@@ -9,7 +8,6 @@ import 'package:music_player/features/analytics/presentation/widgets/new_widgets
 import 'package:music_player/features/analytics/presentation/widgets/new_widgets/recent_activity_card.dart';
 import 'package:music_player/features/analytics/presentation/widgets/new_widgets/temporal_distribution_chart.dart';
 import 'package:music_player/features/analytics/presentation/widgets/new_widgets/top_genres_horizontal_bar.dart';
-import 'package:music_player/features/analytics/presentation/widgets/time_of_day_chart.dart';
 import '../../../../core/di/init_dependencies.dart';
 import '../../../../core/theme/app_pallete.dart';
 import '../../domain/entities/analytics_enums.dart';
@@ -148,10 +146,10 @@ class _AnalyticsBody extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    TimeOfDayChart(
-                      distribution: data.stats.timeOfDayDistribution,
-                    ),
-                    const SizedBox(height: 16),
+                    // TimeOfDayChart(
+                    //   distribution: data.stats.timeOfDayDistribution,
+                    // ),
+                    // const SizedBox(height: 16),
                     ActivityByTimeCard(
                       distribution: data.stats.timeOfDayDistribution,
                     ),
@@ -199,8 +197,8 @@ class _AnalyticsBody extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    GenreBarChart(genres: data.topGenres),
-                    const SizedBox(height: 20),
+                    // GenreBarChart(genres: data.topGenres),
+                    // const SizedBox(height: 20),
                     TopGenresCard(genres: data.topGenres),
                   ],
                 ),
