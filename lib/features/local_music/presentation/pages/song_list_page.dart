@@ -5,19 +5,16 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/router/app_router.dart'; // Import AppRouter
+import 'package:music_player/core/di/init_dependencies.dart';
+import 'package:music_player/core/router/app_router.dart';
+import 'package:music_player/core/theme/app_pallete.dart';
+import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
+import 'package:music_player/features/local_music/presentation/managers/local_music_bloc.dart';
+import 'package:music_player/features/local_music/presentation/managers/local_music_event.dart';
 import 'package:music_player/features/local_music/presentation/managers/local_music_state.dart';
 import 'package:music_player/features/local_music/presentation/widgets/song_list_tile.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
-
-// Architecture Imports
-import '../../../../core/di/init_dependencies.dart';
-import '../../../../core/theme/app_pallete.dart';
-import '../../domain/entities/song_entity.dart';
-import '../managers/local_music_bloc.dart';
-import '../managers/local_music_event.dart';
 
 @RoutePage()
 class SongListPage extends StatefulWidget {
@@ -33,17 +30,34 @@ class _SongListPageState extends State<SongListPage>
   final TextEditingController _searchController = TextEditingController();
   static const String _sortPrefKey = 'local_songs_sort_option';
 
+  /// Held as a field so we can dispatch events from anywhere (initState,
+  /// lifecycle callbacks, sort callback) without needing context.read.
+  late final LocalMusicBloc _bloc;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _initData();
+
+    _bloc = serviceLocator<LocalMusicBloc>();
+
+    // Restore saved sort preference into _pendingSort BEFORE the load fires.
+    final prefs = serviceLocator<SharedPreferences>();
+    final savedIndex = prefs.getInt(_sortPrefKey);
+    if (savedIndex != null &&
+        savedIndex >= 0 &&
+        savedIndex < SortOption.values.length) {
+      _bloc.add(LocalMusicEvent.sortSongs(SortOption.values[savedIndex]));
+    }
+
+    _checkPermissionAndFetch();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
+    _bloc.close();
     super.dispose();
   }
 
@@ -54,69 +68,41 @@ class _SongListPageState extends State<SongListPage>
     }
   }
 
-  Future<void> _initData() async {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkPermissionAndFetch();
-    });
-  }
-
   Future<void> _checkPermissionAndFetch() async {
-    Permission permission;
     if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
-      _fetchSongs();
+      _onPermissionGranted();
       return;
     }
+
+    Permission permission;
     if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
-      if (androidInfo.version.sdkInt >= 33) {
-        permission = Permission.audio;
-      } else {
-        permission = Permission.storage;
-      }
+      permission = androidInfo.version.sdkInt >= 33
+          ? Permission.audio
+          : Permission.storage;
     } else {
       permission = Permission.mediaLibrary;
     }
 
     final status = await permission.status;
-
     if (status.isGranted) {
-      _fetchSongs();
+      _onPermissionGranted();
     } else if (status.isDenied) {
       final result = await permission.request();
-      if (result.isGranted) {
-        _fetchSongs();
-      }
+      if (result.isGranted) _onPermissionGranted();
     }
   }
 
-  void _fetchSongs() {
-    if (mounted) {
-      setState(() {
-        _hasPermission = true;
-      });
-    }
+  void _onPermissionGranted() {
+    if (!mounted) return;
+    setState(() => _hasPermission = true);
+    _bloc.add(const LocalMusicEvent.getLocalSongs());
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) {
-        final bloc = serviceLocator<LocalMusicBloc>();
-
-        // Restore sort preference
-        final prefs = serviceLocator<SharedPreferences>();
-        final savedIndex = prefs.getInt(_sortPrefKey);
-        if (savedIndex != null &&
-            savedIndex >= 0 &&
-            savedIndex < SortOption.values.length) {
-          bloc.add(LocalMusicEvent.sortSongs(SortOption.values[savedIndex]));
-        }
-
-        if (_hasPermission) {
-          bloc.add(const LocalMusicEvent.getLocalSongs());
-        }
-        return bloc;
-      },
+    return BlocProvider.value(
+      value: _bloc,
       child: Scaffold(
         backgroundColor: AppPallete.backgroundColor,
         body: Stack(
@@ -128,7 +114,6 @@ class _SongListPageState extends State<SongListPage>
                 listener: (context, state) {
                   state.mapOrNull(
                     loaded: (loadedState) {
-                      // Sync Controller if Bloc clears search (e.g. via X button logic if added later)
                       if (loadedState.searchQuery != _searchController.text) {
                         _searchController.text = loadedState.searchQuery;
                       }
@@ -148,7 +133,7 @@ class _SongListPageState extends State<SongListPage>
                       child: Padding(
                         padding: const EdgeInsets.all(24.0),
                         child: Text(
-                          "Unable to load songs.\n${failure.message}",
+                          'Unable to load songs.\n${failure.message}',
                           textAlign: TextAlign.center,
                           style: const TextStyle(color: Colors.white70),
                         ),
@@ -169,15 +154,10 @@ class _SongListPageState extends State<SongListPage>
                             totalSongs: allSongs.length,
                             searchController: _searchController,
                             onSearchChanged: (query) {
-                              context.read<LocalMusicBloc>().add(
-                                LocalMusicEvent.searchSongs(query),
-                              );
+                              _bloc.add(LocalMusicEvent.searchSongs(query));
                             },
                             onSortOptionSelected: (option) {
-                              context.read<LocalMusicBloc>().add(
-                                LocalMusicEvent.sortSongs(option),
-                              );
-                              Navigator.pop(context);
+                              _bloc.add(LocalMusicEvent.sortSongs(option));
                               serviceLocator<SharedPreferences>().setInt(
                                 _sortPrefKey,
                                 SortOption.values.indexOf(option),
@@ -196,6 +176,8 @@ class _SongListPageState extends State<SongListPage>
     );
   }
 }
+
+// ── Permission View ────────────────────────────────────────────────────────────
 
 class _PermissionRequestView extends StatelessWidget {
   final VoidCallback onGrant;
@@ -230,7 +212,7 @@ class _PermissionRequestView extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             const Text(
-              "Access Your Library",
+              'Access Your Library',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
@@ -240,7 +222,7 @@ class _PermissionRequestView extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             const Text(
-              "We need permission to scan your device for local audio files to play them.",
+              'We need permission to scan your device for local audio files to play them.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white60,
@@ -266,7 +248,7 @@ class _PermissionRequestView extends StatelessWidget {
                 ),
               ),
               child: const Text(
-                "Grant Access",
+                'Grant Access',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
@@ -274,7 +256,7 @@ class _PermissionRequestView extends StatelessWidget {
             TextButton(
               onPressed: openAppSettings,
               child: const Text(
-                "Open Settings",
+                'Open Settings',
                 style: TextStyle(color: AppPallete.grey),
               ),
             ),
@@ -284,6 +266,8 @@ class _PermissionRequestView extends StatelessWidget {
     );
   }
 }
+
+// ── Empty State ────────────────────────────────────────────────────────────────
 
 class _EmptySongState extends StatelessWidget {
   final bool isFiltered;
@@ -305,7 +289,7 @@ class _EmptySongState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              isFiltered ? "No Matches Found" : "No Songs Found",
+              isFiltered ? 'No Matches Found' : 'No Songs Found',
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 18,
@@ -315,8 +299,8 @@ class _EmptySongState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               isFiltered
-                  ? "Try adjusting your search query."
-                  : "Add some audio files to your device\nto see them here.",
+                  ? 'Try adjusting your search query.'
+                  : 'Add some audio files to your device\nto see them here.',
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white38),
             ),
@@ -326,6 +310,8 @@ class _EmptySongState extends StatelessWidget {
     );
   }
 }
+
+// ── Sliver Layout ──────────────────────────────────────────────────────────────
 
 class _SliverSongLayout extends StatelessWidget {
   const _SliverSongLayout({
@@ -372,7 +358,6 @@ class _SliverSongLayout extends StatelessWidget {
 
 class _SongListSliverItems extends StatelessWidget {
   const _SongListSliverItems({required this.songs});
-
   final List<SongEntity> songs;
 
   @override
@@ -381,7 +366,6 @@ class _SongListSliverItems extends StatelessWidget {
       delegate: SliverChildBuilderDelegate((context, index) {
         final song = songs[index];
         return SongListTile(
-          // Use public widget
           key: ValueKey(song.id),
           song: song,
           index: index,
@@ -391,6 +375,8 @@ class _SongListSliverItems extends StatelessWidget {
     );
   }
 }
+
+// ── Sliver App Bar ─────────────────────────────────────────────────────────────
 
 class _SongListSliverAppBar extends StatelessWidget {
   const _SongListSliverAppBar({
@@ -419,22 +405,17 @@ class _SongListSliverAppBar extends StatelessWidget {
 
     return SliverAppBar(
       expandedHeight: expandedHeight,
-      collapsedHeight: kToolbarHeight, // Explicitly set to avoid jumps
+      collapsedHeight: kToolbarHeight,
       pinned: true,
       stretch: true,
-      backgroundColor: Colors.transparent, // Handled by the container
-
+      backgroundColor: Colors.transparent,
       flexibleSpace: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final top = constraints.biggest.height;
-          // t represents the percentage of expansion (1.0 = fully expanded, 0.0 = collapsed)
           final t =
               ((top - collapsedHeight) / (expandedHeight - collapsedHeight))
                   .clamp(0.0, 1.0);
-
-          // Opacity for expanded content (fades out quickly)
           final contentOpacity = (t - 0.3).clamp(0.0, 1.0) / 0.7;
-          // Opacity for collapsed title (fades in at the end)
           final titleOpacity = (1.0 - t - 0.6).clamp(0.0, 0.4) / 0.4;
 
           return Container(
@@ -443,16 +424,15 @@ class _SongListSliverAppBar extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF1E2A78), // Deep Blue
-                  Color(0xFF0D1236), // Darker Blue
-                  AppPallete.backgroundColor, // Black
+                  Color(0xFF1E2A78),
+                  Color(0xFF0D1236),
+                  AppPallete.backgroundColor,
                 ],
                 stops: [0.0, 0.6, 1.0],
               ),
             ),
             child: Stack(
               children: [
-                // Expanded Content
                 Positioned(
                   top: 0,
                   left: 0,
@@ -473,7 +453,6 @@ class _SongListSliverAppBar extends StatelessWidget {
                               isSearching: isSearching,
                             ),
                             const Spacer(),
-                            // Dynamic Hero Content
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
@@ -514,7 +493,7 @@ class _SongListSliverAppBar extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
                                       const Text(
-                                        "Local Files",
+                                        'Local Files',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
@@ -524,7 +503,8 @@ class _SongListSliverAppBar extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        "$displayCount tracks ${displayCount != songsCount ? '(of $songsCount)' : '• Device Storage'}",
+                                        '$displayCount tracks '
+                                        '${displayCount != songsCount ? '(of $songsCount)' : '• Device Storage'}',
                                         style: TextStyle(
                                           color: Colors.white.withValues(
                                             alpha: 0.7,
@@ -538,29 +518,24 @@ class _SongListSliverAppBar extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 24),
-                            // Action Row
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
                                 children: [
                                   _ActionButton(
                                     icon: Icons.playlist_play_rounded,
-                                    label: "Playlists",
-                                    onTap: () {
-                                      context.router.push(
-                                        const PlaylistListRoute(),
-                                      );
-                                    },
+                                    label: 'Playlists',
+                                    onTap: () => context.router.push(
+                                      const PlaylistListRoute(),
+                                    ),
                                   ),
                                   const SizedBox(width: 12),
                                   _ActionButton(
                                     icon: Icons.favorite_rounded,
-                                    label: "Favorites",
-                                    onTap: () {
-                                      context.router.push(
-                                        const FavoritesRoute(),
-                                      );
-                                    },
+                                    label: 'Favorites',
+                                    onTap: () => context.router.push(
+                                      const FavoritesRoute(),
+                                    ),
                                   ),
                                   const SizedBox(width: 12),
                                   _ActionButton(
@@ -595,8 +570,6 @@ class _SongListSliverAppBar extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // Collapsed Title
                 Positioned(
                   bottom: 14,
                   left: 0,
@@ -604,7 +577,7 @@ class _SongListSliverAppBar extends StatelessWidget {
                   child: Opacity(
                     opacity: titleOpacity,
                     child: const Text(
-                      "Local Songs",
+                      'Local Songs',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white,
@@ -622,6 +595,8 @@ class _SongListSliverAppBar extends StatelessWidget {
     );
   }
 }
+
+// ── Sort Sheet ─────────────────────────────────────────────────────────────────
 
 class _SortBottomSheet extends StatelessWidget {
   final SortOption currentOption;
@@ -641,7 +616,7 @@ class _SortBottomSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Sort By",
+            'Sort By',
             style: TextStyle(
               color: Colors.white,
               fontSize: 20,
@@ -655,6 +630,7 @@ class _SortBottomSheet extends StatelessWidget {
               onTap: () {
                 HapticFeedback.lightImpact();
                 onOptionSelected(option);
+                Navigator.pop(context);
               },
               leading: Icon(
                 isSelected
@@ -677,6 +653,8 @@ class _SortBottomSheet extends StatelessWidget {
     );
   }
 }
+
+// ── Search Bar ─────────────────────────────────────────────────────────────────
 
 class _SearchBar extends StatelessWidget {
   final TextEditingController controller;
@@ -707,9 +685,7 @@ class _SearchBar extends StatelessWidget {
           cursorColor: AppPallete.primaryGreen,
           decoration: InputDecoration(
             isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              vertical: 11,
-            ), // Center vertically
+            contentPadding: const EdgeInsets.symmetric(vertical: 11),
             prefixIcon: Icon(
               Icons.search,
               color: Colors.white.withValues(alpha: 0.5),
@@ -740,7 +716,7 @@ class _SearchBar extends StatelessWidget {
                     },
                   )
                 : null,
-            hintText: "Find in songs...",
+            hintText: 'Find in songs...',
             hintStyle: TextStyle(
               color: Colors.white.withValues(alpha: 0.5),
               fontSize: 15,
@@ -753,6 +729,8 @@ class _SearchBar extends StatelessWidget {
     );
   }
 }
+
+// ── Action Button ──────────────────────────────────────────────────────────────
 
 class _ActionButton extends StatelessWidget {
   final IconData icon;

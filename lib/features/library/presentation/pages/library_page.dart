@@ -320,7 +320,6 @@ class _LibraryPageState extends State<LibraryPage>
   }
 
   void _showSortSheet(BuildContext context, dynamic loadedState) {
-    final bloc = context.read<LocalMusicBloc>();
     showModalBottomSheet(
       context: context,
       backgroundColor: AppPallete.surface,
@@ -332,12 +331,13 @@ class _LibraryPageState extends State<LibraryPage>
       builder: (_) => _SortBottomSheet(
         currentOption: loadedState.sortOption,
         onOptionSelected: (option) {
-          bloc.add(LocalMusicEvent.sortSongs(option));
+          if (!_bloc.isClosed) {
+            _bloc.add(LocalMusicEvent.sortSongs(option));
+          }
           serviceLocator<SharedPreferences>().setInt(
             'local_songs_sort_option',
             SortOption.values.indexOf(option),
           );
-          Navigator.pop(context);
         },
       ),
     );
@@ -610,6 +610,7 @@ class _SortBottomSheet extends StatelessWidget {
                   onTap: () {
                     HapticFeedback.lightImpact();
                     onOptionSelected(option);
+                    Navigator.pop(context);
                   },
                   leading: Icon(
                     isSelected

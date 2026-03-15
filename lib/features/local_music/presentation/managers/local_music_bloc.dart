@@ -7,9 +7,8 @@ import 'package:music_player/features/local_music/domain/usecases/edit_song_meta
 import 'package:music_player/features/local_music/domain/usecases/get_local_songs_use_case.dart';
 import 'package:music_player/features/local_music/presentation/managers/local_music_event.dart';
 import 'package:music_player/features/local_music/presentation/managers/local_music_state.dart';
-import 'package:stream_transform/stream_transform.dart'; // Add this package
+import 'package:stream_transform/stream_transform.dart';
 
-// Custom Transformer to handle Debounce (Wait 300ms)
 EventTransformer<E> debounce<E>(Duration duration) {
   return (events, mapper) {
     return events.debounce(duration).switchMap(mapper);
@@ -22,28 +21,28 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
   final DeleteSong _deleteSongUseCase;
   final EditSongMetadata _editSongMetadataUseCase;
 
+  // FIX: Sort preference not applied on first load.
+  //
+  // _onSortSongs calls state.mapOrNull(loaded: ...) which is a no-op when
+  // state is still `initial`. By storing the desired sort as a field on the
+  // bloc itself, _onGetLocalSongs picks it up regardless of dispatch order.
+  // This means the page can safely dispatch SortSongs before GetLocalSongs
+  // (to restore saved preferences) and the load will honour that choice.
+  SortOption _pendingSort = SortOption.dateAdded;
+
   LocalMusicBloc(
     this._getLocalSongsUseCase,
     this._getAllSongPlayCountsUseCase,
     this._deleteSongUseCase,
     this._editSongMetadataUseCase,
   ) : super(const LocalMusicState.initial()) {
-    // 1. Initial Load
     on<GetLocalSongs>(_onGetLocalSongs);
-
-    // 2. Search (With Debounce Transformer)
     on<SearchSongs>(
       _onSearchSongs,
       transformer: debounce(const Duration(milliseconds: 300)),
     );
-
-    // 3. Sort
     on<SortSongs>(_onSortSongs);
-
-    // 4. Delete
     on<DeleteSongEvent>(_onDeleteSong);
-
-    // 5. Edit
     on<EditSongEvent>(_onEditSong);
   }
 
@@ -53,15 +52,9 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
   ) async {
     final result = await _deleteSongUseCase(event.song);
     result.fold(
-      (failure) {
-        // Ideally show a snackbar via listener, but here we might emit failure
-        // For now, let's just log or emit failure if critical
-        emit(LocalMusicState.failure(failure));
-      },
+      (failure) => emit(LocalMusicState.failure(failure)),
       (success) {
-        if (success) {
-          add(const GetLocalSongs());
-        }
+        if (success) add(const GetLocalSongs());
       },
     );
   }
@@ -81,11 +74,12 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
         artworkBytes: event.artworkBytes,
       ),
     );
-    result.fold((failure) => emit(LocalMusicState.failure(failure)), (success) {
-      if (success) {
-        add(const GetLocalSongs());
-      }
-    });
+    result.fold(
+      (failure) => emit(LocalMusicState.failure(failure)),
+      (success) {
+        if (success) add(const GetLocalSongs());
+      },
+    );
   }
 
   Future<void> _onGetLocalSongs(
@@ -99,36 +93,36 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
       _getAllSongPlayCountsUseCase(NoParams()),
     ).wait;
 
-    songsResult.fold((failure) => emit(LocalMusicState.failure(failure)), (
-      songs,
-    ) {
-      final Map<int, int> counts = countsResult.fold(
-        (l) => <int, int>{},
-        (r) => r,
-      );
+    songsResult.fold(
+      (failure) => emit(LocalMusicState.failure(failure)),
+      (songs) {
+        final Map<int, int> counts = countsResult.fold(
+          (l) => <int, int>{},
+          (r) => r,
+        );
 
-      // Initial Process using defaults
-      final processed = _processSongs(songs, '', SortOption.dateAdded, counts);
+        // Use _pendingSort so any SortSongs dispatched before the load
+        // (e.g. restoring saved preference) is honoured.
+        final processed = _processSongs(songs, '', _pendingSort, counts);
 
-      emit(
-        LocalMusicState.loaded(
-          allSongs: songs,
-          processedSongs: processed,
-          playCounts: counts,
-          searchQuery: '',
-          sortOption: SortOption.dateAdded,
-        ),
-      );
-    });
+        emit(
+          LocalMusicState.loaded(
+            allSongs: songs,
+            processedSongs: processed,
+            playCounts: counts,
+            searchQuery: '',
+            sortOption: _pendingSort,
+          ),
+        );
+      },
+    );
   }
 
   void _onSearchSongs(SearchSongs event, Emitter<LocalMusicState> emit) {
     state.mapOrNull(
       loaded: (currentState) {
-        // 1. Set searching flag (optional, if you want to show spinner while processing)
         emit(currentState.copyWith(isSearching: true));
 
-        // 2. Process logic
         final processed = _processSongs(
           currentState.allSongs,
           event.query,
@@ -136,7 +130,6 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
           currentState.playCounts,
         );
 
-        // 3. Emit new data and turn off searching flag
         emit(
           currentState.copyWith(
             processedSongs: processed,
@@ -149,6 +142,10 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
   }
 
   void _onSortSongs(SortSongs event, Emitter<LocalMusicState> emit) {
+    // Always update _pendingSort so the preference is captured even if
+    // this fires before the initial load completes.
+    _pendingSort = event.option;
+
     state.mapOrNull(
       loaded: (currentState) {
         final processed = _processSongs(
@@ -168,14 +165,12 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
     );
   }
 
-  /// Pure Logic Helper: Filters and Sorts the list
   List<SongEntity> _processSongs(
     List<SongEntity> original,
     String query,
     SortOption sortOption,
     Map<int, int> playCounts,
   ) {
-    // A. Filter
     List<SongEntity> filtered;
     if (query.isEmpty) {
       filtered = List.of(original);
@@ -187,7 +182,6 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
       }).toList();
     }
 
-    // B. Sort
     switch (sortOption) {
       case SortOption.titleAz:
         filtered.sort(
