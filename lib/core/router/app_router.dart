@@ -6,12 +6,14 @@ import 'package:music_player/features/home/presentation/pages/home_page.dart';
 import 'package:music_player/features/home/presentation/pages/home_dashboard_page.dart';
 import 'package:music_player/features/home/presentation/pages/home_tab_shell_page.dart';
 import 'package:music_player/features/library/presentation/pages/library_page.dart';
+import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
 import 'package:music_player/features/local_music/presentation/pages/song_list_page.dart';
 import 'package:music_player/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:music_player/features/onboarding/presentation/pages/user_registration_page.dart';
 import 'package:music_player/features/playlists/presentation/pages/playlist_detail_page.dart';
 import 'package:music_player/features/playlists/presentation/pages/playlist_list_page.dart';
 import 'package:music_player/features/profile/presentation/pages/profile_page.dart';
+import 'package:music_player/features/music_player/presentation/pages/music_player_page.dart';
 import 'package:music_player/features/splash/presentation/pages/splash_page.dart';
 import 'package:music_player/features/artists/presentation/pages/artists_page.dart';
 import 'package:music_player/features/artists/presentation/pages/artist_detail_page.dart';
@@ -82,5 +84,8 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: ProfileRoute.page),
       ],
     ),
+
+    // 4. Full-Screen Player (sits ABOVE the shell so it overlays everything)
+    AutoRoute(page: MusicPlayerRoute.page),
   ];
 }
