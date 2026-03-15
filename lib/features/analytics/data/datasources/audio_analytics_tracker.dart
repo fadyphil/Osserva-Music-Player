@@ -7,8 +7,7 @@ import 'package:music_player/features/analytics/domain/entities/play_log.dart';
 import 'package:music_player/features/analytics/domain/usecases/log_playback.dart';
 
 /// Tracks analytics directly at the AudioPlayer level — below the UI layer.
-/// This runs in the same context as the AudioHandler, so it always captures
-/// playback time regardless of whether the app is foregrounded or backgrounded.
+/// Always captures playback time regardless of foreground/background state.
 class AudioAnalyticsTracker {
   final AudioPlayer _player;
   final LogPlayback _logPlayback;
@@ -21,6 +20,16 @@ class AudioAnalyticsTracker {
   int _accumulatedMs = 0;
   bool _isPlaying = false;
 
+  // FIX: Loop tracking — track last known position to detect wraparound.
+  // In LoopMode.one, just_audio silently restarts: ProcessingState.completed
+  // never fires and _onSequenceStateChanged short-circuits (same item id).
+  // The only observable signal is the position jumping from near-end back to 0.
+  Duration _lastPosition = Duration.zero;
+
+  // How close to the end (in seconds) we must be before a position reset
+  // counts as a loop rather than a manual seek-to-start.
+  static const int _loopEndThresholdSeconds = 4;
+
   AudioAnalyticsTracker(this._player, this._logPlayback);
 
   void init() {
@@ -28,6 +37,8 @@ class AudioAnalyticsTracker {
     _subs.add(_player.sequenceStateStream.listen(_onSequenceStateChanged));
     _subs.add(_player.durationStream.listen(_onDurationChanged));
     _subs.add(_player.processingStateStream.listen(_onProcessingStateChanged));
+    // Loop detection — must come after the others are registered.
+    _subs.add(_player.positionStream.listen(_onPositionChanged));
   }
 
   void _onPlayingChanged(bool isPlaying) {
@@ -49,9 +60,29 @@ class AudioAnalyticsTracker {
     }
   }
 
+  void _onPositionChanged(Duration position) {
+    // Detect loop: position was near the end of the track and has reset to the
+    // beginning while the same item is still playing. This is the only reliable
+    // signal for LoopMode.one because just_audio never emits completed.
+    final durationSec = _songDuration.inSeconds;
+    if (_isPlaying &&
+        _currentItem != null &&
+        durationSec > 0 &&
+        _lastPosition.inSeconds >= durationSec - _loopEndThresholdSeconds &&
+        position.inSeconds < _loopEndThresholdSeconds) {
+      // The song wrapped around — log the completed play, reset the clock.
+      _finalizeAndLog(_currentItem!, _songDuration, forceCompleted: true);
+      _accumulatedMs = 0;
+      _playStartTime = DateTime.now();
+    }
+    _lastPosition = position;
+  }
+
   void _onSequenceStateChanged(SequenceState? state) {
     final newItem = state?.currentSource?.tag as MediaItem?;
-    if (newItem?.id == _currentItem?.id) return; // metadata refresh, skip
+    // Same item id means a metadata refresh or the loop guard handled it —
+    // skip to avoid double-logging.
+    if (newItem?.id == _currentItem?.id) return;
 
     if (_currentItem != null) {
       _finalizeAndLog(_currentItem!, _songDuration);
@@ -60,13 +91,16 @@ class AudioAnalyticsTracker {
     _currentItem = newItem;
     _songDuration = newItem?.duration ?? Duration.zero;
     _accumulatedMs = 0;
+    _lastPosition = Duration.zero;
     _playStartTime = _isPlaying ? DateTime.now() : null;
   }
 
   void _onProcessingStateChanged(ProcessingState state) {
+    // Fires on track completion in normal (non-loop-one) playback.
     if (state == ProcessingState.completed && _currentItem != null) {
       _finalizeAndLog(_currentItem!, _songDuration, forceCompleted: true);
       _accumulatedMs = 0;
+      _lastPosition = Duration.zero;
       _playStartTime = _isPlaying ? DateTime.now() : null;
     }
   }
@@ -76,13 +110,12 @@ class AudioAnalyticsTracker {
     Duration songDuration, {
     bool forceCompleted = false,
   }) {
-    // Snapshot any ongoing session — then immediately restart the clock
-    // so the next log doesn't lose time that accrued after this finalize.
+    // Snapshot any ongoing session then restart the clock so the next play
+    // doesn't lose time that accrued after this finalize.
     if (_isPlaying && _playStartTime != null) {
-      _accumulatedMs += DateTime.now()
-          .difference(_playStartTime!)
-          .inMilliseconds;
-      _playStartTime = DateTime.now(); // restart, not null
+      _accumulatedMs +=
+          DateTime.now().difference(_playStartTime!).inMilliseconds;
+      _playStartTime = DateTime.now();
     }
 
     final listenedSeconds = (_accumulatedMs / 1000).round();
@@ -90,11 +123,17 @@ class AudioAnalyticsTracker {
 
     final now = DateTime.now();
     final hour = now.hour;
+    // FIX: Added 'evening' bucket (18:00–21:59).
+    // Previously everything from 18:00 onward collapsed into 'night',
+    // making the time-of-day chart unrepresentative for evening listeners.
+    // Buckets: morning 05–11, afternoon 12–17, evening 18–21, night 22–04.
     final timeOfDay = hour >= 5 && hour < 12
         ? 'morning'
         : hour >= 12 && hour < 18
-        ? 'afternoon'
-        : 'night';
+            ? 'afternoon'
+            : hour >= 18 && hour < 22
+                ? 'evening'
+                : 'night';
 
     final songDurationSeconds = songDuration.inSeconds;
     final isCompleted =
@@ -116,7 +155,6 @@ class AudioAnalyticsTracker {
       sessionTimeOfDay: timeOfDay,
     );
 
-    // Fire-and-forget — don't block the stream callback
     _logPlayback(playLog)
         .then(
           (_) => log('Analytics: logged "${item.title}" ${listenedSeconds}s'),
@@ -124,7 +162,6 @@ class AudioAnalyticsTracker {
         .catchError((e) => log('Analytics: failed to log "${item.title}": $e'));
   }
 
-  /// Call this when the app process is truly being killed (task removed).
   void flushAndDispose() {
     if (_currentItem != null) {
       _finalizeAndLog(_currentItem!, _songDuration);

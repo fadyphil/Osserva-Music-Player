@@ -1,16 +1,13 @@
 import 'dart:async';
 import 'dart:developer';
+import 'package:music_player/features/analytics/data/datasources/db/analytics_database.dart';
+import 'package:music_player/features/analytics/domain/entities/play_log.dart';
 import 'package:sqflite/sqflite.dart';
-
-import '../../domain/entities/play_log.dart';
-import 'db/analytics_database.dart';
 
 class AnalyticsRecorder {
   final AnalyticsDatabase _dbProvider;
   final _logController = StreamController<void>.broadcast();
 
-  // Simple in-memory cache to reduce DB reads for repetitive dimensions
-  // Key: "table_name:value_name", Value: id
   final Map<String, int> _idCache = {};
 
   AnalyticsRecorder(this._dbProvider);
@@ -21,7 +18,6 @@ class AnalyticsRecorder {
     final db = await _dbProvider.db;
 
     await db.transaction((txn) async {
-      // 1. Ensure Dimensions exist and get IDs
       int artistId = await _getOrInsertId(
         txn,
         AnalyticsDatabase.tblArtists,
@@ -38,10 +34,6 @@ class AnalyticsRecorder {
         log.genre,
       );
 
-      // 2. Ensure Song exists
-      // We check if this source_id already exists in our internal map
-      // Note: We don't cache song IDs yet as they depend on other IDs,
-      // but the dimensions are the heaviest repeated reads.
       final songQuery = await txn.query(
         AnalyticsDatabase.tblSongs,
         columns: ['id'],
@@ -63,11 +55,20 @@ class AnalyticsRecorder {
         });
       }
 
-      // 3. Insert or Update Log
-      // Check last log to see if it's the same song
+      // FIX: 'timestamp' was missing from the columns list.
+      // Without it, lastRow['timestamp'] was null → lastTimeStamp = 0 →
+      // ageMs ≈ 1.7 trillion ms → isConsecutive was ALWAYS false.
+      // Every play created a new row instead of accumulating, breaking
+      // the consecutive-listen duration rollup entirely.
       final lastLogQuery = await txn.query(
         AnalyticsDatabase.tblPlaybackLogs,
-        columns: ['id', 'song_id', 'play_count', 'duration_listened'],
+        columns: [
+          'id',
+          'song_id',
+          'play_count',
+          'duration_listened',
+          'timestamp',
+        ],
         orderBy: 'id DESC',
         limit: 1,
       );
@@ -81,7 +82,6 @@ class AnalyticsRecorder {
         final lastSongId = lastRow['song_id'] as int;
         final lastTimeStamp = (lastRow['timestamp'] as int?) ?? 0;
         final ageMs = DateTime.now().millisecondsSinceEpoch - lastTimeStamp;
-        // Only consider consecutive if same song AND within the last 10 minutes
 
         if (lastSongId == internalSongId && ageMs < 10 * 60 * 1000) {
           isConsecutive = true;
@@ -93,17 +93,11 @@ class AnalyticsRecorder {
       if (isConsecutive && lastLogId != null) {
         final existingDuration =
             (lastLogQuery.first['duration_listened'] as int?) ?? 0;
-        // Update existing log
         await txn.update(
           AnalyticsDatabase.tblPlaybackLogs,
           {
             'timestamp': log.timestamp.millisecondsSinceEpoch,
-            'duration_listened':
-                existingDuration +
-                log.durationListenedSeconds, //new comment: this accumalates the duration
-            // old comment: Update duration if needed, or maybe accumulate?
-            // Usually history shows the "play" event. unique duration might vary.
-            // For now simply updating timestamp and count.
+            'duration_listened': existingDuration + log.durationListenedSeconds,
             'is_completed': log.isCompleted ? 1 : 0,
             'time_of_day': log.sessionTimeOfDay,
             'play_count': currentPlayCount + 1,
@@ -112,7 +106,6 @@ class AnalyticsRecorder {
           whereArgs: [lastLogId],
         );
       } else {
-        // Insert new log
         await txn.insert(AnalyticsDatabase.tblPlaybackLogs, {
           'song_id': internalSongId,
           'timestamp': log.timestamp.millisecondsSinceEpoch,
