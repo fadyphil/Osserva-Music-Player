@@ -1,66 +1,80 @@
 # Osserva 🎵
 
-> **Status:** Stable (v1.0.0)  
-> **Architecture:** Feature-First Clean Architecture (DDD)  
-> **State Management:** BLoC (Business Logic Component)
+A local music player with smart listening analytics, built for Android with Flutter.
 
-## Overview
+**v1.0.0 — Early Release** | Open source | [Download APK](../../releases)
 
-This project serves as a strictly typed, production-grade reference implementation for **Clean Architecture** in Flutter. It is designed to demonstrate how to build a scalable, testable, and offline-first mobile application that survives background process termination.
+---
 
-**Key Features:**
-- **Background Audio:** Robust playback with notification controls (`audio_service` + `just_audio`).
-- **Offline-First:** Local SQLite database for analytics (`sqflite`).
-- **Granular Permissions:** Handling Android 13+ media permissions.
-- **Complex UI:** Physics-based animations and custom shaders.
+## Features
 
-## Documentation
+- Background playback with lock-screen and notification controls
+- Listening analytics — play counts, top artists/albums/genres, time-of-day 
+  distribution, and activity heatmap
+- Playlist and favorites management, fully offline
+- Artist browsing with per-artist analytics
+- Song metadata editing with custom artwork support
+- Android 13+ permission handling
 
-*   **[System Architecture](docs/architecture.md):** Deep dive into the Three-Layer Clean Architecture, DDD, and Folder Structure.
-*   **[Background Audio Feature](docs/features/background_notifications.md):** How the background service and notifications work.
-*   **[Analytics Feature](docs/features/analytics.md):** Implementation of local-first data tracking.
+## Architecture
 
-## Getting Started
+Feature-First Clean Architecture with BLoC state management. Each feature is 
+self-contained across three layers (data / domain / presentation) with its own 
+DI module.
+```
+lib/
+├── core/           # DI modules, router, theme, shared usecases
+└── features/       # analytics, artists, favorites, home, library,
+                    # local_music, music_player, onboarding,
+                    # playlists, profile, splash
+```
 
-### Prerequisites
-
-- **Flutter SDK:** Stable channel (v3.10+)
-- **Platform:** Android (min SDK 21) or iOS (min 13.0).
-
-### Installation & Run
-
-1.  **Clone and Install:**
-    ```bash
-    git clone [repository_url]
-    flutter pub get
-    ```
-
-2.  **Code Generation (Mandatory):**
-    This project uses `freezed` and `json_serializable`. You must run the build runner before launching:
-    ```bash
-    dart run build_runner build --delete-conflicting-outputs
-    ```
-
-3.  **Run Application:**
-    ```bash
-    flutter run
-    ```
+Full breakdown → [docs/architecture.md](docs/architecture.md)
 
 ## Tech Stack
 
-| Category         | Package                 |
-| :--------------- | :---------------------- |
-| **State**        | `flutter_bloc`          |
-| **DI**           | `get_it`                |
-| **Functional**   | `fpdart`                |
-| **Immutability** | `freezed`               |
-| **Database**     | `sqflite`               |
-| **Audio**        | `just_audio`            |
+| Category       | Package                                         |
+| :------------- | :---------------------------------------------- |
+| State          | `flutter_bloc ^9.1.1`                           |
+| DI             | `get_it ^9.1.1`                                 |
+| Navigation     | `auto_route ^11.0.0`                            |
+| Audio          | `just_audio ^0.10.5` + `audio_service ^0.18.18` |
+| Media Query    | `on_audio_query` (forked)                       |
+| Database       | `sqflite ^2.4.2`                                |
+| Functional     | `fpdart ^1.2.0`                                 |
+| Immutability   | `freezed ^3.2.3`                                |
+| Charts         | `fl_chart ^1.1.1`                               |
+
+## Building from Source
+
+**Requirements:** Flutter stable ≥ 3.10, Android device or emulator (min API 21)
+```bash
+git clone https://github.com/your-username/osserva.git
+cd osserva
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter run
+```
 
 ## Troubleshooting
 
-**Error:** `Missing concrete implementation of ...` or `The method ... isn't defined.`
-*   **Fix:** Run `dart run build_runner build --delete-conflicting-outputs`.
+**`Missing concrete implementation` or `isn't defined` errors**
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
 
-**Error:** `Permission denied (READ_MEDIA_AUDIO)`
-*   **Fix:** Accept the system dialog, or manually enable permissions in App Settings.
+**`Permission denied (READ_MEDIA_AUDIO)`**  
+Accept the system prompt on first launch, or go to App Settings → Permissions.
+
+**Background playback fails in a self-built release APK**  
+Ensure `android/app/src/main/res/raw/keep.xml` is present. This file prevents 
+R8 from stripping `audio_service` classes at build time.
+
+## Known Limitations
+
+- iOS is scaffolded but not tested on device
+- BLoC unit test coverage is partial
+
+## License
+
+[MIT](LICENSE)
