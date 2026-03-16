@@ -268,8 +268,9 @@ class _ListeningHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final morning = timeOfDayDistribution['morning'] ?? 0;
     final afternoon = timeOfDayDistribution['afternoon'] ?? 0;
+    final evening = timeOfDayDistribution['evening'] ?? 0; // ADD
     final night = timeOfDayDistribution['night'] ?? 0;
-    final total = morning + afternoon + night;
+    final total = morning + afternoon + evening + night; // ADD evening
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -288,7 +289,6 @@ class _ListeningHero extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Stat row
           Row(
             children: [
               _StatBlock(
@@ -306,20 +306,17 @@ class _ListeningHero extends StatelessWidget {
           ),
           if (total > 0) ...[
             const SizedBox(height: 20),
-            // Stacked time-of-day bar
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: SizedBox(
                 height: 6,
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    final morningW = total > 0
-                        ? constraints.maxWidth * morning / total
-                        : 0.0;
-                    final afternoonW = total > 0
-                        ? constraints.maxWidth * afternoon / total
-                        : 0.0;
-                    final nightW = constraints.maxWidth - morningW - afternoonW;
+                    final w = constraints.maxWidth;
+                    final morningW = w * morning / total;
+                    final afternoonW = w * afternoon / total;
+                    final eveningW = w * evening / total; // ADD
+                    final nightW = w - morningW - afternoonW - eveningW;
                     return Row(
                       children: [
                         Container(
@@ -331,6 +328,10 @@ class _ListeningHero extends StatelessWidget {
                           color: const Color(0xFF1976D2),
                         ),
                         Container(
+                          width: eveningW,
+                          color: const Color(0xFFFF7043),
+                        ), // ADD
+                        Container(
                           width: nightW,
                           color: const Color(0xFF9C27B0),
                         ),
@@ -341,15 +342,20 @@ class _ListeningHero extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Row(
+            Wrap(
+              // CHANGED: Row → Wrap
+              spacing: 16, // so it doesn't overflow
+              runSpacing: 6, // with 4 items
               children: [
                 _Dot(color: const Color(0xFFFFB300), label: 'Morning $morning'),
-                const SizedBox(width: 16),
                 _Dot(
                   color: const Color(0xFF1976D2),
                   label: 'Afternoon $afternoon',
                 ),
-                const SizedBox(width: 16),
+                _Dot(
+                  color: const Color(0xFFFF7043),
+                  label: 'Evening $evening',
+                ), // ADD
                 _Dot(color: const Color(0xFF9C27B0), label: 'Night $night'),
               ],
             ),
@@ -434,7 +440,7 @@ class _TimeFrameTabs extends StatelessWidget {
       builder: (context, state) {
         final selected = state.maybeMap(
           loaded: (s) => s.selectedTimeFrame,
-          orElse: () => TimeFrame.week,
+          orElse: () => TimeFrame.day,
         );
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,

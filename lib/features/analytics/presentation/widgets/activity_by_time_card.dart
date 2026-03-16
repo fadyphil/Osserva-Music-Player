@@ -10,16 +10,26 @@ class ActivityByTimeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final morning = distribution['morning'] ?? 0;
     final afternoon = distribution['afternoon'] ?? 0;
+    final evening = distribution['evening'] ?? 0; // ADD
     final night = distribution['night'] ?? 0;
-    final total = morning + afternoon + night;
+    final total = morning + afternoon + evening + night; // ADD evening
 
-    if (total == 0) {
-      return _emptyState();
-    }
+    if (total == 0) return _emptyState();
 
     final segments = [
-      _Segment('Morning', morning, const Color(0xFFFFB300), Icons.wb_sunny_outlined),
+      _Segment(
+        'Morning',
+        morning,
+        const Color(0xFFFFB300),
+        Icons.wb_sunny_outlined,
+      ),
       _Segment('Afternoon', afternoon, const Color(0xFF1976D2), Icons.wb_sunny),
+      _Segment(
+        'Evening',
+        evening,
+        const Color(0xFFFF7043),
+        Icons.wb_twilight,
+      ), // ADD
       _Segment('Night', night, const Color(0xFF9C27B0), Icons.nightlight_round),
     ];
 
@@ -37,17 +47,30 @@ class ActivityByTimeCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.access_time_rounded, color: Colors.blueAccent, size: 20),
+              const Icon(
+                Icons.access_time_rounded,
+                color: Colors.blueAccent,
+                size: 20,
+              ),
               const SizedBox(width: 8),
-              const Text('Activity by Time', style: TextStyle(
-                color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold,
-              )),
+              const Text(
+                'Activity by Time',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             'Peak: ${peak.label} · ${peak.count} plays · ${(peak.count / total * 100).toStringAsFixed(0)}% of total',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12, height: 1.4),
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 12,
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 28),
           Row(
@@ -67,12 +90,18 @@ class ActivityByTimeCard extends StatelessWidget {
                         Text(
                           '${(peak.count / total * 100).toStringAsFixed(0)}%',
                           style: const TextStyle(
-                            color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text(peak.label, style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5), fontSize: 10,
-                        )),
+                        Text(
+                          peak.label,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 10,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -94,13 +123,21 @@ class ActivityByTimeCard extends StatelessWidget {
                             children: [
                               Icon(seg.icon, color: seg.color, size: 14),
                               const SizedBox(width: 6),
-                              Text(seg.label, style: const TextStyle(
-                                color: Colors.white, fontSize: 13,
-                              )),
+                              Text(
+                                seg.label,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                ),
+                              ),
                               const Spacer(),
-                              Text('${seg.count}', style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.6), fontSize: 12,
-                              )),
+                              Text(
+                                '${seg.count}',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 6),
@@ -121,10 +158,12 @@ class ActivityByTimeCard extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     color: seg.color,
                                     borderRadius: BorderRadius.circular(2),
-                                    boxShadow: [BoxShadow(
-                                      color: seg.color.withValues(alpha: 0.4),
-                                      blurRadius: 4,
-                                    )],
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: seg.color.withValues(alpha: 0.4),
+                                        blurRadius: 4,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -152,9 +191,13 @@ class ActivityByTimeCard extends StatelessWidget {
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Center(
-        child: Text('No activity data yet', style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.4), fontSize: 14,
-        )),
+        child: Text(
+          'No activity data yet',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.4),
+            fontSize: 14,
+          ),
+        ),
       ),
     );
   }

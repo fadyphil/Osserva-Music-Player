@@ -51,7 +51,7 @@ class _SplashPageState extends State<SplashPage> {
           children: [
             // Logo
             Image.asset(
-                  'assets/images/app_logo.png',
+                  'assets/images/main-brighter.png',
                   width: 150,
                   height: 150,
                   fit: BoxFit.contain,
@@ -62,7 +62,7 @@ class _SplashPageState extends State<SplashPage> {
             const SizedBox(height: 24),
             // App Name
             const Text(
-                  'Spotify el 8alaba',
+                  'Observe Your Listening Habits',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
