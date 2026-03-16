@@ -239,7 +239,7 @@ class _NavigationLayoutSelector extends StatelessWidget {
           preview: const _NavPreviewSkeleton(isMinimal: true),
           onTap: () {
             context.read<ProfileBloc>().add(
-              const ProfileEvent.changeNavBarStyle(NavBarStyle.prism),
+              const ProfileEvent.changeNavBarStyle(NavBarStyle.neural),
             );
           },
         ),
