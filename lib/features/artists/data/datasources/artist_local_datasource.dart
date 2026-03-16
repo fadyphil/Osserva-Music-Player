@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:music_player/features/artists/data/models/artist_mapper.dart';
-import 'package:music_player/features/artists/domain/entities/artist_entity.dart';
-import 'package:music_player/features/local_music/data/models/song_model.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/artists/data/models/artist_mapper.dart';
+import 'package:osserva/features/artists/domain/entities/artist_entity.dart';
+import 'package:osserva/features/local_music/data/models/song_model.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 abstract class ArtistLocalDataSource {

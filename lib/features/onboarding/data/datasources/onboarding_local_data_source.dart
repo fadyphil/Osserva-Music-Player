@@ -1,5 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:music_player/features/onboarding/domain/failure/onboarding_failure.dart';
+import 'package:osserva/features/onboarding/domain/failure/onboarding_failure.dart';
 
 abstract interface class OnboardingLocalDataSource {
   Future<void> cacheFirstTimer();

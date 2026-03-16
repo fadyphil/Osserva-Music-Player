@@ -1,12 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/usecases/usecase.dart';
-import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-import 'package:music_player/features/local_music/domain/usecases/delete_song.dart';
-import 'package:music_player/features/local_music/domain/usecases/edit_song_metadata.dart';
-import 'package:music_player/features/local_music/domain/usecases/get_local_songs_use_case.dart';
-import 'package:music_player/features/local_music/presentation/managers/local_music_event.dart';
-import 'package:music_player/features/local_music/presentation/managers/local_music_state.dart';
+import 'package:osserva/core/usecases/usecase.dart';
+import 'package:osserva/features/analytics/domain/usecases/get_all_song_play_counts.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/domain/usecases/delete_song.dart';
+import 'package:osserva/features/local_music/domain/usecases/edit_song_metadata.dart';
+import 'package:osserva/features/local_music/domain/usecases/get_local_songs_use_case.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_event.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_state.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 EventTransformer<E> debounce<E>(Duration duration) {
@@ -51,12 +51,9 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
     Emitter<LocalMusicState> emit,
   ) async {
     final result = await _deleteSongUseCase(event.song);
-    result.fold(
-      (failure) => emit(LocalMusicState.failure(failure)),
-      (success) {
-        if (success) add(const GetLocalSongs());
-      },
-    );
+    result.fold((failure) => emit(LocalMusicState.failure(failure)), (success) {
+      if (success) add(const GetLocalSongs());
+    });
   }
 
   Future<void> _onEditSong(
@@ -74,12 +71,9 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
         artworkBytes: event.artworkBytes,
       ),
     );
-    result.fold(
-      (failure) => emit(LocalMusicState.failure(failure)),
-      (success) {
-        if (success) add(const GetLocalSongs());
-      },
-    );
+    result.fold((failure) => emit(LocalMusicState.failure(failure)), (success) {
+      if (success) add(const GetLocalSongs());
+    });
   }
 
   Future<void> _onGetLocalSongs(
@@ -93,29 +87,28 @@ class LocalMusicBloc extends Bloc<LocalMusicEvent, LocalMusicState> {
       _getAllSongPlayCountsUseCase(NoParams()),
     ).wait;
 
-    songsResult.fold(
-      (failure) => emit(LocalMusicState.failure(failure)),
-      (songs) {
-        final Map<int, int> counts = countsResult.fold(
-          (l) => <int, int>{},
-          (r) => r,
-        );
+    songsResult.fold((failure) => emit(LocalMusicState.failure(failure)), (
+      songs,
+    ) {
+      final Map<int, int> counts = countsResult.fold(
+        (l) => <int, int>{},
+        (r) => r,
+      );
 
-        // Use _pendingSort so any SortSongs dispatched before the load
-        // (e.g. restoring saved preference) is honoured.
-        final processed = _processSongs(songs, '', _pendingSort, counts);
+      // Use _pendingSort so any SortSongs dispatched before the load
+      // (e.g. restoring saved preference) is honoured.
+      final processed = _processSongs(songs, '', _pendingSort, counts);
 
-        emit(
-          LocalMusicState.loaded(
-            allSongs: songs,
-            processedSongs: processed,
-            playCounts: counts,
-            searchQuery: '',
-            sortOption: _pendingSort,
-          ),
-        );
-      },
-    );
+      emit(
+        LocalMusicState.loaded(
+          allSongs: songs,
+          processedSongs: processed,
+          playCounts: counts,
+          searchQuery: '',
+          sortOption: _pendingSort,
+        ),
+      );
+    });
   }
 
   void _onSearchSongs(SearchSongs event, Emitter<LocalMusicState> emit) {

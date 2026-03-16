@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:music_player/features/analytics/data/datasources/analytics_recorder.dart';
-import 'package:music_player/features/analytics/data/datasources/db/analytics_database.dart';
-import 'package:music_player/features/analytics/domain/entities/play_log.dart';
+import 'package:osserva/features/analytics/data/datasources/analytics_recorder.dart';
+import 'package:osserva/features/analytics/data/datasources/db/analytics_database.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
 
 class MockAnalyticsDatabase extends Mock implements AnalyticsDatabase {}
 

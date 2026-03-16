@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_player/features/analytics/domain/entities/play_log.dart';
-import 'package:music_player/features/home/presentation/widgets/recently_played_list.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
+import 'package:osserva/features/home/presentation/widgets/recently_played_list.dart';
 
 void main() {
   final sampleLogs = [

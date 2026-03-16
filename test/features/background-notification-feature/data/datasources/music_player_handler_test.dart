@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:music_player/features/background_notification/data/datasources/audio_handler.dart';
+import 'package:osserva/features/background_notification/data/datasources/audio_handler.dart';
 
 class MockAudioPlayer extends Mock implements AudioPlayer {}
 

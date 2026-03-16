@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:music_player/features/analytics/domain/entities/artist_stats.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/analytics/domain/entities/artist_stats.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
 
 part 'artist_detail_state.freezed.dart';
 

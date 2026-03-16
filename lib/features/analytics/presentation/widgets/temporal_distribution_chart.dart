@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:music_player/features/analytics/domain/entities/play_log.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
 
 class TemporalDistributionChart extends StatelessWidget {
   final List<PlayLog> logs;

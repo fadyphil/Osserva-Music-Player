@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/router/app_router.dart';
-import 'package:music_player/features/music_player/presentation/widgets/mini_player.dart';
-import 'package:music_player/features/profile/domain/entities/user_entity.dart';
-import 'package:music_player/features/profile/presentation/bloc/profile_bloc.dart';
-import 'package:music_player/features/home/domain/entities/home_tab.dart'; // Need HomeTab enum
+import 'package:osserva/core/router/app_router.dart';
+import 'package:osserva/features/music_player/presentation/widgets/mini_player.dart';
+import 'package:osserva/features/profile/domain/entities/user_entity.dart';
+import 'package:osserva/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:osserva/features/home/domain/entities/home_tab.dart'; // Need HomeTab enum
 
 // Import your widgets
 import '../widgets/prism_knob_navigation.dart';

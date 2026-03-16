@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/di/init_dependencies.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/playlists/presentation/bloc/playlist_bloc.dart';
-import 'package:music_player/features/library/presentation/widgets/playlist_card.dart';
+import 'package:osserva/core/di/init_dependencies.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/playlists/presentation/bloc/playlist_bloc.dart';
+import 'package:osserva/features/library/presentation/widgets/playlist_card.dart';
 
 class LibraryPlaylistsSlivers extends StatelessWidget {
   const LibraryPlaylistsSlivers({super.key});
@@ -11,8 +11,9 @@ class LibraryPlaylistsSlivers extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => serviceLocator<PlaylistBloc>()
-        ..add(const PlaylistEvent.loadPlaylists()),
+      create: (_) =>
+          serviceLocator<PlaylistBloc>()
+            ..add(const PlaylistEvent.loadPlaylists()),
       child: BlocBuilder<PlaylistBloc, PlaylistState>(
         builder: (context, state) {
           return state.map(
@@ -44,18 +45,23 @@ class LibraryPlaylistsSlivers extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
-                              color: AppPallete.cardColor,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: AppPallete.primaryColor
-                                      .withValues(alpha: 0.3),
-                                  width: 1,
-                                  style: BorderStyle.solid)),
+                            color: AppPallete.cardColor,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppPallete.primaryColor.withValues(
+                                alpha: 0.3,
+                              ),
+                              width: 1,
+                              style: BorderStyle.solid,
+                            ),
+                          ),
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.add_circle_outline,
-                                  color: AppPallete.primaryColor),
+                              Icon(
+                                Icons.add_circle_outline,
+                                color: AppPallete.primaryColor,
+                              ),
                               SizedBox(width: 8),
                               Text(
                                 "Create New Playlist",
@@ -63,7 +69,7 @@ class LibraryPlaylistsSlivers extends StatelessWidget {
                                   color: AppPallete.primaryColor,
                                   fontWeight: FontWeight.bold,
                                 ),
-                              )
+                              ),
                             ],
                           ),
                         ),
@@ -75,18 +81,15 @@ class LibraryPlaylistsSlivers extends StatelessWidget {
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final playlist = data.playlists[index];
-                          final isEven = index % 2 == 0;
-                          return PlaylistCard(
-                            playlist: playlist,
-                            activityLabel: isEven ? "Morning" : "Afternoon",
-                            timeLabel: isEven ? "7m" : "9m",
-                          );
-                        },
-                        childCount: data.playlists.length,
-                      ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final playlist = data.playlists[index];
+                        final isEven = index % 2 == 0;
+                        return PlaylistCard(
+                          playlist: playlist,
+                          activityLabel: isEven ? "Morning" : "Afternoon",
+                          timeLabel: isEven ? "7m" : "9m",
+                        );
+                      }, childCount: data.playlists.length),
                     ),
                   ),
 
@@ -110,7 +113,10 @@ class LibraryPlaylistsSlivers extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('New Playlist', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'New Playlist',
+          style: TextStyle(color: Colors.white),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -121,9 +127,11 @@ class LibraryPlaylistsSlivers extends StatelessWidget {
                 labelText: 'Name',
                 labelStyle: TextStyle(color: Colors.white54),
                 enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white24)),
+                  borderSide: BorderSide(color: Colors.white24),
+                ),
                 focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: AppPallete.primaryColor)),
+                  borderSide: BorderSide(color: AppPallete.primaryColor),
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -134,9 +142,11 @@ class LibraryPlaylistsSlivers extends StatelessWidget {
                 labelText: 'Description (Optional)',
                 labelStyle: TextStyle(color: Colors.white54),
                 enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white24)),
+                  borderSide: BorderSide(color: Colors.white24),
+                ),
                 focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: AppPallete.primaryColor)),
+                  borderSide: BorderSide(color: AppPallete.primaryColor),
+                ),
               ),
             ),
           ],
@@ -144,22 +154,30 @@ class LibraryPlaylistsSlivers extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           TextButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
-                bloc.add(PlaylistEvent.createPlaylist(
-                  name: nameCtrl.text,
-                  description: descCtrl.text,
-                ));
+                bloc.add(
+                  PlaylistEvent.createPlaylist(
+                    name: nameCtrl.text,
+                    description: descCtrl.text,
+                  ),
+                );
                 Navigator.pop(ctx);
               }
             },
-            child: const Text('Create',
-                style: TextStyle(
-                    color: AppPallete.primaryColor,
-                    fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Create',
+              style: TextStyle(
+                color: AppPallete.primaryColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -183,13 +201,20 @@ class _EmptyPlaylistsState extends StatelessWidget {
               color: AppPallete.cardColor,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.queue_music, size: 48, color: Colors.white24),
+            child: const Icon(
+              Icons.queue_music,
+              size: 48,
+              color: Colors.white24,
+            ),
           ),
           const SizedBox(height: 24),
           const Text(
             "No Playlists Yet",
             style: TextStyle(
-                color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -204,7 +229,7 @@ class _EmptyPlaylistsState extends StatelessWidget {
               foregroundColor: Colors.white,
             ),
             child: const Text("Create Playlist"),
-          )
+          ),
         ],
       ),
     );

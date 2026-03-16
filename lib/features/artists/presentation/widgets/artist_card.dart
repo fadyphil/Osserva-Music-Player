@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:music_player/core/router/app_router.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/analytics/domain/entities/artist_stats.dart';
-import 'package:music_player/features/artists/domain/entities/artist_entity.dart';
+import 'package:osserva/core/router/app_router.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/analytics/domain/entities/artist_stats.dart';
+import 'package:osserva/features/artists/domain/entities/artist_entity.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class ArtistCard extends StatelessWidget {

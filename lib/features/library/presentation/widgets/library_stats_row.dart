@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
 
 class LibraryStatsRow extends StatelessWidget {
   final int trackCount;
@@ -19,11 +19,17 @@ class LibraryStatsRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
         children: [
-          Expanded(child: _StatCard(label: "Tracks", count: trackCount)),
+          Expanded(
+            child: _StatCard(label: "Tracks", count: trackCount),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: _StatCard(label: "Artists", count: artistCount)),
+          Expanded(
+            child: _StatCard(label: "Artists", count: artistCount),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: _StatCard(label: "Albums", count: albumCount)),
+          Expanded(
+            child: _StatCard(label: "Albums", count: albumCount),
+          ),
         ],
       ),
     );

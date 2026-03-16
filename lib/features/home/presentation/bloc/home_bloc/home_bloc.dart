@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:music_player/features/local_music/domain/repositories/music_repository.dart';
+import 'package:osserva/features/local_music/domain/repositories/music_repository.dart';
 
 part 'home_event.dart';
 part 'home_state.dart';

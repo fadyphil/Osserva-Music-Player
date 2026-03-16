@@ -3,13 +3,13 @@ import 'package:flutter/services.dart';
 // import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-import 'package:music_player/features/local_music/presentation/managers/local_music_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
-import 'package:music_player/features/playlists/presentation/widgets/add_to_playlist_sheet.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/favorites/presentation/bloc/favorites_bloc.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_bloc.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_bloc.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_event.dart';
+import 'package:osserva/features/playlists/presentation/widgets/add_to_playlist_sheet.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class SongListTile extends StatelessWidget {

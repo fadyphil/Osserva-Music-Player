@@ -1,10 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:music_player/core/usecases/usecase.dart';
-import 'package:music_player/features/favorites/domain/usecases/add_favorite.dart';
-import 'package:music_player/features/favorites/domain/usecases/get_favorite_songs.dart';
-import 'package:music_player/features/favorites/domain/usecases/remove_favorite.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/core/usecases/usecase.dart';
+import 'package:osserva/features/favorites/domain/usecases/add_favorite.dart';
+import 'package:osserva/features/favorites/domain/usecases/get_favorite_songs.dart';
+import 'package:osserva/features/favorites/domain/usecases/remove_favorite.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
 
 part 'favorites_event.dart';
 part 'favorites_state.dart';

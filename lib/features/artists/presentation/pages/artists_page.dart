@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/di/init_dependencies.dart';
-import 'package:music_player/features/artists/presentation/bloc/artists/artists_bloc.dart';
-import 'package:music_player/features/artists/presentation/bloc/artists/artists_event.dart';
-import 'package:music_player/features/artists/presentation/bloc/artists/artists_state.dart';
-import 'package:music_player/features/artists/presentation/widgets/artist_card.dart';
+import 'package:osserva/core/di/init_dependencies.dart';
+import 'package:osserva/features/artists/presentation/bloc/artists/artists_bloc.dart';
+import 'package:osserva/features/artists/presentation/bloc/artists/artists_event.dart';
+import 'package:osserva/features/artists/presentation/bloc/artists/artists_state.dart';
+import 'package:osserva/features/artists/presentation/widgets/artist_card.dart';
 
 @RoutePage()
 class ArtistsPage extends StatelessWidget {

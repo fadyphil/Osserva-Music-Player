@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
-import 'package:music_player/features/analytics/data/datasources/db/analytics_database.dart';
-import 'package:music_player/features/analytics/domain/entities/play_log.dart';
+import 'package:osserva/features/analytics/data/datasources/db/analytics_database.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
 import 'package:sqflite/sqflite.dart';
 
 class AnalyticsRecorder {

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
 
 part 'music_player_event.freezed.dart';
 

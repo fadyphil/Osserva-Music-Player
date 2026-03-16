@@ -1,21 +1,21 @@
 import 'package:get_it/get_it.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:music_player/features/analytics/data/datasources/analytics_aggregator.dart';
-import 'package:music_player/features/analytics/data/datasources/analytics_reader.dart';
-import 'package:music_player/features/analytics/data/datasources/analytics_recorder.dart';
-import 'package:music_player/features/analytics/data/datasources/audio_analytics_tracker.dart';
-import 'package:music_player/features/analytics/data/datasources/db/analytics_database.dart';
-import 'package:music_player/features/analytics/data/repositories/analytics_repository_impl.dart';
-import 'package:music_player/features/analytics/domain/repositories/analytics_repository.dart';
-import 'package:music_player/features/analytics/domain/usecases/clear_analytics.dart';
-import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
-import 'package:music_player/features/analytics/domain/usecases/get_general_stats.dart';
-import 'package:music_player/features/analytics/domain/usecases/get_playback_history.dart';
-import 'package:music_player/features/analytics/domain/usecases/get_top_items.dart';
-import 'package:music_player/features/analytics/domain/usecases/log_playback.dart';
-import 'package:music_player/features/analytics/domain/usecases/watch_playback_history.dart';
-import 'package:music_player/features/analytics/presentation/bloc/analytics_bloc.dart';
-import 'package:music_player/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
+import 'package:osserva/features/analytics/data/datasources/analytics_aggregator.dart';
+import 'package:osserva/features/analytics/data/datasources/analytics_reader.dart';
+import 'package:osserva/features/analytics/data/datasources/analytics_recorder.dart';
+import 'package:osserva/features/analytics/data/datasources/audio_analytics_tracker.dart';
+import 'package:osserva/features/analytics/data/datasources/db/analytics_database.dart';
+import 'package:osserva/features/analytics/data/repositories/analytics_repository_impl.dart';
+import 'package:osserva/features/analytics/domain/repositories/analytics_repository.dart';
+import 'package:osserva/features/analytics/domain/usecases/clear_analytics.dart';
+import 'package:osserva/features/analytics/domain/usecases/get_all_song_play_counts.dart';
+import 'package:osserva/features/analytics/domain/usecases/get_general_stats.dart';
+import 'package:osserva/features/analytics/domain/usecases/get_playback_history.dart';
+import 'package:osserva/features/analytics/domain/usecases/get_top_items.dart';
+import 'package:osserva/features/analytics/domain/usecases/log_playback.dart';
+import 'package:osserva/features/analytics/domain/usecases/watch_playback_history.dart';
+import 'package:osserva/features/analytics/presentation/bloc/analytics_bloc.dart';
+import 'package:osserva/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
 
 void registerAnalyticsDependencies(GetIt sl) {
   sl.registerLazySingleton(() => AnalyticsDatabase());

@@ -3,8 +3,8 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:music_player/features/analytics/domain/entities/play_log.dart';
-import 'package:music_player/features/analytics/domain/usecases/log_playback.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
+import 'package:osserva/features/analytics/domain/usecases/log_playback.dart';
 
 /// Tracks analytics directly at the AudioPlayer level — below the UI layer.
 /// Always captures playback time regardless of foreground/background state.
@@ -113,8 +113,9 @@ class AudioAnalyticsTracker {
     // Snapshot any ongoing session then restart the clock so the next play
     // doesn't lose time that accrued after this finalize.
     if (_isPlaying && _playStartTime != null) {
-      _accumulatedMs +=
-          DateTime.now().difference(_playStartTime!).inMilliseconds;
+      _accumulatedMs += DateTime.now()
+          .difference(_playStartTime!)
+          .inMilliseconds;
       _playStartTime = DateTime.now();
     }
 
@@ -130,10 +131,10 @@ class AudioAnalyticsTracker {
     final timeOfDay = hour >= 5 && hour < 12
         ? 'morning'
         : hour >= 12 && hour < 18
-            ? 'afternoon'
-            : hour >= 18 && hour < 22
-                ? 'evening'
-                : 'night';
+        ? 'afternoon'
+        : hour >= 18 && hour < 22
+        ? 'evening'
+        : 'night';
 
     final songDurationSeconds = songDuration.inSeconds;
     final isCompleted =

@@ -1,8 +1,8 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:music_player/core/error/failure.dart';
-import 'package:music_player/core/usecases/usecase.dart';
-import 'package:music_player/features/playlists/domain/entities/playlist_entity.dart';
-import 'package:music_player/features/playlists/domain/repositories/playlist_repository.dart';
+import 'package:osserva/core/error/failure.dart';
+import 'package:osserva/core/usecases/usecase.dart';
+import 'package:osserva/features/playlists/domain/entities/playlist_entity.dart';
+import 'package:osserva/features/playlists/domain/repositories/playlist_repository.dart';
 
 class CreatePlaylist implements UseCase<PlaylistEntity, CreatePlaylistParams> {
   final PlaylistRepository repository;
@@ -10,7 +10,9 @@ class CreatePlaylist implements UseCase<PlaylistEntity, CreatePlaylistParams> {
   CreatePlaylist(this.repository);
 
   @override
-  Future<Either<Failure, PlaylistEntity>> call(CreatePlaylistParams params) async {
+  Future<Either<Failure, PlaylistEntity>> call(
+    CreatePlaylistParams params,
+  ) async {
     return await repository.createPlaylist(
       name: params.name,
       description: params.description,

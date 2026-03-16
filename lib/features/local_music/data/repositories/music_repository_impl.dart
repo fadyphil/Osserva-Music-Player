@@ -1,10 +1,10 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:music_player/core/error/failure.dart';
-import 'package:music_player/features/local_music/data/datasource/local_music_datasource.dart';
-import 'package:music_player/features/local_music/data/failures/music_failures.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-import 'package:music_player/features/local_music/domain/repositories/music_repository.dart';
-import 'package:music_player/features/local_music/domain/usecases/edit_song_metadata.dart';
+import 'package:osserva/core/error/failure.dart';
+import 'package:osserva/features/local_music/data/datasource/local_music_datasource.dart';
+import 'package:osserva/features/local_music/data/failures/music_failures.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/domain/repositories/music_repository.dart';
+import 'package:osserva/features/local_music/domain/usecases/edit_song_metadata.dart';
 
 class MusicRepositoryImpl implements MusicRepository {
   final LocalMusicDatasource _localMusicDatasource;

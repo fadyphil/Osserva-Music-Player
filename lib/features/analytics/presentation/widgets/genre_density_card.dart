@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:music_player/features/analytics/domain/entities/analytics_stats.dart';
+import 'package:osserva/features/analytics/domain/entities/analytics_stats.dart';
 
 class GenreDensityCard extends StatelessWidget {
   final List<TopItem> topGenres;
@@ -27,9 +27,15 @@ class GenreDensityCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        child: Center(child: Text('No genre data yet', style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.4), fontSize: 14,
-        ))),
+        child: Center(
+          child: Text(
+            'No genre data yet',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.4),
+              fontSize: 14,
+            ),
+          ),
+        ),
       );
     }
 
@@ -45,20 +51,33 @@ class GenreDensityCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Genre Density', style: TextStyle(
-            color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold,
-          )),
+          const Text(
+            'Genre Density',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text('Visual representation of genre dominance', style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5), fontSize: 12,
-          )),
+          Text(
+            'Visual representation of genre dominance',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 12,
+            ),
+          ),
           const SizedBox(height: 32),
           Center(
             child: SizedBox(
               width: 200,
               height: 180,
               child: CustomPaint(
-                painter: _BubblePainter(genres: genres, total: total, colors: _colors),
+                painter: _BubblePainter(
+                  genres: genres,
+                  total: total,
+                  colors: _colors,
+                ),
               ),
             ),
           ),
@@ -74,17 +93,30 @@ class GenreDensityCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Container(
-                      width: 8, height: 8,
-                      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                     const SizedBox(width: 12),
-                    Text(genre.title, style: const TextStyle(
-                      color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500,
-                    )),
+                    Text(
+                      genre.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     const Spacer(),
-                    Text('${genre.count} plays', style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.45), fontSize: 12,
-                    )),
+                    Text(
+                      '${genre.count} plays',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.45),
+                        fontSize: 12,
+                      ),
+                    ),
                     const SizedBox(width: 12),
                     SizedBox(
                       width: 36,
@@ -93,7 +125,8 @@ class GenreDensityCard extends StatelessWidget {
                         textAlign: TextAlign.right,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.85),
-                          fontSize: 12, fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
@@ -113,7 +146,11 @@ class _BubblePainter extends CustomPainter {
   final int total;
   final List<Color> colors;
 
-  const _BubblePainter({required this.genres, required this.total, required this.colors});
+  const _BubblePainter({
+    required this.genres,
+    required this.total,
+    required this.colors,
+  });
 
   // Pre-computed offsets (relative to center) for up to 5 bubbles
   static const _offsets = [

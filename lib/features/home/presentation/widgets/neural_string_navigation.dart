@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:music_player/features/home/domain/entities/home_tab.dart';
+import 'package:osserva/features/home/domain/entities/home_tab.dart';
 
 class NeuralStringNavigation extends StatefulWidget {
   final HomeTab selectedTab;
@@ -20,23 +20,24 @@ class NeuralStringNavigation extends StatefulWidget {
 class _NeuralStringNavigationState extends State<NeuralStringNavigation>
     with TickerProviderStateMixin {
   late AnimationController _waveController;
-  
+
   // Physics State
   double _pluckAmplitude = 0.0;
   double _pluckTargetX = 0.5; // Normalized 0..1
-  
+
   @override
   void initState() {
     super.initState();
-    _waveController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2), // Long tail resonance
-    )..addListener(() {
-        setState(() {
-          // Dampen the amplitude over time
-          _pluckAmplitude *= 0.92;
+    _waveController =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(seconds: 2), // Long tail resonance
+        )..addListener(() {
+          setState(() {
+            // Dampen the amplitude over time
+            _pluckAmplitude *= 0.92;
+          });
         });
-      });
   }
 
   @override
@@ -62,15 +63,15 @@ class _NeuralStringNavigationState extends State<NeuralStringNavigation>
   double _getTabPosition(HomeTab tab) {
     switch (tab) {
       case HomeTab.songs:
-        return 0.1; 
+        return 0.1;
       case HomeTab.library:
         return 0.3;
       case HomeTab.artists:
         return 0.5;
       case HomeTab.analytics:
-        return 0.7; 
+        return 0.7;
       case HomeTab.profile:
-        return 0.9; 
+        return 0.9;
     }
   }
 
@@ -86,7 +87,7 @@ class _NeuralStringNavigationState extends State<NeuralStringNavigation>
   Widget build(BuildContext context) {
     // Cyberpunk / Synthwave Palette
     final primaryColor = Theme.of(context).colorScheme.primary;
-    
+
     return SizedBox(
       height: 100,
       child: Stack(
@@ -165,8 +166,8 @@ class _HoloIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected 
-        ? Theme.of(context).colorScheme.primary 
+    final color = isSelected
+        ? Theme.of(context).colorScheme.primary
         : Colors.white.withValues(alpha: 0.3);
 
     return GestureDetector(
@@ -189,15 +190,11 @@ class _HoloIcon extends StatelessWidget {
                           color: color.withValues(alpha: 0.6),
                           blurRadius: 20,
                           spreadRadius: -5,
-                        )
+                        ),
                       ]
                     : [],
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 28,
-              ),
+              child: Icon(icon, color: color, size: 28),
             ),
             const SizedBox(height: 8),
             // Glitch Text Effect
@@ -210,12 +207,7 @@ class _HoloIcon extends StatelessWidget {
                 color: color,
                 fontWeight: isSelected ? FontWeight.w900 : FontWeight.w300,
                 shadows: isSelected
-                    ? [
-                        Shadow(
-                          color: color,
-                          blurRadius: 8,
-                        )
-                      ]
+                    ? [Shadow(color: color, blurRadius: 8)]
                     : [],
               ),
               child: Text(label),
@@ -250,30 +242,32 @@ class _StringPainter extends CustomPainter {
 
     final path = Path();
     final width = size.width;
-    final centerY = 15.0; // Moved to the top of the 100px height for the nav bar
+    final centerY =
+        15.0; // Moved to the top of the 100px height for the nav bar
 
     path.moveTo(0, centerY);
 
     // Resolution of simulation
     const int segments = 100;
-    
+
     for (int i = 0; i <= segments; i++) {
       final xRatio = i / segments;
       final x = width * xRatio;
-      
+
       // Physics: Gaussian function centered at targetX multiplied by Sine wave
       // creating a localized standing wave pulse
       final dist = (xRatio - targetX).abs();
-      
+
       // Bell curve width (how wide the wave spreads)
-      final spread = 0.15; 
+      final spread = 0.15;
       final gaussian = math.exp(-(dist * dist) / (2 * spread * spread));
-      
+
       // Oscillation
       final wave = math.sin(time) * amplitude * gaussian;
-      
+
       // Secondary harmonics for realism (string timbre)
-      final harmonic = math.sin(time * 2.5 + xRatio * 10) * (amplitude * 0.2) * gaussian;
+      final harmonic =
+          math.sin(time * 2.5 + xRatio * 10) * (amplitude * 0.2) * gaussian;
 
       path.lineTo(x, centerY - wave - harmonic);
     }
@@ -284,7 +278,7 @@ class _StringPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6.0
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-      
+
     canvas.drawPath(path, glowPaint);
     canvas.drawPath(path, paint);
   }

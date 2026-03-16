@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:music_player/features/favorites/domain/repositories/favorites_repository.dart';
-import 'package:music_player/features/favorites/domain/usecases/add_favorite.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/favorites/domain/repositories/favorites_repository.dart';
+import 'package:osserva/features/favorites/domain/usecases/add_favorite.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
 
 class MockFavoritesRepository extends Mock implements FavoritesRepository {}
 

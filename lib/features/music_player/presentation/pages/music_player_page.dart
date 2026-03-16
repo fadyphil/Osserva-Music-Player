@@ -1,17 +1,17 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-import 'package:music_player/features/local_music/presentation/managers/local_music_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_state.dart';
-import 'package:music_player/features/music_player/presentation/widgets/lyrics_sheet.dart';
-import 'package:music_player/features/music_player/presentation/widgets/queue_sheet.dart';
-import 'package:music_player/features/music_player/presentation/widgets/sleep_timer_sheet.dart';
-import 'package:music_player/features/playlists/presentation/widgets/add_to_playlist_sheet.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/favorites/presentation/bloc/favorites_bloc.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_bloc.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_bloc.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_event.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_state.dart';
+import 'package:osserva/features/music_player/presentation/widgets/lyrics_sheet.dart';
+import 'package:osserva/features/music_player/presentation/widgets/queue_sheet.dart';
+import 'package:osserva/features/music_player/presentation/widgets/sleep_timer_sheet.dart';
+import 'package:osserva/features/playlists/presentation/widgets/add_to_playlist_sheet.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 @RoutePage()

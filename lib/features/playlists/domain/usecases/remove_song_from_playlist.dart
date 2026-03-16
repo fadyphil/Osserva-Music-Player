@@ -1,16 +1,22 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:music_player/core/error/failure.dart';
-import 'package:music_player/core/usecases/usecase.dart';
-import 'package:music_player/features/playlists/domain/repositories/playlist_repository.dart';
+import 'package:osserva/core/error/failure.dart';
+import 'package:osserva/core/usecases/usecase.dart';
+import 'package:osserva/features/playlists/domain/repositories/playlist_repository.dart';
 
-class RemoveSongFromPlaylist implements UseCase<void, RemoveSongFromPlaylistParams> {
+class RemoveSongFromPlaylist
+    implements UseCase<void, RemoveSongFromPlaylistParams> {
   final PlaylistRepository repository;
 
   RemoveSongFromPlaylist(this.repository);
 
   @override
-  Future<Either<Failure, void>> call(RemoveSongFromPlaylistParams params) async {
-    return await repository.removeSongFromPlaylist(params.playlistId, params.songId);
+  Future<Either<Failure, void>> call(
+    RemoveSongFromPlaylistParams params,
+  ) async {
+    return await repository.removeSongFromPlaylist(
+      params.playlistId,
+      params.songId,
+    );
   }
 }
 
@@ -18,5 +24,8 @@ class RemoveSongFromPlaylistParams {
   final int playlistId;
   final int songId;
 
-  RemoveSongFromPlaylistParams({required this.playlistId, required this.songId});
+  RemoveSongFromPlaylistParams({
+    required this.playlistId,
+    required this.songId,
+  });
 }

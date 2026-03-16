@@ -1,12 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:music_player/core/usecases/usecase.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-import 'package:music_player/features/playlists/domain/entities/playlist_entity.dart';
-import 'package:music_player/features/playlists/domain/usecases/add_song_to_playlist.dart'; // Import
-import 'package:music_player/features/playlists/domain/usecases/create_playlist.dart';
-import 'package:music_player/features/playlists/domain/usecases/delete_playlist.dart';
-import 'package:music_player/features/playlists/domain/usecases/get_playlists.dart';
+import 'package:osserva/core/usecases/usecase.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/playlists/domain/entities/playlist_entity.dart';
+import 'package:osserva/features/playlists/domain/usecases/add_song_to_playlist.dart'; // Import
+import 'package:osserva/features/playlists/domain/usecases/create_playlist.dart';
+import 'package:osserva/features/playlists/domain/usecases/delete_playlist.dart';
+import 'package:osserva/features/playlists/domain/usecases/get_playlists.dart';
 
 part 'playlist_event.dart';
 part 'playlist_state.dart';

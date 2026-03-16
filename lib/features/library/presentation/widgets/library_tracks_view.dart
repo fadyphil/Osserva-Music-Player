@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/library/presentation/widgets/library_stats_row.dart';
-import 'package:music_player/features/local_music/presentation/managers/local_music_bloc.dart';
-import 'package:music_player/features/local_music/presentation/managers/local_music_event.dart';
-import 'package:music_player/features/local_music/presentation/managers/local_music_state.dart';
-import 'package:music_player/features/local_music/presentation/widgets/song_list_tile.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/library/presentation/widgets/library_stats_row.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_bloc.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_event.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_state.dart';
+import 'package:osserva/features/local_music/presentation/widgets/song_list_tile.dart';
 
 class LibraryTracksSlivers extends StatefulWidget {
   const LibraryTracksSlivers({super.key});

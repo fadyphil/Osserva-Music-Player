@@ -1,8 +1,8 @@
-import 'package:music_player/features/analytics/data/datasources/db/analytics_database.dart';
-import 'package:music_player/features/analytics/domain/entities/analytics_enums.dart';
-import 'package:music_player/features/analytics/domain/entities/analytics_stats.dart';
-import 'package:music_player/features/analytics/domain/entities/artist_stats.dart';
-import 'package:music_player/features/analytics/domain/entities/play_log.dart';
+import 'package:osserva/features/analytics/data/datasources/db/analytics_database.dart';
+import 'package:osserva/features/analytics/domain/entities/analytics_enums.dart';
+import 'package:osserva/features/analytics/domain/entities/analytics_stats.dart';
+import 'package:osserva/features/analytics/domain/entities/artist_stats.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
 
 class AnalyticsReader {
   final AnalyticsDatabase _dbProvider;

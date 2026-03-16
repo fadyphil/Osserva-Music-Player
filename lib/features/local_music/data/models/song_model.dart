@@ -1,4 +1,4 @@
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
 import 'package:on_audio_query/on_audio_query.dart' as lib;
 
 class SongMapper {

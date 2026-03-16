@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:music_player/features/home/domain/entities/home_tab.dart';
+import 'package:osserva/features/home/domain/entities/home_tab.dart';
 
 class PrismKnobNavigation extends StatefulWidget {
   final HomeTab selectedTab;

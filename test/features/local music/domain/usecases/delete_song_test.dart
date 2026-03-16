@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:music_player/features/analytics/domain/repositories/analytics_repository.dart';
-import 'package:music_player/features/local_music/data/failures/music_failures.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-import 'package:music_player/features/local_music/domain/repositories/music_repository.dart';
-import 'package:music_player/features/local_music/domain/usecases/delete_song.dart';
-import 'package:music_player/features/playlists/domain/repositories/playlist_repository.dart';
+import 'package:osserva/features/analytics/domain/repositories/analytics_repository.dart';
+import 'package:osserva/features/local_music/data/failures/music_failures.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/domain/repositories/music_repository.dart';
+import 'package:osserva/features/local_music/domain/usecases/delete_song.dart';
+import 'package:osserva/features/playlists/domain/repositories/playlist_repository.dart';
 
 class MockMusicRepository extends Mock implements MusicRepository {}
 

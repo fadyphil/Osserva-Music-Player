@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music_player/features/analytics/domain/entities/play_log.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
 
 class HeatmapCard extends StatelessWidget {
   final List<PlayLog> logs;

@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/di/init_dependencies.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/playlists/domain/entities/playlist_entity.dart';
-import 'package:music_player/features/playlists/presentation/bloc/playlist_detail_bloc.dart';
+import 'package:osserva/core/di/init_dependencies.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/playlists/domain/entities/playlist_entity.dart';
+import 'package:osserva/features/playlists/presentation/bloc/playlist_detail_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 @RoutePage()
@@ -16,7 +16,9 @@ class PlaylistDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => serviceLocator<PlaylistDetailBloc>()..add(PlaylistDetailEvent.loadPlaylistDetail(playlist)),
+      create: (_) =>
+          serviceLocator<PlaylistDetailBloc>()
+            ..add(PlaylistDetailEvent.loadPlaylistDetail(playlist)),
       child: Scaffold(
         backgroundColor: AppPallete.backgroundColor,
         body: BlocBuilder<PlaylistDetailBloc, PlaylistDetailState>(
@@ -28,7 +30,7 @@ class PlaylistDetailPage extends StatelessWidget {
               loaded: (data) {
                 final currentPlaylist = data.playlist;
                 final songs = data.songs;
-                
+
                 return CustomScrollView(
                   slivers: [
                     SliverAppBar(
@@ -45,7 +47,11 @@ class PlaylistDetailPage extends StatelessWidget {
                             : Container(
                                 color: Colors.grey[900],
                                 child: const Center(
-                                  child: Icon(Icons.music_note, size: 80, color: Colors.white24),
+                                  child: Icon(
+                                    Icons.music_note,
+                                    size: 80,
+                                    color: Colors.white24,
+                                  ),
                                 ),
                               ),
                       ),
@@ -53,7 +59,7 @@ class PlaylistDetailPage extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.edit),
                           onPressed: () {
-                             _showEditDialog(context, currentPlaylist);
+                            _showEditDialog(context, currentPlaylist);
                           },
                         ),
                       ],
@@ -69,47 +75,50 @@ class PlaylistDetailPage extends StatelessWidget {
                       )
                     else
                       SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final song = songs[index];
-                            return ListTile(
-                              leading: QueryArtworkWidget(
-                                id: song.id,
-                                type: ArtworkType.AUDIO,
-                                nullArtworkWidget: Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[800],
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Icon(Icons.music_note, color: Colors.white54),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final song = songs[index];
+                          return ListTile(
+                            leading: QueryArtworkWidget(
+                              id: song.id,
+                              type: ArtworkType.AUDIO,
+                              nullArtworkWidget: Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[800],
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Icon(
+                                  Icons.music_note,
+                                  color: Colors.white54,
                                 ),
                               ),
-                              title: Text(
-                                song.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.white),
+                            ),
+                            title: Text(
+                              song.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              song.artist,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white54),
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(
+                                Icons.remove_circle_outline,
+                                color: Colors.redAccent,
                               ),
-                              subtitle: Text(
-                                song.artist,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.white54),
-                              ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent),
-                                onPressed: () {
-                                  context.read<PlaylistDetailBloc>().add(
-                                    PlaylistDetailEvent.removeSong(song.id),
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                          childCount: songs.length,
-                        ),
+                              onPressed: () {
+                                context.read<PlaylistDetailBloc>().add(
+                                  PlaylistDetailEvent.removeSong(song.id),
+                                );
+                              },
+                            ),
+                          );
+                        }, childCount: songs.length),
                       ),
                   ],
                 );
@@ -130,7 +139,10 @@ class PlaylistDetailPage extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('Edit Playlist', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Edit Playlist',
+          style: TextStyle(color: Colors.white),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -147,14 +159,19 @@ class PlaylistDetailPage extends StatelessWidget {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () {
-              bloc.add(PlaylistDetailEvent.editPlaylist(
-                name: nameCtrl.text,
-                description: descCtrl.text,
-                imagePath: playlist.imagePath,
-              ));
+              bloc.add(
+                PlaylistDetailEvent.editPlaylist(
+                  name: nameCtrl.text,
+                  description: descCtrl.text,
+                  imagePath: playlist.imagePath,
+                ),
+              );
               Navigator.pop(ctx);
             },
             child: const Text('Save'),

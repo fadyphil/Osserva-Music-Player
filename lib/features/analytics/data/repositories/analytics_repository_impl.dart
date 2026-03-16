@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:fpdart/fpdart.dart';
-import 'package:music_player/features/analytics/domain/entities/artist_stats.dart';
+import 'package:osserva/features/analytics/domain/entities/artist_stats.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/entities/analytics_enums.dart';
 import '../../domain/entities/analytics_stats.dart';

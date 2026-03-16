@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:music_player/core/error/failure.dart';
+import 'package:osserva/core/error/failure.dart';
 
 part 'music_failures.freezed.dart';
 

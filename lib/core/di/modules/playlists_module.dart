@@ -1,16 +1,16 @@
 import 'package:get_it/get_it.dart';
-import 'package:music_player/features/playlists/data/datasources/playlist_local_datasource.dart';
-import 'package:music_player/features/playlists/data/repositories/playlist_repository_impl.dart';
-import 'package:music_player/features/playlists/domain/repositories/playlist_repository.dart';
-import 'package:music_player/features/playlists/domain/usecases/add_song_to_playlist.dart';
-import 'package:music_player/features/playlists/domain/usecases/create_playlist.dart';
-import 'package:music_player/features/playlists/domain/usecases/delete_playlist.dart';
-import 'package:music_player/features/playlists/domain/usecases/edit_playlist.dart';
-import 'package:music_player/features/playlists/domain/usecases/get_playlist_songs.dart';
-import 'package:music_player/features/playlists/domain/usecases/get_playlists.dart';
-import 'package:music_player/features/playlists/domain/usecases/remove_song_from_playlist.dart';
-import 'package:music_player/features/playlists/presentation/bloc/playlist_bloc.dart';
-import 'package:music_player/features/playlists/presentation/bloc/playlist_detail_bloc.dart';
+import 'package:osserva/features/playlists/data/datasources/playlist_local_datasource.dart';
+import 'package:osserva/features/playlists/data/repositories/playlist_repository_impl.dart';
+import 'package:osserva/features/playlists/domain/repositories/playlist_repository.dart';
+import 'package:osserva/features/playlists/domain/usecases/add_song_to_playlist.dart';
+import 'package:osserva/features/playlists/domain/usecases/create_playlist.dart';
+import 'package:osserva/features/playlists/domain/usecases/delete_playlist.dart';
+import 'package:osserva/features/playlists/domain/usecases/edit_playlist.dart';
+import 'package:osserva/features/playlists/domain/usecases/get_playlist_songs.dart';
+import 'package:osserva/features/playlists/domain/usecases/get_playlists.dart';
+import 'package:osserva/features/playlists/domain/usecases/remove_song_from_playlist.dart';
+import 'package:osserva/features/playlists/presentation/bloc/playlist_bloc.dart';
+import 'package:osserva/features/playlists/presentation/bloc/playlist_detail_bloc.dart';
 
 void registerPlaylistsDependencies(GetIt sl) {
   sl.registerLazySingleton<PlaylistLocalDataSource>(

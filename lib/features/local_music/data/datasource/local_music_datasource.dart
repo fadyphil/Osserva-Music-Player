@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:audiotags/audiotags.dart';
 import 'package:media_store_plus/media_store_plus.dart';
-import 'package:music_player/features/local_music/data/models/song_model.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/data/models/song_model.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
 

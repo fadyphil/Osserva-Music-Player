@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:music_player/features/analytics/domain/entities/play_log.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
 
 class RecentActivityCard extends StatelessWidget {
   final List<PlayLog> logs;
@@ -12,7 +12,8 @@ class RecentActivityCard extends StatelessWidget {
     final Map<String, int> dateMap = {};
     for (final log in logs) {
       final t = log.timestamp;
-      final key = '${t.year}-${t.month.toString().padLeft(2, '0')}-${t.day.toString().padLeft(2, '0')}';
+      final key =
+          '${t.year}-${t.month.toString().padLeft(2, '0')}-${t.day.toString().padLeft(2, '0')}';
       dateMap[key] = (dateMap[key] ?? 0) + 1;
     }
 
@@ -21,7 +22,8 @@ class RecentActivityCard extends StatelessWidget {
 
     return List.generate(7, (i) {
       final date = today.subtract(Duration(days: 6 - i));
-      final key = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final key =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
       return _DayActivity(
         dateLabel: date.day.toString(),
         dayName: dayNames[date.weekday - 1],
@@ -48,15 +50,28 @@ class RecentActivityCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.calendar_today_rounded, color: Colors.orangeAccent, size: 20),
+              const Icon(
+                Icons.calendar_today_rounded,
+                color: Colors.orangeAccent,
+                size: 20,
+              ),
               const SizedBox(width: 8),
-              const Text('Recent Activity', style: TextStyle(
-                color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold,
-              )),
+              const Text(
+                'Recent Activity',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const Spacer(),
-              Text('Last 7 days', style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.4), fontSize: 11,
-              )),
+              Text(
+                'Last 7 days',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontSize: 11,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -64,9 +79,13 @@ class RecentActivityCard extends StatelessWidget {
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Text('No plays in the last 7 days', style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4), fontSize: 13,
-                )),
+                child: Text(
+                  'No plays in the last 7 days',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 13,
+                  ),
+                ),
               ),
             )
           else
@@ -78,7 +97,9 @@ class RecentActivityCard extends StatelessWidget {
 
   Widget _buildDayRow(_DayActivity day, int maxPlays) {
     final pct = maxPlays > 0 ? day.plays / maxPlays : 0.0;
-    final barColor = day.isToday ? Colors.orangeAccent : Colors.orangeAccent.withValues(alpha: 0.6);
+    final barColor = day.isToday
+        ? Colors.orangeAccent
+        : Colors.orangeAccent.withValues(alpha: 0.6);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -89,16 +110,25 @@ class RecentActivityCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(day.dayName, style: TextStyle(
-                  color: day.isToday
-                      ? Colors.orangeAccent
-                      : Colors.white.withValues(alpha: 0.5),
-                  fontSize: 11,
-                )),
-                Text(day.dateLabel, style: TextStyle(
-                  color: day.isToday ? Colors.white : Colors.white.withValues(alpha: 0.8),
-                  fontSize: 13, fontWeight: FontWeight.bold,
-                )),
+                Text(
+                  day.dayName,
+                  style: TextStyle(
+                    color: day.isToday
+                        ? Colors.orangeAccent
+                        : Colors.white.withValues(alpha: 0.5),
+                    fontSize: 11,
+                  ),
+                ),
+                Text(
+                  day.dateLabel,
+                  style: TextStyle(
+                    color: day.isToday
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.8),
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
@@ -122,10 +152,13 @@ class RecentActivityCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: barColor,
                         borderRadius: BorderRadius.circular(4),
-                        boxShadow: [BoxShadow(
-                          color: barColor.withValues(alpha: 0.35),
-                          blurRadius: 6, offset: const Offset(0, 2),
-                        )],
+                        boxShadow: [
+                          BoxShadow(
+                            color: barColor.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                     ),
                   ),

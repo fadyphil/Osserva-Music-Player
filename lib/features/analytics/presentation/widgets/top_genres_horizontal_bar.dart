@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music_player/features/analytics/domain/entities/analytics_stats.dart';
+import 'package:osserva/features/analytics/domain/entities/analytics_stats.dart';
 
 class TopGenresCard extends StatelessWidget {
   final List<TopItem> genres;
@@ -24,9 +24,15 @@ class TopGenresCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        child: Center(child: Text('No genre data yet', style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.4), fontSize: 14,
-        ))),
+        child: Center(
+          child: Text(
+            'No genre data yet',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.4),
+              fontSize: 14,
+            ),
+          ),
+        ),
       );
     }
 
@@ -36,8 +42,11 @@ class TopGenresCard extends StatelessWidget {
     // Build a short insight string
     String insight = '';
     if (topGenres.length >= 2) {
-      final top2Pct = ((topGenres[0].count + topGenres[1].count) / totalPlays * 100).toStringAsFixed(0);
-      insight = '${topGenres[0].title} & ${topGenres[1].title} dominate ($top2Pct% combined).';
+      final top2Pct =
+          ((topGenres[0].count + topGenres[1].count) / totalPlays * 100)
+              .toStringAsFixed(0);
+      insight =
+          '${topGenres[0].title} & ${topGenres[1].title} dominate ($top2Pct% combined).';
     }
 
     return Container(
@@ -52,18 +61,32 @@ class TopGenresCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.bar_chart_rounded, color: Colors.purpleAccent, size: 20),
+              const Icon(
+                Icons.bar_chart_rounded,
+                color: Colors.purpleAccent,
+                size: 20,
+              ),
               const SizedBox(width: 8),
-              const Text('Top Genres', style: TextStyle(
-                color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold,
-              )),
+              const Text(
+                'Top Genres',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           if (insight.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(insight, style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.5), fontSize: 12, height: 1.4,
-            )),
+            Text(
+              insight,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 12,
+                height: 1.4,
+              ),
+            ),
           ],
           const SizedBox(height: 24),
           ...topGenres.asMap().entries.map((entry) {
@@ -79,21 +102,32 @@ class TopGenresCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(genre.title, style: const TextStyle(
-                        color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500,
-                      )),
+                      Text(
+                        genre.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                       Row(
                         children: [
                           Text(
                             '${(pct * 100).toStringAsFixed(0)}%',
                             style: const TextStyle(
-                              color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Text('${genre.count} plays', style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.45), fontSize: 12,
-                          )),
+                          Text(
+                            '${genre.count} plays',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.45),
+                              fontSize: 12,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -102,7 +136,8 @@ class TopGenresCard extends StatelessWidget {
                   Stack(
                     children: [
                       Container(
-                        height: 6, width: double.infinity,
+                        height: 6,
+                        width: double.infinity,
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(3),
@@ -115,10 +150,13 @@ class TopGenresCard extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: color,
                             borderRadius: BorderRadius.circular(3),
-                            boxShadow: [BoxShadow(
-                              color: color.withValues(alpha: 0.4),
-                              blurRadius: 6, offset: const Offset(0, 2),
-                            )],
+                            boxShadow: [
+                              BoxShadow(
+                                color: color.withValues(alpha: 0.4),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                         ),
                       ),

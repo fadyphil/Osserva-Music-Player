@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:music_player/core/error/failure.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/core/error/failure.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
 part 'local_music_state.freezed.dart';
 
 enum SortOption {

@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-import 'package:music_player/features/local_music/presentation/managers/local_music_state.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_state.dart';
 part 'local_music_event.freezed.dart';
 
 @freezed

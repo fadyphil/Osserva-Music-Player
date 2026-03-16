@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:music_player/features/playlists/data/models/playlist_model.dart';
+import 'package:osserva/features/playlists/data/models/playlist_model.dart';
 
 abstract class PlaylistLocalDataSource {
   Future<PlaylistModel> createPlaylist({
@@ -231,7 +231,9 @@ class PlaylistLocalDataSourceImpl implements PlaylistLocalDataSource {
     );
 
     if (affectedPlaylists.isNotEmpty) {
-      final playlistIds = affectedPlaylists.map((e) => e['playlist_id'] as int).toSet();
+      final playlistIds = affectedPlaylists
+          .map((e) => e['playlist_id'] as int)
+          .toSet();
 
       await database.delete(
         _tablePlaylistSongs,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_player/features/analytics/domain/entities/play_log.dart';
-import 'package:music_player/features/home/presentation/widgets/quick_resume_grid.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
+import 'package:osserva/features/home/presentation/widgets/quick_resume_grid.dart';
 
 void main() {
   final sampleLogs = [
@@ -35,10 +35,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: QuickResumeGrid(
-            songs: sampleLogs,
-            onPlay: (_) {},
-          ),
+          body: QuickResumeGrid(songs: sampleLogs, onPlay: (_) {}),
         ),
       ),
     );

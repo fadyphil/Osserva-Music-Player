@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
-import 'package:music_player/features/favorites/presentation/widgets/favorite_button.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/favorites/presentation/bloc/favorites_bloc.dart';
+import 'package:osserva/features/favorites/presentation/widgets/favorite_button.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_bloc.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_event.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 @RoutePage()
@@ -17,7 +17,7 @@ class FavoritesPage extends StatelessWidget {
     // Note: FavoritesBloc is provided globally in main.dart, so we can just read it.
     // However, if we want to ensure it refreshes when entering this page, we might want to trigger load.
     // But it's already reactive.
-    
+
     return Scaffold(
       backgroundColor: AppPallete.backgroundColor,
       appBar: AppBar(
@@ -36,7 +36,11 @@ class FavoritesPage extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.favorite_border, size: 64, color: Colors.white24),
+                      Icon(
+                        Icons.favorite_border,
+                        size: 64,
+                        color: Colors.white24,
+                      ),
                       SizedBox(height: 16),
                       Text(
                         'No favorites yet.\nLike some songs to see them here.',
@@ -47,7 +51,7 @@ class FavoritesPage extends StatelessWidget {
                   ),
                 );
               }
-              
+
               return ListView.builder(
                 itemCount: data.favoriteSongs.length,
                 itemBuilder: (context, index) {
@@ -63,7 +67,10 @@ class FavoritesPage extends StatelessWidget {
                           color: Colors.grey[800],
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Icon(Icons.music_note, color: Colors.white54),
+                        child: const Icon(
+                          Icons.music_note,
+                          color: Colors.white54,
+                        ),
                       ),
                     ),
                     title: Text(

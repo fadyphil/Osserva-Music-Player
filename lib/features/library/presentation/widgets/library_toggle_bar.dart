@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
 
 enum LibraryViewMode { tracks, playlists }
 
@@ -59,7 +59,9 @@ class _ToggleButton extends StatelessWidget {
           color: isActive ? AppPallete.primaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isActive ? Colors.transparent : Colors.white.withValues(alpha: 0.1),
+            color: isActive
+                ? Colors.transparent
+                : Colors.white.withValues(alpha: 0.1),
           ),
         ),
         child: Text(

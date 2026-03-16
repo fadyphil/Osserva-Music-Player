@@ -1,11 +1,11 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:music_player/core/error/failure.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-import 'package:music_player/features/playlists/data/datasources/playlist_local_datasource.dart';
-import 'package:music_player/features/playlists/data/models/playlist_model.dart';
-import 'package:music_player/features/playlists/domain/entities/playlist_entity.dart';
-import 'package:music_player/features/playlists/domain/failures/playlist_failure.dart';
-import 'package:music_player/features/playlists/domain/repositories/playlist_repository.dart';
+import 'package:osserva/core/error/failure.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/playlists/data/datasources/playlist_local_datasource.dart';
+import 'package:osserva/features/playlists/data/models/playlist_model.dart';
+import 'package:osserva/features/playlists/domain/entities/playlist_entity.dart';
+import 'package:osserva/features/playlists/domain/failures/playlist_failure.dart';
+import 'package:osserva/features/playlists/domain/repositories/playlist_repository.dart';
 
 class PlaylistRepositoryImpl implements PlaylistRepository {
   final PlaylistLocalDataSource dataSource;

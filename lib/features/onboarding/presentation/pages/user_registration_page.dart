@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:music_player/core/di/init_dependencies.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
+import 'package:osserva/core/di/init_dependencies.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
 import '../cubit/user_registration_cubit.dart';
 import '../cubit/user_registration_state.dart';
 

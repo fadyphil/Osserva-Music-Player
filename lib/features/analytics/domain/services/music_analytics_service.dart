@@ -1,9 +1,9 @@
 // import 'dart:async';
 // import 'package:flutter/widgets.dart';
-// import 'package:music_player/features/analytics/domain/entities/play_log.dart';
-// import 'package:music_player/features/analytics/domain/usecases/log_playback.dart';
-// import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-// import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
+// import 'package:osserva/features/analytics/domain/entities/play_log.dart';
+// import 'package:osserva/features/analytics/domain/usecases/log_playback.dart';
+// import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+// import 'package:osserva/features/music_player/domain/repos/audio_player_repository.dart';
 
 // class MusicAnalyticsService with WidgetsBindingObserver {
 //   final AudioPlayerRepository _audioRepository;

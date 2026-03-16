@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/favorites/presentation/bloc/favorites_bloc.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
 
 class FavoriteButton extends StatelessWidget {
   final SongEntity song;

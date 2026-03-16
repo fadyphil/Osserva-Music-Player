@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/features/analytics/domain/entities/artist_stats.dart';
-import 'package:music_player/features/artists/domain/usecases/get_artist_analytics_stats.dart';
-import 'package:music_player/features/artists/domain/usecases/get_artist_songs.dart';
-import 'package:music_player/features/artists/presentation/bloc/artist_details/artist_detail_event.dart';
-import 'package:music_player/features/artists/presentation/bloc/artist_details/artist_detail_state.dart';
+import 'package:osserva/features/analytics/domain/entities/artist_stats.dart';
+import 'package:osserva/features/artists/domain/usecases/get_artist_analytics_stats.dart';
+import 'package:osserva/features/artists/domain/usecases/get_artist_songs.dart';
+import 'package:osserva/features/artists/presentation/bloc/artist_details/artist_detail_event.dart';
+import 'package:osserva/features/artists/presentation/bloc/artist_details/artist_detail_state.dart';
 
 class ArtistDetailBloc extends Bloc<ArtistDetailEvent, ArtistDetailState> {
   final GetArtistSongs _getArtistSongs;

@@ -1,9 +1,9 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:music_player/core/error/failure.dart';
-import 'package:music_player/core/usecases/usecase.dart';
-import 'package:music_player/features/favorites/domain/repositories/favorites_repository.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-import 'package:music_player/features/local_music/domain/repositories/music_repository.dart';
+import 'package:osserva/core/error/failure.dart';
+import 'package:osserva/core/usecases/usecase.dart';
+import 'package:osserva/features/favorites/domain/repositories/favorites_repository.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/domain/repositories/music_repository.dart';
 
 class GetFavoriteSongs implements UseCase<List<SongEntity>, NoParams> {
   final FavoritesRepository favoritesRepository;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-import 'package:music_player/features/local_music/presentation/managers/local_music_bloc.dart';
-import 'package:music_player/features/local_music/presentation/managers/local_music_event.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_bloc.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_event.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class EditSongMetadataSheet extends StatefulWidget {

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_player/features/home/domain/entities/home_tab.dart';
-import 'package:music_player/features/home/presentation/widgets/pulse_bottom_nav_bar.dart';
+import 'package:osserva/features/home/domain/entities/home_tab.dart';
+import 'package:osserva/features/home/presentation/widgets/pulse_bottom_nav_bar.dart';
 
 void main() {
-  testWidgets('PulseBottomNavBar displays correct tabs and handles taps', (tester) async {
+  testWidgets('PulseBottomNavBar displays correct tabs and handles taps', (
+    tester,
+  ) async {
     HomeTab selectedTab = HomeTab.songs;
 
     await tester.pumpWidget(

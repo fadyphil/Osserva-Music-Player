@@ -1,11 +1,11 @@
 import 'package:get_it/get_it.dart';
-import 'package:music_player/features/favorites/data/datasources/favorites_local_datasource.dart';
-import 'package:music_player/features/favorites/data/repositories/favorites_repository_impl.dart';
-import 'package:music_player/features/favorites/domain/repositories/favorites_repository.dart';
-import 'package:music_player/features/favorites/domain/usecases/add_favorite.dart';
-import 'package:music_player/features/favorites/domain/usecases/get_favorite_songs.dart';
-import 'package:music_player/features/favorites/domain/usecases/remove_favorite.dart';
-import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
+import 'package:osserva/features/favorites/data/datasources/favorites_local_datasource.dart';
+import 'package:osserva/features/favorites/data/repositories/favorites_repository_impl.dart';
+import 'package:osserva/features/favorites/domain/repositories/favorites_repository.dart';
+import 'package:osserva/features/favorites/domain/usecases/add_favorite.dart';
+import 'package:osserva/features/favorites/domain/usecases/get_favorite_songs.dart';
+import 'package:osserva/features/favorites/domain/usecases/remove_favorite.dart';
+import 'package:osserva/features/favorites/presentation/bloc/favorites_bloc.dart';
 
 void registerFavoritesDependencies(GetIt sl) {
   sl.registerLazySingleton<FavoritesLocalDataSource>(

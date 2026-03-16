@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:music_player/core/error/failure.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-import 'package:music_player/features/local_music/domain/usecases/edit_song_metadata.dart';
+import 'package:osserva/core/error/failure.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/domain/usecases/edit_song_metadata.dart';
 
 abstract class MusicRepository {
   Future<Either<Failure, List<SongEntity>>> getLocalSongs();

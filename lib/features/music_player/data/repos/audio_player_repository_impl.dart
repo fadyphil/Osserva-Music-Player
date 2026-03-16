@@ -1,7 +1,7 @@
 import 'package:audio_service/audio_service.dart';
-import 'package:music_player/features/background_notification/data/datasources/audio_handler.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
-import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
+import 'package:osserva/features/background_notification/data/datasources/audio_handler.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/music_player/domain/repos/audio_player_repository.dart';
 
 class AudioPlayerRepositoryImpl implements AudioPlayerRepository {
   // Inject the abstract AudioHandler

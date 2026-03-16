@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:music_player/features/local_music/data/datasource/local_music_datasource.dart';
+import 'package:osserva/features/local_music/data/datasource/local_music_datasource.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class MockOnAudioQuery extends Mock implements OnAudioQuery {}
