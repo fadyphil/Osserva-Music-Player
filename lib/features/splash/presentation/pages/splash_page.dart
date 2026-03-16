@@ -49,36 +49,39 @@ class _SplashPageState extends State<SplashPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo
-            Image.asset(
-                  'assets/images/ic-launcher.png',
-                  width: 150,
-                  height: 150,
-                  fit: BoxFit.contain,
-                )
-                .animate()
-                .fade(duration: 600.ms)
-                .scale(duration: 600.ms, curve: Curves.easeOutBack),
-            const SizedBox(height: 24),
+            // // Logo
+            // Image.asset(
+            //       'assets/images/ic-launcher.png',
+            //       width: 150,
+            //       height: 150,
+            //       fit: BoxFit.contain,
+            //     )
+            //     .animate()
+            //     .fade(duration: 600.ms)
+            //     .scale(duration: 600.ms, curve: Curves.easeOutBack),
+            // const SizedBox(height: 24),
             // App Name
-            const Text(
-                  'Observe Your Listening Habits',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: AppPallete.primaryGreen,
-                    letterSpacing: 1.2,
-                  ),
-                )
-                .animate()
-                .fade(delay: 300.ms, duration: 600.ms)
-                .moveY(
-                  begin: 20,
-                  end: 0,
-                  delay: 300.ms,
-                  duration: 600.ms,
-                  curve: Curves.easeOut,
-                ),
+            Center(
+              child:
+                  const Text(
+                        'Observe Your Listening Habits',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppPallete.primaryGreen,
+                          letterSpacing: 1.2,
+                        ),
+                      )
+                      .animate()
+                      .fade(delay: 300.ms, duration: 600.ms)
+                      .moveY(
+                        begin: 20,
+                        end: 0,
+                        delay: 300.ms,
+                        duration: 600.ms,
+                        curve: Curves.easeOut,
+                      ),
+            ),
             const SizedBox(height: 8),
             // Slogan
             const Text(
