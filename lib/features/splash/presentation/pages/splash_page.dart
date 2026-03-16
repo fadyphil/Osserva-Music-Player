@@ -51,7 +51,7 @@ class _SplashPageState extends State<SplashPage> {
           children: [
             // Logo
             Image.asset(
-                  'assets/images/main-brighter.png',
+                  'assets/images/ic-launcher.png',
                   width: 150,
                   height: 150,
                   fit: BoxFit.contain,
