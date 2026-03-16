@@ -231,10 +231,11 @@ class _NavigationLayoutSelector extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         _NavLayoutCard(
-          title: "Minimal",
+          title: "Stylish",
           description: "Focus on music playback and library",
           isSelected:
-              selectedStyle == NavBarStyle.prism, // Mapping 'prism' to Minimal
+              selectedStyle ==
+              NavBarStyle.neural, // Mapping 'neural' to stylish
           preview: const _NavPreviewSkeleton(isMinimal: true),
           onTap: () {
             context.read<ProfileBloc>().add(
