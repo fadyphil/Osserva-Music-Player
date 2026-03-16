@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
 export "FLUTTER_ROOT=/home/fady/Downloads/flutter"
-export "FLUTTER_APPLICATION_PATH=/home/fady/Projects/CURRENT/music_player"
+export "FLUTTER_APPLICATION_PATH=/home/fady/Projects/CURRENT/a-personal/music-player"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib/main.dart"
 export "FLUTTER_BUILD_DIR=build"
