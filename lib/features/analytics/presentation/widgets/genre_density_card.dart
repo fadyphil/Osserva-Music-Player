@@ -1,10 +1,46 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:osserva/features/analytics/domain/entities/analytics_stats.dart';
 
 class GenreDensityCard extends StatelessWidget {
-  const GenreDensityCard({super.key});
+  final List<TopItem> topGenres;
+
+  const GenreDensityCard({super.key, required this.topGenres});
+
+  static const _colors = [
+    Color(0xFF1976D2),
+    Color(0xFF9C27B0),
+    Color(0xFF4CAF50),
+    Color(0xFFD4A017),
+    Color(0xFFE53935),
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final genres = topGenres.take(5).toList();
+
+    if (genres.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E2128),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Center(
+          child: Text(
+            'No genre data yet',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.4),
+              fontSize: 14,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final total = genres.fold(0, (sum, g) => sum + g.count);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -36,74 +72,68 @@ class GenreDensityCard extends StatelessWidget {
             child: SizedBox(
               width: 200,
               height: 180,
-              child: CustomPaint(painter: _GenreDensityPainter()),
+              child: CustomPaint(
+                painter: _BubblePainter(
+                  genres: genres,
+                  total: total,
+                  colors: _colors,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 32),
           Column(
-            children: [
-              _buildGenreLegendRow(Colors.blue, 'Electronic', '1,240', '35%'),
-              _buildGenreLegendRow(
-                Colors.purpleAccent,
-                'Ambient',
-                '850',
-                '24%',
-              ),
-              _buildGenreLegendRow(Colors.green, 'Indie', '620', '18%'),
-              _buildGenreLegendRow(
-                const Color(0xFFD4A017),
-                'Jazz',
-                '450',
-                '13%',
-              ),
-              _buildGenreLegendRow(Colors.redAccent, 'Classical', '350', '10%'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGenreLegendRow(
-    Color color,
-    String name,
-    String plays,
-    String percentage,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            '$plays plays',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.5),
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            percentage,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
+            children: genres.asMap().entries.map((entry) {
+              final i = entry.key;
+              final genre = entry.value;
+              final pct = total > 0 ? (genre.count / total * 100) : 0.0;
+              final color = _colors[i % _colors.length];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      genre.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '${genre.count} plays',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.45),
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: 36,
+                      child: Text(
+                        '${pct.toStringAsFixed(0)}%',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -111,42 +141,53 @@ class GenreDensityCard extends StatelessWidget {
   }
 }
 
-class _GenreDensityPainter extends CustomPainter {
+class _BubblePainter extends CustomPainter {
+  final List<TopItem> genres;
+  final int total;
+  final List<Color> colors;
+
+  const _BubblePainter({
+    required this.genres,
+    required this.total,
+    required this.colors,
+  });
+
+  // Pre-computed offsets (relative to center) for up to 5 bubbles
+  static const _offsets = [
+    Offset(22, -8),
+    Offset(5, 34),
+    Offset(-38, 6),
+    Offset(-22, -32),
+    Offset(14, -44),
+  ];
+
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
+    if (total == 0 || genres.isEmpty) return;
 
-    // Using BlendMode.screen or adjusting alpha creates the nice overlapping color effect
+    final center = Offset(size.width / 2, size.height / 2);
+    const maxRadius = 62.0;
+    final maxCount = genres.first.count.toDouble();
+
     final paint = Paint()..style = PaintingStyle.fill;
 
-    // These offsets and radii would ideally be calculated by your AnalyticsBloc
-    // based on percentages, but here is the geometric layout matching your UI.
+    // Draw from largest to smallest so smaller bubbles appear on top
+    for (int i = genres.length - 1; i >= 0; i--) {
+      final genre = genres[i];
+      // Scale radius by sqrt of ratio for visual balance
+      final ratio = genre.count / maxCount;
+      final radius = maxRadius * math.sqrt(ratio);
+      final offset = i < _offsets.length ? _offsets[i] : Offset.zero;
 
-    // Electronic (Blue - Largest, Right)
-    paint.color = Colors.blue.withValues(alpha: 0.75);
-    canvas.drawCircle(center + const Offset(30, 0), 65, paint);
+      paint.color = colors[i % colors.length].withValues(alpha: 0.75);
+      canvas.drawCircle(center + offset, radius, paint);
+    }
 
-    // Ambient (Purple - Bottom)
-    paint.color = Colors.purpleAccent.withValues(alpha: 0.75);
-    canvas.drawCircle(center + const Offset(10, 40), 55, paint);
-
-    // Indie (Green - Left)
-    paint.color = Colors.green.withValues(alpha: 0.75);
-    canvas.drawCircle(center + const Offset(-40, 10), 45, paint);
-
-    // Jazz (Yellow/Orange - Top Left)
-    paint.color = const Color(0xFFD4A017).withValues(alpha: 0.8);
-    canvas.drawCircle(center + const Offset(-25, -30), 40, paint);
-
-    // Classical (Red - Top)
-    paint.color = Colors.redAccent.withValues(alpha: 0.8);
-    canvas.drawCircle(center + const Offset(15, -45), 30, paint);
-
-    // Tiny blue dot in center
-    paint.color = Colors.blue;
-    canvas.drawCircle(center + const Offset(0, 0), 3, paint);
+    // Center dot accent
+    paint.color = colors[0];
+    canvas.drawCircle(center, 3, paint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _BubblePainter old) => old.total != total;
 }

@@ -1,10 +1,10 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:music_player/core/error/failure.dart';
-import 'package:music_player/features/artists/data/datasources/artist_local_datasource.dart';
-import 'package:music_player/features/artists/domain/entities/artist_entity.dart';
-import 'package:music_player/features/artists/domain/repositories/artist_repository.dart';
-import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
-import 'package:music_player/features/artists/domain/failures/artist_failure.dart';
+import 'package:osserva/core/error/failure.dart';
+import 'package:osserva/features/artists/data/datasources/artist_local_datasource.dart';
+import 'package:osserva/features/artists/domain/entities/artist_entity.dart';
+import 'package:osserva/features/artists/domain/repositories/artist_repository.dart';
+import 'package:osserva/features/artists/domain/failures/artist_failure.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
 
 class ArtistRepositoryImpl implements ArtistRepository {
   final ArtistLocalDataSource dataSource;
@@ -32,7 +32,9 @@ class ArtistRepositoryImpl implements ArtistRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getArtistStats(String artistName) async {
+  Future<Either<Failure, Map<String, dynamic>>> getArtistStats(
+    String artistName,
+  ) async {
     try {
       final result = await dataSource.getArtistStats(artistName);
       return Right(result);

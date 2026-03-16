@@ -235,6 +235,53 @@ class LibraryTabShellRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [MusicPlayerPage]
+class MusicPlayerRoute extends PageRouteInfo<MusicPlayerRouteArgs> {
+  MusicPlayerRoute({
+    Key? key,
+    required SongEntity song,
+    List<PageRouteInfo>? children,
+  }) : super(
+         MusicPlayerRoute.name,
+         args: MusicPlayerRouteArgs(key: key, song: song),
+         initialChildren: children,
+       );
+
+  static const String name = 'MusicPlayerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<MusicPlayerRouteArgs>();
+      return MusicPlayerPage(key: args.key, song: args.song);
+    },
+  );
+}
+
+class MusicPlayerRouteArgs {
+  const MusicPlayerRouteArgs({this.key, required this.song});
+
+  final Key? key;
+
+  final SongEntity song;
+
+  @override
+  String toString() {
+    return 'MusicPlayerRouteArgs{key: $key, song: $song}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! MusicPlayerRouteArgs) return false;
+    return key == other.key && song == other.song;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ song.hashCode;
+}
+
+/// generated route for
 /// [OnboardingPage]
 class OnboardingRoute extends PageRouteInfo<OnboardingRouteArgs> {
   OnboardingRoute({

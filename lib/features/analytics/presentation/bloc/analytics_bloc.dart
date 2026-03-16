@@ -31,23 +31,25 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     required GetTopGenres getTopGenres,
     required GetGeneralStats getGeneralStats,
     required WatchPlaybackHistory watchPlaybackHistory,
-  })  : _logPlayback = logPlayback,
-        _getTopSongs = getTopSongs,
-        _getTopArtists = getTopArtists,
-        _getTopAlbums = getTopAlbums,
-        _getTopGenres = getTopGenres,
-        _getGeneralStats = getGeneralStats,
-        _watchPlaybackHistory = watchPlaybackHistory,
-        super(const AnalyticsState.initial()) {
+  }) : _logPlayback = logPlayback,
+       _getTopSongs = getTopSongs,
+       _getTopArtists = getTopArtists,
+       _getTopAlbums = getTopAlbums,
+       _getTopGenres = getTopGenres,
+       _getGeneralStats = getGeneralStats,
+       _watchPlaybackHistory = watchPlaybackHistory,
+       super(const AnalyticsState.initial()) {
     on<_LogPlaybackEvent>(_onLogPlayback);
     on<_LoadAnalyticsData>(_onLoadAnalyticsData);
 
     _playbackSubscription = _watchPlaybackHistory().listen((_) {
       state.mapOrNull(
         loaded: (loadedState) {
-          add(AnalyticsEvent.loadAnalyticsData(
-            timeFrame: loadedState.selectedTimeFrame,
-          ));
+          add(
+            AnalyticsEvent.loadAnalyticsData(
+              timeFrame: loadedState.selectedTimeFrame,
+            ),
+          );
         },
       );
     });
@@ -92,20 +94,22 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     final params = GetTopSongsParams(timeFrame, limit: limit);
 
     // Run all queries in parallel
-    final results = await Future.wait([
+
+    /// The key change here is that the results are directly unpacked from the `wait` extension. the .wait extension on the record of futures is from  dart:async already available so no imports needed (i don't really understand the importance of that)
+    final (songsRes, artistsRes, albumsRes, genresRes, statsRes) = await (
       _getTopSongs(params),
       _getTopArtists(params),
       _getTopAlbums(params),
       _getTopGenres(params),
       _getGeneralStats(timeFrame),
-    ]);
+    ).wait;
 
-    // Unpack results
-    final songsRes = results[0] as dynamic; // Typed via Either
-    final artistsRes = results[1] as dynamic;
-    final albumsRes = results[2] as dynamic;
-    final genresRes = results[3] as dynamic;
-    final statsRes = results[4] as dynamic;
+    // // Unpack results
+    // final songsRes = results[0] as dynamic; // Typed via Either
+    // final artistsRes = results[1] as dynamic;
+    // final albumsRes = results[2] as dynamic;
+    // final genresRes = results[3] as dynamic;
+    // final statsRes = results[4] as dynamic;
 
     // Check for failures
     // Simple approach: If any fail, show error.
@@ -128,14 +132,16 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     if (error != null) {
       emit(AnalyticsState.failure(error!));
     } else {
-      emit(AnalyticsState.loaded(
-        topSongs: songs,
-        topArtists: artists,
-        topAlbums: albums,
-        topGenres: genres,
-        stats: stats!,
-        selectedTimeFrame: timeFrame,
-      ));
+      emit(
+        AnalyticsState.loaded(
+          topSongs: songs,
+          topArtists: artists,
+          topAlbums: albums,
+          topGenres: genres,
+          stats: stats!,
+          selectedTimeFrame: timeFrame,
+        ),
+      );
     }
   }
 }

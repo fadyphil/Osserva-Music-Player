@@ -14,7 +14,7 @@ The onboarding process guides you through the initial setup of your application,
 ## First-Time Experience
 
 When you launch the application for the very first time:
-1.  You will see a series of introductory screens highlighting the key features of the music player.
+1.  You will see a series of introductory screens highlighting the key features of the Osserva.
 2.  Tap **Next** to proceed through these screens.
 3.  On the final onboarding screen, you will be prompted to either **Skip** the user registration or **Proceed** to create your identity.
 

@@ -55,6 +55,6 @@ Each song tile supports swipe gestures for quick actions:
 4. Select a playlist to add the song to it. You can also create a new playlist from this sheet.
 
 ## Related Features
-- **Music Player:** For playback controls and current song information.
+- **Osserva:** For playback controls and current song information.
 - **Playlists:** For custom song collections.
 - **Favorites:** For bookmarking your most liked songs.

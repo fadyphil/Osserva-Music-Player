@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/usecases/usecase.dart';
-import 'package:music_player/features/artists/domain/usecases/get_artists.dart';
-import 'package:music_player/features/artists/domain/usecases/get_artist_analytics_stats.dart';
-import 'package:music_player/features/artists/presentation/bloc/artists/artists_event.dart';
-import 'package:music_player/features/artists/presentation/bloc/artists/artists_state.dart';
+import 'package:osserva/core/usecases/usecase.dart';
+import 'package:osserva/features/artists/domain/usecases/get_artists.dart';
+import 'package:osserva/features/artists/domain/usecases/get_artist_analytics_stats.dart';
+import 'package:osserva/features/artists/presentation/bloc/artists/artists_event.dart';
+import 'package:osserva/features/artists/presentation/bloc/artists/artists_state.dart';
 
 class ArtistsBloc extends Bloc<ArtistsEvent, ArtistsState> {
   final GetArtists getArtists;

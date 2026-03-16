@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_state.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_bloc.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_event.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_state.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class QueueSheet extends StatelessWidget {
@@ -107,8 +107,8 @@ class QueueSheet extends StatelessWidget {
                       newIndex -= 1;
                     }
                     context.read<MusicPlayerBloc>().add(
-                          MusicPlayerEvent.reorderQueue(oldIndex, newIndex),
-                        );
+                      MusicPlayerEvent.reorderQueue(oldIndex, newIndex),
+                    );
                   },
                   proxyDecorator: (child, index, animation) {
                     return Material(
@@ -129,7 +129,9 @@ class QueueSheet extends StatelessWidget {
                         currentSong != null && song.id == currentSong.id;
 
                     return Dismissible(
-                      key: ValueKey(song.uniqueId ?? '${song.id}_$index'), // Stable Key
+                      key: ValueKey(
+                        song.uniqueId ?? '${song.id}_$index',
+                      ), // Stable Key
                       direction: DismissDirection.endToStart,
                       background: Container(
                         alignment: Alignment.centerRight,
@@ -195,8 +197,8 @@ class QueueSheet extends StatelessWidget {
                         ),
                         onTap: () {
                           context.read<MusicPlayerBloc>().add(
-                                MusicPlayerEvent.playQueueItem(index),
-                              );
+                            MusicPlayerEvent.playQueueItem(index),
+                          );
                         },
                       ),
                     );

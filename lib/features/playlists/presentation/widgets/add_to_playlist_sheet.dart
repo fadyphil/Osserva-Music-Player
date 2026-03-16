@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/di/init_dependencies.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
-import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
-import 'package:music_player/features/local%20music/presentation/managers/local_music_bloc.dart';
-import 'package:music_player/features/local%20music/presentation/managers/local_music_event.dart';
-import 'package:music_player/features/local%20music/presentation/widgets/edit_song_metadata_sheet.dart';
-import 'package:music_player/features/playlists/domain/entities/playlist_entity.dart';
-import 'package:music_player/features/playlists/presentation/bloc/playlist_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
+import 'package:osserva/core/di/init_dependencies.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/favorites/presentation/bloc/favorites_bloc.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_bloc.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_event.dart';
+import 'package:osserva/features/local_music/presentation/widgets/edit_song_metadata_sheet.dart';
+import 'package:osserva/features/playlists/domain/entities/playlist_entity.dart';
+import 'package:osserva/features/playlists/presentation/bloc/playlist_bloc.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_bloc.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_event.dart';
 
 // --- SHEET 1: Song Actions Menu ---
 class SongActionsSheet extends StatelessWidget {
@@ -181,7 +181,10 @@ class SongActionsSheet extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppPallete.cardColor,
-        title: const Text("Delete Song?", style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "Delete Song?",
+          style: TextStyle(color: Colors.white),
+        ),
         content: const Text(
           "This will permanently delete the file from your device.",
           style: TextStyle(color: Colors.white70),
@@ -402,7 +405,10 @@ class AddToPlaylistSheet extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('New Playlist', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'New Playlist',
+          style: TextStyle(color: Colors.white),
+        ),
         content: TextField(
           controller: nameCtrl,
           autofocus: true,
@@ -421,7 +427,10 @@ class AddToPlaylistSheet extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           TextButton(
             onPressed: () {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/home/domain/entities/home_tab.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/home/domain/entities/home_tab.dart';
 
 class PulseBottomNavBar extends StatelessWidget {
   final HomeTab selectedTab;
@@ -26,9 +26,7 @@ class PulseBottomNavBar extends StatelessWidget {
       height: 64, // h-16
       decoration: const BoxDecoration(
         color: AppPallete.background,
-        border: Border(
-          top: BorderSide(color: AppPallete.border, width: 1),
-        ),
+        border: Border(top: BorderSide(color: AppPallete.border, width: 1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

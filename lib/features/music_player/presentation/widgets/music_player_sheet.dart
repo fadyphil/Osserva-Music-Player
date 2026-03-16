@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
-import 'package:music_player/features/local%20music/domain/entities/song_entity.dart';
-import 'package:music_player/features/local%20music/presentation/managers/local_music_bloc.dart';
-import 'package:music_player/features/playlists/presentation/widgets/add_to_playlist_sheet.dart';
+import 'package:osserva/features/favorites/presentation/bloc/favorites_bloc.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/presentation/managers/local_music_bloc.dart';
+import 'package:osserva/features/playlists/presentation/widgets/add_to_playlist_sheet.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import '../../../../core/theme/app_pallete.dart';
 import '../bloc/music_player_bloc.dart';

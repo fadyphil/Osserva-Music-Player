@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:music_player/features/home/presentation/widgets/home_header.dart';
+import 'package:osserva/features/home/presentation/widgets/home_header.dart';
 
 void main() {
   testWidgets('HomeHeader displays greeting and track count', (tester) async {
@@ -10,10 +10,7 @@ void main() {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: HomeHeader(
-            greeting: greeting,
-            trackCount: trackCount,
-          ),
+          body: HomeHeader(greeting: greeting, trackCount: trackCount),
         ),
       ),
     );

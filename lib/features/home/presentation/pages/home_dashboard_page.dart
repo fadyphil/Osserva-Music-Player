@@ -1,16 +1,16 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/di/init_dependencies.dart';
-import 'package:music_player/core/router/app_router.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
-import 'package:music_player/features/home/presentation/bloc/home_bloc/home_bloc.dart';
-import 'package:music_player/features/home/presentation/widgets/home_header.dart';
-import 'package:music_player/features/home/presentation/widgets/quick_resume_grid.dart';
-import 'package:music_player/features/home/presentation/widgets/recently_played_list.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
+import 'package:osserva/core/di/init_dependencies.dart';
+import 'package:osserva/core/router/app_router.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
+import 'package:osserva/features/home/presentation/bloc/home_bloc/home_bloc.dart';
+import 'package:osserva/features/home/presentation/widgets/home_header.dart';
+import 'package:osserva/features/home/presentation/widgets/quick_resume_grid.dart';
+import 'package:osserva/features/home/presentation/widgets/recently_played_list.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_bloc.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_event.dart';
 
 @RoutePage()
 class HomeDashboardPage extends StatelessWidget {
@@ -21,10 +21,13 @@ class HomeDashboardPage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => serviceLocator<HomeBloc>()..add(const HomeEvent.loadHomeData()),
+          create: (_) =>
+              serviceLocator<HomeBloc>()..add(const HomeEvent.loadHomeData()),
         ),
         BlocProvider(
-          create: (_) => serviceLocator<HistoryBloc>()..add(const HistoryEvent.fetchRecentHistory()),
+          create: (_) =>
+              serviceLocator<HistoryBloc>()
+                ..add(const HistoryEvent.fetchRecentHistory()),
         ),
       ],
       child: Scaffold(
@@ -41,7 +44,10 @@ class HomeDashboardPage extends StatelessWidget {
                         greeting: data.greeting,
                         trackCount: data.trackCount,
                       ),
-                      orElse: () => const HomeHeader(greeting: 'Loading...', trackCount: 0),
+                      orElse: () => const HomeHeader(
+                        greeting: 'Loading...',
+                        trackCount: 0,
+                      ),
                     );
                   },
                 ),
@@ -68,26 +74,31 @@ class HomeDashboardPage extends StatelessWidget {
                                 songs: quickResume,
                                 onPlay: (song) {
                                   context.read<MusicPlayerBloc>().add(
-                                    MusicPlayerEvent.playSongById(songId: song.songId),
+                                    MusicPlayerEvent.playSongById(
+                                      songId: song.songId,
+                                    ),
                                   );
                                 },
                               ),
-                             if (recentList.isNotEmpty)
-                               RecentlyPlayedList(
-                                 songs: recentList,
-                                 onPlay: (song) {
-                                   context.read<MusicPlayerBloc>().add(
-                                     MusicPlayerEvent.playSongById(songId: song.songId),
-                                   );
-                                 },
-                                 onSeeAll: () {
-                                    context.router.push(const HistoryRoute());
-                                 },
-                               ),
+                            if (recentList.isNotEmpty)
+                              RecentlyPlayedList(
+                                songs: recentList,
+                                onPlay: (song) {
+                                  context.read<MusicPlayerBloc>().add(
+                                    MusicPlayerEvent.playSongById(
+                                      songId: song.songId,
+                                    ),
+                                  );
+                                },
+                                onSeeAll: () {
+                                  context.router.push(const HistoryRoute());
+                                },
+                              ),
                           ],
                         );
                       },
-                      loading: (_) => const Center(child: CircularProgressIndicator()),
+                      loading: (_) =>
+                          const Center(child: CircularProgressIndicator()),
                       orElse: () => const SizedBox.shrink(),
                     );
                   },
@@ -102,4 +113,3 @@ class HomeDashboardPage extends StatelessWidget {
     );
   }
 }
-

@@ -1,8 +1,8 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:music_player/core/error/failure.dart';
-import 'package:music_player/features/onboarding/data/datasources/onboarding_local_data_source.dart';
-import 'package:music_player/features/onboarding/domain/failure/onboarding_failure.dart';
-import 'package:music_player/features/onboarding/domain/repositories/onboarding_repository.dart';
+import 'package:osserva/core/error/failure.dart';
+import 'package:osserva/features/onboarding/data/datasources/onboarding_local_data_source.dart';
+import 'package:osserva/features/onboarding/domain/failure/onboarding_failure.dart';
+import 'package:osserva/features/onboarding/domain/repositories/onboarding_repository.dart';
 
 class OnboardingRepositoryImpl implements OnboardingRepository {
   final OnboardingLocalDataSource onboardingLocalDataSource;

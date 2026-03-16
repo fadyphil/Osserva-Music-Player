@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:music_player/core/router/app_router.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/playlists/domain/entities/playlist_entity.dart';
+import 'package:osserva/core/router/app_router.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/playlists/domain/entities/playlist_entity.dart';
 
 class PlaylistCard extends StatelessWidget {
   final PlaylistEntity playlist;
@@ -56,10 +56,11 @@ class PlaylistCard extends StatelessWidget {
                               child: Image.network(
                                 playlist.imagePath!,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => const Icon(
-                                  Icons.music_note,
-                                  color: Colors.white54,
-                                ),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(
+                                      Icons.music_note,
+                                      color: Colors.white54,
+                                    ),
                               ),
                             )
                           : const Icon(

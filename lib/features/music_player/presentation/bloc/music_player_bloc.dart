@@ -1,15 +1,22 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/usecases/usecase.dart';
-import 'package:music_player/features/analytics/domain/usecases/get_all_song_play_counts.dart';
-import 'package:music_player/features/music_player/domain/repos/audio_player_repository.dart';
-import 'package:music_player/features/local%20music/domain/use%20cases/get_song_by_id_use_case.dart';
+import 'package:osserva/core/usecases/usecase.dart';
+import 'package:osserva/features/analytics/domain/usecases/get_all_song_play_counts.dart';
+import 'package:osserva/features/local_music/domain/usecases/get_song_by_id_use_case.dart';
+import 'package:osserva/features/music_player/domain/repos/audio_player_repository.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_event.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_state.dart';
 import 'package:stream_transform/stream_transform.dart';
-import 'music_player_event.dart';
-import 'music_player_state.dart';
 
 class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
   final AudioPlayerRepository _audioRepository;
+
+  /// True only while `setQueue` is actively loading a new playlist.
+  /// Guards against spurious `mediaItem` emissions from just_audio
+  /// during playlist initialisation — but NOT during normal auto-advance.
+  bool _isLoadingQueue = false;
+  bool _reorderPending = false;
+  Timer? _reorderClearTimer;
   final GetSongByIdUseCase _getSongByIdUseCase;
   final GetAllSongPlayCounts _getAllSongPlayCounts;
 
@@ -29,7 +36,6 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
     this._getSongByIdUseCase,
     this._getAllSongPlayCounts,
   ) : super(const MusicPlayerState()) {
-    // 1. Setup Listeners
     _positionSubscription = _audioRepository.positionStream
         .throttle(const Duration(milliseconds: 500))
         .listen((pos) {
@@ -56,13 +62,10 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
       add(MusicPlayerEvent.updateLoopState(mode));
     });
 
-    // Subscribe to the truth
-    // when the repo (and handler) changes the queue this listener fires
     _queueSubscription = _audioRepository.queueStream.listen((queue) {
       add(MusicPlayerEvent.queueUpdated(queue));
     });
 
-    // Listen to the Operating System / Audio Service for the current song
     _currentSongSubscription = _audioRepository.currentSongStream.listen((
       song,
     ) {
@@ -77,12 +80,13 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
 
     _refreshPlayCounts();
 
-    // 2. Handle Events
     on<MusicPlayerEvent>((event, emit) async {
       await event.map(
         initMusicQueue: (e) async {
           try {
-            // Optimistic update
+            _isLoadingQueue = true;
+            // Optimistic update — UI sees the correct song immediately,
+            // before just_audio finishes loading the playlist.
             emit(
               state.copyWith(
                 queue: e.songs,
@@ -91,18 +95,16 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
                 isPlaying: true,
               ),
             );
-            // Delegate to Handler
             await _audioRepository.setQueue(e.songs, e.currentIndex);
+            _isLoadingQueue = false;
           } catch (e) {
-            // Revert or show error
-            // If "Loading interrupted", it's fine.
+            _isLoadingQueue = false;
             emit(
               state.copyWith(errorMessage: "Failed to initialize queue: $e"),
             );
           }
         },
         playSong: (e) async {
-          // Play Single Song (Legacy/Specific use case)
           emit(state.copyWith(currentSong: e.song, isPlaying: true));
           final artworkUri =
               "content://media/external/audio/media/${e.song.id}/albumart";
@@ -133,17 +135,16 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
           );
         },
         playNextSong: (_) async {
-          // Delegate to Handler
           await _audioRepository.skipToNext();
         },
         playPreviousSong: (_) async {
-          // Delegate to Handler
           await _audioRepository.skipToPrevious();
         },
         songFinished: (_) async {
-          // The player handles song transitions automatically.
-          // This event now only signifies the END of the entire playlist.
-          emit(state.copyWith(isPlaying: false, isPlaylistEnd: true));
+          // Only mark playlist end; isPlaying is managed reactively
+          // by updatePlayerState (via isPlayingStream) so we don't
+          // force it false here — that would break auto-advance.
+          emit(state.copyWith(isPlaylistEnd: true));
         },
         pause: (_) async {
           await _audioRepository.pause();
@@ -153,13 +154,11 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
         },
         toggleShuffle: (_) async {
           final newValue = !state.isShuffling;
-          // Optimistic update
           emit(state.copyWith(isShuffling: newValue));
           await _audioRepository.setShuffleMode(newValue);
         },
         cycleLoopMode: (_) async {
           final nextMode = (state.loopMode + 1) % 3;
-          // Optimistic update
           emit(state.copyWith(loopMode: nextMode));
           await _audioRepository.setRepeatMode(nextMode);
         },
@@ -183,14 +182,41 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
           emit(state.copyWith(loopMode: e.loopMode));
         },
         updateCurrentSong: (e) async {
-          // Try to match the incoming song (from OS) with our full-detail queue
+          if (_reorderPending &&
+              state.currentSong != null &&
+              e.song.id != state.currentSong!.id) {
+            return;
+          }
+
           final index = state.queue.indexWhere((s) => s.id == e.song.id);
           final fullSong = index != -1 ? state.queue[index] : e.song;
 
-          // Placeholder: Fetch genre if needed. For now, we assume it's unknown
-          // as SongEntity doesn't have it.
-          const genre = 'Unknown';
+          // FIX: Reset the flag unconditionally first, THEN check whether to
+          // discard this specific event. The original code left _isLoadingQueue=true
+          // on early return, permanently blocking all subsequent updateCurrentSong
+          // events (including legitimate auto-advance ones).
+          if (_isLoadingQueue) {
+            _isLoadingQueue =
+                false; // always reset — we only suppress ONE event
+            if (state.currentSong != null && index != -1) {
+              final expectedSong = state.currentIndex < state.queue.length
+                  ? state.queue[state.currentIndex]
+                  : null;
+              final optimisticIsCorrect =
+                  expectedSong != null &&
+                  state.currentSong!.id == expectedSong.id;
+              final streamContradictsOptimistic =
+                  fullSong.id != expectedSong?.id;
 
+              if (optimisticIsCorrect && streamContradictsOptimistic) {
+                // Spurious just_audio emission during setQueue init — discard.
+                // _isLoadingQueue is already false above; safe to return.
+                return;
+              }
+            }
+          }
+
+          final genre = 'Unknown';
           final bool isChangingTrack =
               state.currentSong != null && state.currentSong!.id != fullSong.id;
 
@@ -212,22 +238,10 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
         },
         addToQueue: (e) async {
           try {
-            // we ask the repo to add it
-            // we DO NOT update the UI state locally
-            // we wait for the 'queueUpdated' event to  fire via the stream
             await _audioRepository.addQueueItem(e.song);
-            // Emit Success status to trigger Green snackbar
             emit(state.copyWith(queueActionStatus: QueueStatus.success));
-            // Immediately reset status so  it doesn't trigger again on the next rebuild
             emit(state.copyWith(queueActionStatus: QueueStatus.initial));
-            // OPTIONAL : Emit a 'Side Effect' for the UI (Like a Snackbar trigger)
-            // you might have a separate status field for the one-off messages
-            // emit(state.copyWith(status: Status.success, message: 'Song added to queue'))
           } catch (e) {
-            // if the handler failed (bad URL) , we catch it here
-            // the queue list in the state never changed
-            // the UI shows an error
-            // emit(state.copyWith(status: Status.error, message: e.toString()));
             emit(
               state.copyWith(
                 queueActionStatus: QueueStatus.failure,
@@ -240,7 +254,6 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
         removeFromQueue: (e) async {
           try {
             await _audioRepository.removeQueueItemAt(e.index);
-            // Success status (optional, maybe no snackbar needed for removal)
           } catch (e) {
             emit(
               state.copyWith(
@@ -253,8 +266,12 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
         },
         reorderQueue: (e) async {
           try {
+            _reorderPending = true; // ADD
+            _reorderClearTimer?.cancel(); // ADD
             await _audioRepository.reorderQueue(e.oldIndex, e.newIndex);
           } catch (e) {
+            _reorderPending = false; // ADD
+            _reorderClearTimer?.cancel(); // ADD
             emit(
               state.copyWith(
                 queueActionStatus: QueueStatus.failure,
@@ -277,15 +294,46 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
             emit(state.copyWith(queueActionStatus: QueueStatus.initial));
           }
         },
-        addToPlaylist: (e) async {
-          // Placeholder for Playlist feature
-          // Ideally, this would open a dialog in UI, but the Bloc just handles logic.
-          // Since we don't have a playlist Repo yet, we do nothing or just emit a side-effect if needed.
-          // For now, no state change.
-        },
+        addToPlaylist: (e) async {},
         queueUpdated: (e) {
-          // This is the ONLY place state.queue should change
-          emit(state.copyWith(queue: e.queue));
+          int newIndex = state.currentIndex;
+          if (state.currentSong != null && e.queue.isNotEmpty) {
+            final byUniqueId = state.currentSong!.uniqueId != null
+                ? e.queue.indexWhere(
+                    (s) => s.uniqueId == state.currentSong!.uniqueId,
+                  )
+                : -1;
+            final byId = byUniqueId == -1
+                ? e.queue.indexWhere((s) => s.id == state.currentSong!.id)
+                : -1;
+            final resolved = byUniqueId != -1 ? byUniqueId : byId;
+            if (resolved != -1) newIndex = resolved;
+          }
+
+          // Explicitly re-anchor currentSong to queue[newIndex].
+          // This is the safety net: even if a spurious updateCurrentSong
+          // slips through below, the state here is definitively correct.
+          final anchoredSong = e.queue.isNotEmpty && newIndex < e.queue.length
+              ? e.queue[newIndex]
+              : state.currentSong;
+
+          emit(
+            state.copyWith(
+              queue: e.queue,
+              currentIndex: newIndex,
+              currentSong: anchoredSong, // ADD
+            ),
+          );
+
+          // Safety valve: keep _reorderPending true long enough to cover
+          // both orderings (spurious updateCurrentSong before OR after us).
+          // 300ms comfortably outlasts any stream emission latency.
+          if (_reorderPending) {
+            _reorderClearTimer?.cancel();
+            _reorderClearTimer = Timer(const Duration(milliseconds: 300), () {
+              _reorderPending = false;
+            });
+          }
         },
         playNextinQueue: (e) async {
           try {
@@ -365,6 +413,7 @@ class MusicPlayerBloc extends Bloc<MusicPlayerEvent, MusicPlayerState> {
     _shuffleSubscription?.cancel();
     _loopSubscription?.cancel();
     _queueSubscription?.cancel();
+    _reorderClearTimer?.cancel();
     return super.close();
   }
 }

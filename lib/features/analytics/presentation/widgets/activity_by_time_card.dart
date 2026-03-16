@@ -2,42 +2,43 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 class ActivityByTimeCard extends StatelessWidget {
-  const ActivityByTimeCard({super.key});
+  final Map<String, int> distribution;
+
+  const ActivityByTimeCard({super.key, required this.distribution});
 
   @override
   Widget build(BuildContext context) {
-    // Mock data representing 24 hours of activity (0 to 23)
-    final List<double> hourlyData = [
-      2,
-      1,
-      0,
-      0,
-      1,
-      3,
-      8,
-      15,
-      22,
-      25,
-      20,
-      18,
-      22,
-      28,
-      35,
-      40,
-      42,
-      38,
-      30,
-      25,
-      18,
-      12,
-      8,
-      5,
+    final morning = distribution['morning'] ?? 0;
+    final afternoon = distribution['afternoon'] ?? 0;
+    final evening = distribution['evening'] ?? 0; // ADD
+    final night = distribution['night'] ?? 0;
+    final total = morning + afternoon + evening + night; // ADD evening
+
+    if (total == 0) return _emptyState();
+
+    final segments = [
+      _Segment(
+        'Morning',
+        morning,
+        const Color(0xFFFFB300),
+        Icons.wb_sunny_outlined,
+      ),
+      _Segment('Afternoon', afternoon, const Color(0xFF1976D2), Icons.wb_sunny),
+      _Segment(
+        'Evening',
+        evening,
+        const Color(0xFFFF7043),
+        Icons.wb_twilight,
+      ), // ADD
+      _Segment('Night', night, const Color(0xFF9C27B0), Icons.nightlight_round),
     ];
+
+    final peak = segments.reduce((a, b) => a.count > b.count ? a : b);
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF16181D), // Deep dark background
+        color: const Color(0xFF16181D),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -62,149 +63,197 @@ class ActivityByTimeCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
-            'Peak listening: 16:00 - 17:00 (42 plays avg). Strong afternoon preference indicates focus/work sessions.',
+            'Peak: ${peak.label} · ${peak.count} plays · ${(peak.count / total * 100).toStringAsFixed(0)}% of total',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 12,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 32),
-          Center(
-            child: SizedBox(
-              width: 240,
-              height: 240,
-              child: CustomPaint(painter: _PolarChartPainter(data: hourlyData)),
-            ),
+          const SizedBox(height: 28),
+          Row(
+            children: [
+              // Donut chart
+              SizedBox(
+                width: 140,
+                height: 140,
+                child: CustomPaint(
+                  painter: _DonutPainter(segments: segments, total: total),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(peak.icon, color: peak.color, size: 18),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${(peak.count / total * 100).toStringAsFixed(0)}%',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          peak.label,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 24),
+              // Legend with mini bars
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: segments.map((seg) {
+                    final pct = total > 0 ? seg.count / total : 0.0;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(seg.icon, color: seg.color, size: 14),
+                              const SizedBox(width: 6),
+                              Text(
+                                seg.label,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                '${seg.count}',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          LayoutBuilder(
+                            builder: (context, constraints) => Stack(
+                              children: [
+                                Container(
+                                  height: 4,
+                                  width: constraints.maxWidth,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.06),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                Container(
+                                  height: 4,
+                                  width: constraints.maxWidth * pct,
+                                  decoration: BoxDecoration(
+                                    color: seg.color,
+                                    borderRadius: BorderRadius.circular(2),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: seg.color.withValues(alpha: 0.4),
+                                        blurRadius: 4,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
         ],
+      ),
+    );
+  }
+
+  Widget _emptyState() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF16181D),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: Center(
+        child: Text(
+          'No activity data yet',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.4),
+            fontSize: 14,
+          ),
+        ),
       ),
     );
   }
 }
 
-class _PolarChartPainter extends CustomPainter {
-  final List<double> data;
-  final double maxData;
+class _Segment {
+  final String label;
+  final int count;
+  final Color color;
+  final IconData icon;
+  const _Segment(this.label, this.count, this.color, this.icon);
+}
 
-  _PolarChartPainter({required this.data}) : maxData = data.reduce(math.max);
+class _DonutPainter extends CustomPainter {
+  final List<_Segment> segments;
+  final int total;
+
+  const _DonutPainter({required this.segments, required this.total});
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (total == 0) return;
     final center = Offset(size.width / 2, size.height / 2);
-    // Radius leaves room for labels on the outside
-    final radius = (math.min(size.width, size.height) / 2) - 24;
+    final radius = size.width / 2 - 10;
+    const strokeWidth = 18.0;
 
-    // 1. Draw concentric grid circles
-    final gridPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.05)
+    // Background ring
+    final bgPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
+      ..strokeWidth = strokeWidth
+      ..color = Colors.white.withValues(alpha: 0.06);
+    canvas.drawCircle(center, radius, bgPaint);
 
-    canvas.drawCircle(center, radius, gridPaint);
-    canvas.drawCircle(center, radius * 0.66, gridPaint);
-    canvas.drawCircle(center, radius * 0.33, gridPaint);
-
-    // 2. Draw the 24 wedges
-    final barPaint = Paint()..style = PaintingStyle.fill;
-    final strokePaint = Paint()
-      ..color =
-          const Color(0xFF16181D) // Match background to create gaps
+    final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.butt;
 
-    final sweepAngle = (2 * math.pi) / 24;
-    final innerRadius = radius * 0.25; // Hollow center
+    double startAngle = -math.pi / 2;
+    const gap = 0.06;
 
-    for (int i = 0; i < 24; i++) {
-      final normalizedValue = data[i] / maxData;
-      // Calculate how far out this bar should stretch
-      final barRadius =
-          innerRadius + (normalizedValue * (radius - innerRadius));
-      // Start at top (-90 degrees or -pi/2)
-      final startAngle = -math.pi / 2 + (i * sweepAngle);
-
-      // Create a slight gradient effect based on height
-      barPaint.color = const Color(
-        0xFF1976D2,
-      ).withValues(alpha: 0.6 + (0.4 * normalizedValue));
-
-      final path = Path();
-      path.moveTo(center.dx, center.dy);
-      path.arcTo(
-        Rect.fromCircle(center: center, radius: barRadius),
-        startAngle,
-        sweepAngle,
+    for (final seg in segments) {
+      if (seg.count == 0) continue;
+      final sweep = (seg.count / total) * 2 * math.pi;
+      paint.color = seg.color;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle + gap,
+        sweep - gap * 2,
         false,
+        paint,
       );
-      path.close();
-
-      canvas.drawPath(path, barPaint);
-      canvas.drawPath(path, strokePaint); // Draws the gap between wedges
+      startAngle += sweep;
     }
-
-    // 3. Draw Center Overlay Circle
-    final centerOverlayPaint = Paint()
-      ..color = const Color(0xFF1A1C23)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, innerRadius + 4, centerOverlayPaint);
-    canvas.drawCircle(center, innerRadius + 4, gridPaint); // Inner border
-
-    // 4. Draw Center Text
-    _drawText(
-      canvas,
-      center,
-      "Activity\nby Hour",
-      fontSize: 10,
-      color: Colors.white70,
-    );
-
-    // 5. Draw Outer Axis Labels
-    _drawLabelAtAngle(canvas, center, radius, -math.pi / 2, "12am"); // Top
-    _drawLabelAtAngle(canvas, center, radius, 0, "6am"); // Right
-    _drawLabelAtAngle(canvas, center, radius, math.pi / 2, "12pm"); // Bottom
-    _drawLabelAtAngle(canvas, center, radius, math.pi, "6pm"); // Left
-  }
-
-  void _drawLabelAtAngle(
-    Canvas canvas,
-    Offset center,
-    double radius,
-    double angle,
-    String text,
-  ) {
-    final offset = Offset(
-      center.dx + (radius + 18) * math.cos(angle),
-      center.dy + (radius + 18) * math.sin(angle),
-    );
-    _drawText(canvas, offset, text, fontSize: 11, color: Colors.white54);
-  }
-
-  void _drawText(
-    Canvas canvas,
-    Offset position,
-    String text, {
-    required double fontSize,
-    required Color color,
-  }) {
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: TextStyle(color: color, fontSize: fontSize, height: 1.2),
-      ),
-      textAlign: TextAlign.center,
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    textPainter.paint(
-      canvas,
-      position - Offset(textPainter.width / 2, textPainter.height / 2),
-    );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _DonutPainter old) => old.total != total;
 }

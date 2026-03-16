@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:osserva/features/analytics/domain/entities/artist_stats.dart';
 
 part 'artist_entity.freezed.dart';
 
@@ -9,6 +10,6 @@ abstract class ArtistEntity with _$ArtistEntity {
     required String name,
     required int numberOfTracks,
     required int numberOfAlbums,
-    Map<String, dynamic>? analytics,
+    ArtistStats? analytics,
   }) = _ArtistEntity;
 }

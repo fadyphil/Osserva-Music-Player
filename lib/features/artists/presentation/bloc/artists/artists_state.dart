@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:music_player/features/artists/domain/entities/artist_entity.dart';
+import 'package:osserva/features/artists/domain/entities/artist_entity.dart';
 
 part 'artists_state.freezed.dart';
 

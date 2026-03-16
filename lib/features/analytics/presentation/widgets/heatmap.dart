@@ -1,25 +1,84 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
 
 class HeatmapCard extends StatelessWidget {
-  const HeatmapCard({super.key});
+  final List<PlayLog> logs;
+
+  const HeatmapCard({super.key, required this.logs});
+
+  Map<String, int> _buildDateMap() {
+    final map = <String, int>{};
+    for (final log in logs) {
+      final t = log.timestamp;
+      final key =
+          '${t.year}-${t.month.toString().padLeft(2, '0')}-${t.day.toString().padLeft(2, '0')}';
+      map[key] = (map[key] ?? 0) + 1;
+    }
+    return map;
+  }
+
+  /// Returns a 28-week (196 day) list of (dateKey, count) from oldest to newest,
+  /// aligned so each column of 7 is Mon→Sun.
+  List<int> _buildGrid(Map<String, int> dateMap) {
+    final today = DateTime.now();
+    // Step back to the most recent Sunday (start of the last full week shown)
+    // We want 28 full columns (weeks), leftmost = oldest, rightmost = most recent
+    // Start aligned so today's column ends at position [27][today.weekday % 7]
+    const totalDays = 28 * 7; // 196
+    // final end = today;
+    // align so the last row in the last column is today (weekday 7=Sun, 1=Mon)
+    // GridView with crossAxisCount=7 fills top-to-bottom per column
+    // We want Mon at top, Sun at bottom → row index = weekday - 1 (1=Mon→0)
+    // Start from totalDays - 1 days ago, but adjust so col 0 row 0 is a Monday
+    final daysBack =
+        totalDays - 1 + (today.weekday - 1); // how far the grid start is
+    final gridStart = today.subtract(Duration(days: daysBack));
+
+    return List.generate(totalDays, (i) {
+      final date = gridStart.add(Duration(days: i));
+      final key =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      return dateMap[key] ?? 0;
+    });
+  }
+
+  int _toIntensity(int count, int max) {
+    if (count == 0 || max == 0) return 0;
+    final ratio = count / max;
+    if (ratio < 0.25) return 1;
+    if (ratio < 0.5) return 2;
+    if (ratio < 0.75) return 3;
+    return 4;
+  }
+
+  Color _cellColor(int intensity) {
+    switch (intensity) {
+      case 1:
+        return const Color(0xFF0D47A1).withValues(alpha: 0.45);
+      case 2:
+        return const Color(0xFF1565C0).withValues(alpha: 0.7);
+      case 3:
+        return const Color(0xFF1976D2);
+      case 4:
+        return const Color(0xFF42A5F5);
+      default:
+        return const Color(0xFF1E2128);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Generate deterministic pseudo-random data to match the UI's varied heatmap look
-    // 0 = no activity, 4 = max activity
-    final math.Random random = math.Random(42);
-    // 7 days x 28 weeks = 196 days (~6.5 months)
-    final int weeks = 28;
-    final int days = 7;
-    final List<int> heatmapData = List.generate(weeks * days, (index) {
-      // Create some "gaps" to simulate the spacing seen in Image 4
-      if (index > 100 && index < 120) return 0;
-      // Bias towards lower numbers to make the bright blue pop out more
-      int value = random.nextInt(10);
-      if (value > 4) value = (value / 3).floor();
-      return value.clamp(0, 4);
-    });
+    final dateMap = _buildDateMap();
+    final maxCount = dateMap.values.isEmpty
+        ? 1
+        : dateMap.values.reduce((a, b) => a > b ? a : b);
+    final rawGrid = _buildGrid(dateMap);
+    final intensityGrid = rawGrid
+        .map((c) => _toIntensity(c, maxCount))
+        .toList();
+
+    final totalActiveDays = dateMap.values.where((v) => v > 0).length;
+    final totalPlays = dateMap.values.fold(0, (a, b) => a + b);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -31,7 +90,6 @@ class HeatmapCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             children: [
               const Icon(Icons.grid_on_rounded, color: Colors.blue, size: 20),
@@ -46,72 +104,62 @@ class HeatmapCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
-            'Most active period: Weekday afternoons (2-6 PM). Consistent engagement with occasional breaks during holidays.',
+            '$totalActiveDays active days · $totalPlays total plays in the last 28 weeks',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 12,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 24),
-
-          // The Grid (GitHub Style: 7 rows for days, scrolling horizontally for weeks)
+          const SizedBox(height: 20),
           SizedBox(
-            height: 140, // Fits 7 items + spacing
+            height: 116,
             child: GridView.builder(
               scrollDirection: Axis.horizontal,
-              // physics: const NeverScrollableScrollPhysics(), // Allow scrolling if it overflows
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7, // 7 Days (Rows)
-                crossAxisSpacing: 4, // Vertical spacing
-                mainAxisSpacing: 4, // Horizontal spacing
-                childAspectRatio: 1.0, // Square
+                crossAxisCount: 7,
+                crossAxisSpacing: 3,
+                mainAxisSpacing: 3,
+                childAspectRatio: 1.0,
               ),
-              itemCount: heatmapData.length,
-              itemBuilder: (context, index) {
-                final intensity = heatmapData[index];
-                return Container(
-                  decoration: BoxDecoration(
-                    color: _getHeatmapColor(intensity),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                );
-              },
+              itemCount: intensityGrid.length,
+              itemBuilder: (context, index) => Container(
+                decoration: BoxDecoration(
+                  color: _cellColor(intensityGrid[index]),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
             ),
           ),
-
-          const SizedBox(height: 24),
-
-          // Legend Footer (Less -> More)
+          const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Less',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4),
+                  color: Colors.white.withValues(alpha: 0.35),
                   fontSize: 10,
                 ),
               ),
-              Row(
-                children: [
-                  _buildLegendBox(const Color(0xFF1E2128)),
-                  const SizedBox(width: 2),
-                  _buildLegendBox(const Color(0xFF0D47A1).withValues(alpha: 0.4)),
-                  const SizedBox(width: 2),
-                  _buildLegendBox(const Color(0xFF1565C0).withValues(alpha: 0.7)),
-                  const SizedBox(width: 2),
-                  _buildLegendBox(const Color(0xFF1976D2)),
-                  const SizedBox(width: 2),
-                  _buildLegendBox(const Color(0xFF42A5F5)),
-                ],
-              ),
+              const SizedBox(width: 6),
+              for (int i = 0; i <= 4; i++) ...[
+                Container(
+                  width: 10,
+                  height: 10,
+                  margin: const EdgeInsets.only(right: 2),
+                  decoration: BoxDecoration(
+                    color: _cellColor(i),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ],
+              const SizedBox(width: 4),
               Text(
                 'More',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4),
+                  color: Colors.white.withValues(alpha: 0.35),
                   fontSize: 10,
                 ),
               ),
@@ -120,33 +168,5 @@ class HeatmapCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Widget _buildLegendBox(Color color) {
-    return Container(
-      width: 10,
-      height: 10,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(2),
-      ),
-    );
-  }
-
-  // Helper method to map intensity levels (0-4) to colors matching the screenshot
-  Color _getHeatmapColor(int intensity) {
-    switch (intensity) {
-      case 1:
-        return const Color(0xFF0D47A1).withValues(alpha: 0.4); // Faint Blue
-      case 2:
-        return const Color(0xFF1565C0).withValues(alpha: 0.7); // Medium Blue
-      case 3:
-        return const Color(0xFF1976D2); // Bright Blue
-      case 4:
-        return const Color(0xFF42A5F5); // Brightest Blue/Highlight
-      case 0:
-      default:
-        return const Color(0xFF1E2128); // Dark Grey (Empty)
-    }
   }
 }

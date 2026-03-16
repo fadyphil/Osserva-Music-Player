@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:music_player/features/home/domain/entities/home_tab.dart';
+import 'package:osserva/features/home/domain/entities/home_tab.dart';
 
 class SimpleAnimatedNavBar extends StatelessWidget {
   final HomeTab selectedTab;
@@ -14,7 +14,7 @@ class SimpleAnimatedNavBar extends StatelessWidget {
 
   void _handleTap(HomeTab tab) {
     if (selectedTab != tab) {
-      HapticFeedback.heavyImpact(); 
+      HapticFeedback.heavyImpact();
       onTabSelected(tab);
     }
   }
@@ -26,10 +26,7 @@ class SimpleAnimatedNavBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.95),
         border: Border(
-          top: BorderSide(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 1,
-          ),
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1),
         ),
       ),
       child: Row(
@@ -75,7 +72,7 @@ class _SimpleTabItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isSelected ? Colors.white : Colors.white38;
-    
+
     return GestureDetector(
       onTap: () {
         onTap();
@@ -92,11 +89,7 @@ class _SimpleTabItem extends StatelessWidget {
               scale: isSelected ? 1.2 : 1.0,
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOutBack,
-              child: Icon(
-                icon,
-                color: color,
-                size: 28, 
-              ),
+              child: Icon(icon, color: color, size: 28),
             ),
             const SizedBox(height: 4),
             Text(

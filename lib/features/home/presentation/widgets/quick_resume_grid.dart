@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/analytics/domain/entities/play_log.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class QuickResumeGrid extends StatelessWidget {

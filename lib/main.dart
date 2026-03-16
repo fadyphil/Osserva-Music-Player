@@ -5,15 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:media_store_plus/media_store_plus.dart';
-import 'package:music_player/core/router/app_router.dart';
-import 'package:music_player/core/theme/app_theme.dart';
-import 'package:music_player/core/usecases/usecase.dart';
-import 'package:music_player/core/di/init_dependencies.dart';
-import 'package:music_player/features/analytics/domain/services/music_analytics_service.dart';
-import 'package:music_player/features/favorites/presentation/bloc/favorites_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
-import 'package:music_player/features/profile/presentation/bloc/profile_bloc.dart';
-import 'package:music_player/features/onboarding/domain/usecases/check_if_user_is_first_timer.dart';
+import 'package:osserva/core/router/app_router.dart';
+import 'package:osserva/core/theme/app_theme.dart';
+import 'package:osserva/core/usecases/usecase.dart';
+import 'package:osserva/core/di/init_dependencies.dart';
+import 'package:osserva/features/favorites/presentation/bloc/favorites_bloc.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_bloc.dart';
+import 'package:osserva/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:osserva/features/onboarding/domain/usecases/check_if_user_is_first_timer.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart'; // Import this
 
@@ -22,7 +21,7 @@ void main() async {
 
   if (Platform.isAndroid) {
     await MediaStore.ensureInitialized();
-    MediaStore.appFolder = "AudioGraphy";
+    MediaStore.appFolder = "Osserva";
   }
 
   JustAudioMediaKit.ensureInitialized();
@@ -34,7 +33,7 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   await initDependencies();
-  serviceLocator<MusicAnalyticsService>().init();
+  // serviceLocator<MusicAnalyticsService>().init();
 
   final isFirstRunResult = await serviceLocator<CheckIfUserIsFirstTimer>()(
     NoParams(),
@@ -80,7 +79,7 @@ class _MyAppState extends State<MyApp> {
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        title: 'AudioGraphy',
+        title: 'Osserva',
         theme: AppTheme.darkThemeMode,
         routerConfig: serviceLocator<AppRouter>().config(
           deepLinkBuilder: (platformDeepLink) {

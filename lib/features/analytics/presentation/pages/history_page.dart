@@ -2,10 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:music_player/core/di/init_dependencies.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/analytics/domain/entities/play_log.dart';
-import 'package:music_player/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
+import 'package:osserva/core/di/init_dependencies.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
+import 'package:osserva/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
 
 @RoutePage()
 class HistoryPage extends StatelessWidget {

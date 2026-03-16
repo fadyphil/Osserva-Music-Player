@@ -25,8 +25,8 @@ Playback is logged automatically by the system, but can be triggered manually fo
 ### Code Example: Logging a Song
 ```dart
 // IMPORTS
-import 'package:music_player/features/analytics/domain/usecases/log_playback.dart';
-import 'package:music_player/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/analytics/domain/usecases/log_playback.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
 
 // LOGIC
 Future<void> manualLog(LogPlayback logPlaybackUseCase, SongEntity song) async {
@@ -52,7 +52,7 @@ To get the top 5 artists, use the generic `GetTopItems` use case.
 
 ```dart
 // IMPORTS
-import 'package:music_player/features/analytics/domain/usecases/get_top_items.dart';
+import 'package:osserva/features/analytics/domain/usecases/get_top_items.dart';
 
 // LOGIC
 void fetchTopArtists(GetTopItems getTopItems) async {

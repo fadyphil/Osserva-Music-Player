@@ -2,8 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:music_player/core/router/app_router.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
+import 'package:osserva/core/router/app_router.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
 
 @RoutePage()
 class SplashPage extends StatefulWidget {
@@ -49,36 +49,39 @@ class _SplashPageState extends State<SplashPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo
-            Image.asset(
-                  'assets/images/app_logo.png',
-                  width: 150,
-                  height: 150,
-                  fit: BoxFit.contain,
-                )
-                .animate()
-                .fade(duration: 600.ms)
-                .scale(duration: 600.ms, curve: Curves.easeOutBack),
-            const SizedBox(height: 24),
+            // // Logo
+            // Image.asset(
+            //       'assets/images/ic-launcher.png',
+            //       width: 150,
+            //       height: 150,
+            //       fit: BoxFit.contain,
+            //     )
+            //     .animate()
+            //     .fade(duration: 600.ms)
+            //     .scale(duration: 600.ms, curve: Curves.easeOutBack),
+            // const SizedBox(height: 24),
             // App Name
-            const Text(
-                  'Spotify el 8alaba',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: AppPallete.primaryGreen,
-                    letterSpacing: 1.2,
-                  ),
-                )
-                .animate()
-                .fade(delay: 300.ms, duration: 600.ms)
-                .moveY(
-                  begin: 20,
-                  end: 0,
-                  delay: 300.ms,
-                  duration: 600.ms,
-                  curve: Curves.easeOut,
-                ),
+            Center(
+              child:
+                  const Text(
+                        'Observe Your Listening Habits',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppPallete.primaryGreen,
+                          letterSpacing: 1.2,
+                        ),
+                      )
+                      .animate()
+                      .fade(delay: 300.ms, duration: 600.ms)
+                      .moveY(
+                        begin: 20,
+                        end: 0,
+                        delay: 300.ms,
+                        duration: 600.ms,
+                        curve: Curves.easeOut,
+                      ),
+            ),
             const SizedBox(height: 8),
             // Slogan
             const Text(

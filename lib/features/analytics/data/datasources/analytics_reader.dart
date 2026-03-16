@@ -1,7 +1,8 @@
-import '../../domain/entities/analytics_enums.dart';
-import '../../domain/entities/analytics_stats.dart';
-import '../../domain/entities/play_log.dart';
-import 'db/analytics_database.dart';
+import 'package:osserva/features/analytics/data/datasources/db/analytics_database.dart';
+import 'package:osserva/features/analytics/domain/entities/analytics_enums.dart';
+import 'package:osserva/features/analytics/domain/entities/analytics_stats.dart';
+import 'package:osserva/features/analytics/domain/entities/artist_stats.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
 
 class AnalyticsReader {
   final AnalyticsDatabase _dbProvider;
@@ -12,19 +13,46 @@ class AnalyticsReader {
     final now = DateTime.now();
     switch (timeFrame) {
       case TimeFrame.day:
-        return now.subtract(const Duration(days: 1)).millisecondsSinceEpoch;
+        // FIX: Use local midnight, not a rolling 24h window.
+        //
+        // The old implementation did now.subtract(Duration(days: 1)), which is
+        // a floating window — "since exactly 24 hours ago". This broke the
+        // "today" stat card: playing 1h at 11 PM and 1h at 1 AM both appeared
+        // in the same window but showed incorrect totals when queried at
+        // different times of day. Anchoring to local midnight (00:00 today)
+        // makes TimeFrame.day mean "today so far" — deterministic regardless
+        // of when the card is loaded.
+        final midnight = DateTime(now.year, now.month, now.day);
+        return midnight.millisecondsSinceEpoch;
+
       case TimeFrame.week:
-        return now.subtract(const Duration(days: 7)).millisecondsSinceEpoch;
+        // Anchor to the most recent Monday 00:00 local time.
+        final daysFromMonday = (now.weekday - 1) % 7;
+        final monday = DateTime(now.year, now.month, now.day - daysFromMonday);
+        return monday.millisecondsSinceEpoch;
+
       case TimeFrame.month:
-        return now.subtract(const Duration(days: 30)).millisecondsSinceEpoch;
+        // Anchor to the 1st of the current month.
+        final firstOfMonth = DateTime(now.year, now.month, 1);
+        return firstOfMonth.millisecondsSinceEpoch;
+
       case TimeFrame.year:
-        return now.subtract(const Duration(days: 365)).millisecondsSinceEpoch;
+        // Anchor to Jan 1 of the current year.
+        final firstOfYear = DateTime(now.year, 1, 1);
+        return firstOfYear.millisecondsSinceEpoch;
+
       case TimeFrame.all:
         return 0;
     }
   }
 
-  /// Helper to generate the SQL that unions Hot Logs + Cold Aggregates
+  /// Helper to generate the SQL that unions Hot Logs + Cold Aggregates.
+  ///
+  /// FIX: Hot data path now uses SUM(play_count) instead of COUNT(*).
+  /// The recorder merges consecutive plays of the same song into one row and
+  /// increments play_count (e.g. 5 loops = 1 row, play_count = 5). COUNT(*)
+  /// was treating that as 1 play. SUM(play_count) correctly counts it as 5,
+  /// consistent with the cold aggregate path which already used SUM(play_count).
   String _buildUnionQuery({
     required String innerSelect,
     required String innerGroupBy,
@@ -35,7 +63,7 @@ class AnalyticsReader {
       SELECT $outerSelect, SUM(count_val) as value
       FROM (
         -- Hot Data
-        SELECT $innerSelect, COUNT(*) as count_val
+        SELECT $innerSelect, SUM(log.play_count) as count_val
         FROM ${AnalyticsDatabase.tblPlaybackLogs} log
         JOIN ${AnalyticsDatabase.tblSongs} s ON log.song_id = s.id
         JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
@@ -66,18 +94,26 @@ class AnalyticsReader {
     final db = await _dbProvider.db;
     final threshold = _getTimestampThreshold(timeFrame);
 
-    // For Songs, we group by song ID but need to fetch titles/artists for display
+    // FIX: SUM(log.play_count) instead of COUNT(*) in hot path.
     final sql =
         '''
       SELECT 
-        CAST(s.source_id AS TEXT) as id, -- Return the original MediaStore ID
+        CAST(s.source_id AS TEXT) as id,
         s.title as label, 
         ar.name as sub_label, 
         SUM(count_val) as value
       FROM (
-        SELECT song_id, COUNT(*) as count_val FROM ${AnalyticsDatabase.tblPlaybackLogs} WHERE timestamp > ? GROUP BY song_id
+        SELECT song_id, SUM(play_count) as count_val
+        FROM ${AnalyticsDatabase.tblPlaybackLogs}
+        WHERE timestamp > ?
+        GROUP BY song_id
+
         UNION ALL
-        SELECT song_id, SUM(play_count) as count_val FROM ${AnalyticsDatabase.tblDailyAggregates} WHERE date_epoch > ? GROUP BY song_id
+
+        SELECT song_id, SUM(play_count) as count_val
+        FROM ${AnalyticsDatabase.tblDailyAggregates}
+        WHERE date_epoch > ?
+        GROUP BY song_id
       ) combined
       JOIN ${AnalyticsDatabase.tblSongs} s ON combined.song_id = s.id
       JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
@@ -148,7 +184,10 @@ class AnalyticsReader {
     final db = await _dbProvider.db;
     final threshold = _getTimestampThreshold(timeFrame);
 
-    // 1. Total Duration and Count (Hot + Cold)
+    // FIX: Hot data play_count was COUNT(*), now SUM(play_count).
+    // COUNT(*) = number of log rows. SUM(play_count) = actual play events,
+    // because consecutive loops/replays of the same song merge into one row
+    // with play_count incremented. Both paths now use SUM(play_count).
     final sql =
         '''
       SELECT 
@@ -158,7 +197,7 @@ class AnalyticsReader {
         -- Hot Data
         SELECT 
           SUM(duration_listened) as total_duration, 
-          COUNT(*) as play_count 
+          SUM(play_count) as play_count 
         FROM ${AnalyticsDatabase.tblPlaybackLogs} 
         WHERE timestamp > ?
         
@@ -178,12 +217,14 @@ class AnalyticsReader {
     final totalSeconds = row['total_duration'] as int? ?? 0;
     final totalCount = row['total_count'] as int? ?? 0;
 
-    // 2. Time of Day Distribution (Hot + Cold)
+    // FIX: Time of day — hot path uses SUM(play_count) instead of COUNT(*).
+    // Also added 'evening' bucket (18:00–22:59) that was previously swallowed
+    // by 'night'. The tracker classifies at log time; the reader just aggregates.
     final timeSql =
         '''
       SELECT time_of_day, SUM(cnt) as count
       FROM (
-        SELECT time_of_day, COUNT(*) as cnt 
+        SELECT time_of_day, SUM(play_count) as cnt 
         FROM ${AnalyticsDatabase.tblPlaybackLogs} 
         WHERE timestamp > ? 
         GROUP BY time_of_day
@@ -215,14 +256,21 @@ class AnalyticsReader {
 
   Future<Map<int, int>> getAllSongPlayCounts() async {
     final db = await _dbProvider.db;
-    // We need SOURCE ID (s.source_id), not internal ID
+
+    // FIX: Hot path uses SUM(play_count) for consistency.
     final sql =
         '''
       SELECT s.source_id, SUM(cnt) as count
       FROM (
-        SELECT song_id, COUNT(*) as cnt FROM ${AnalyticsDatabase.tblPlaybackLogs} GROUP BY song_id
+        SELECT song_id, SUM(play_count) as cnt
+        FROM ${AnalyticsDatabase.tblPlaybackLogs}
+        GROUP BY song_id
+
         UNION ALL
-        SELECT song_id, SUM(play_count) as cnt FROM ${AnalyticsDatabase.tblDailyAggregates} GROUP BY song_id
+
+        SELECT song_id, SUM(play_count) as cnt
+        FROM ${AnalyticsDatabase.tblDailyAggregates}
+        GROUP BY song_id
       ) combined
       JOIN ${AnalyticsDatabase.tblSongs} s ON combined.song_id = s.id
       GROUP BY s.source_id
@@ -239,104 +287,87 @@ class AnalyticsReader {
     return counts;
   }
 
-  Future<Map<String, dynamic>> getArtistStats(String artistName) async {
+  Future<ArtistStats> getArtistStats(String artistName) async {
     final db = await _dbProvider.db;
 
-    final sql =
+    // FIX: Hot path uses SUM(play_count) for play_count column.
+    final innerSql =
         '''
+    SELECT 
+      SUM(total_duration) as total_duration, 
+      SUM(play_count) as total_count,
+      COUNT(DISTINCT session_id) as sessions
+    FROM (
+      SELECT 
+        SUM(duration_listened) as total_duration, 
+        SUM(play_count) as play_count,
+        strftime('%Y-%m-%d %H', datetime(timestamp / 1000, 'unixepoch', 'localtime')) as session_id
+      FROM ${AnalyticsDatabase.tblPlaybackLogs} log
+      JOIN ${AnalyticsDatabase.tblSongs} s ON log.song_id = s.id
+      JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
+      WHERE ar.name = ?
+      GROUP BY session_id
+      
+      UNION ALL
+      
       SELECT 
         SUM(total_duration) as total_duration, 
-        SUM(play_count) as total_count,
-        COUNT(DISTINCT session_id) as sessions -- Heuristic session count if possible
-      FROM (
-        -- Hot Data
-        SELECT 
-          SUM(duration_listened) as total_duration, 
-          COUNT(*) as play_count,
-          strftime('%Y-%m-%d %H', datetime(timestamp / 1000, 'unixepoch')) as session_id
-        FROM ${AnalyticsDatabase.tblPlaybackLogs} log
-        JOIN ${AnalyticsDatabase.tblSongs} s ON log.song_id = s.id
-        JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
-        WHERE ar.name = ?
-        GROUP BY session_id
-        
-        UNION ALL
-        
-        -- Cold Data
-        SELECT 
-          SUM(total_duration) as total_duration, 
-          SUM(play_count) as play_count,
-          date_epoch || time_of_day as session_id
-        FROM ${AnalyticsDatabase.tblDailyAggregates} agg
-        JOIN ${AnalyticsDatabase.tblSongs} s ON agg.song_id = s.id
-        JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
-        WHERE ar.name = ?
-        GROUP BY session_id
-      )
-    ''';
-
-    final result = await db.rawQuery(sql, [artistName, artistName]);
-    if (result.isEmpty) {
-      return {'total_duration': 0, 'total_count': 0, 'sessions': 0};
-    }
-
-    // final row = result.first;
-    // We need to sum up the sub-queries' results because the UNION ALL grouping above might be weird
-    // Actually, the above SQL returns multiple rows (one per session_id).
-    // We should wrap it in another SUM.
+        SUM(play_count) as play_count,
+        date_epoch || time_of_day as session_id
+      FROM ${AnalyticsDatabase.tblDailyAggregates} agg
+      JOIN ${AnalyticsDatabase.tblSongs} s ON agg.song_id = s.id
+      JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
+      WHERE ar.name = ?
+      GROUP BY session_id
+    )
+  ''';
 
     final finalSql =
-        '''
-      SELECT 
-        SUM(total_duration) as total_duration,
-        SUM(play_count) as total_count,
-        COUNT(*) as sessions
-      FROM ($sql)
-    ''';
-
+        'SELECT SUM(total_duration) as total_duration, SUM(total_count) as total_count, SUM(sessions) as sessions FROM ($innerSql)';
     final finalResult = await db.rawQuery(finalSql, [artistName, artistName]);
-    final stats = Map<String, dynamic>.from(finalResult.first);
+    final row = finalResult.first;
 
-    // 2. Get Dominant Time of Day
     final timeSql =
         '''
-      SELECT time_of_day, SUM(cnt) as count
-      FROM (
-        SELECT time_of_day, COUNT(*) as cnt 
-        FROM ${AnalyticsDatabase.tblPlaybackLogs} log
-        JOIN ${AnalyticsDatabase.tblSongs} s ON log.song_id = s.id
-        JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
-        WHERE ar.name = ?
-        GROUP BY time_of_day
-        
-        UNION ALL
-        
-        SELECT time_of_day, SUM(play_count) as cnt 
-        FROM ${AnalyticsDatabase.tblDailyAggregates} agg
-        JOIN ${AnalyticsDatabase.tblSongs} s ON agg.song_id = s.id
-        JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
-        WHERE ar.name = ?
-        GROUP BY time_of_day
-      )
+    SELECT time_of_day, SUM(cnt) as count
+    FROM (
+      SELECT time_of_day, SUM(play_count) as cnt 
+      FROM ${AnalyticsDatabase.tblPlaybackLogs} log
+      JOIN ${AnalyticsDatabase.tblSongs} s ON log.song_id = s.id
+      JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
+      WHERE ar.name = ?
       GROUP BY time_of_day
-      ORDER BY count DESC
-      LIMIT 1
-    ''';
+      
+      UNION ALL
+      
+      SELECT time_of_day, SUM(play_count) as cnt 
+      FROM ${AnalyticsDatabase.tblDailyAggregates} agg
+      JOIN ${AnalyticsDatabase.tblSongs} s ON agg.song_id = s.id
+      JOIN ${AnalyticsDatabase.tblArtists} ar ON s.artist_id = ar.id
+      WHERE ar.name = ?
+      GROUP BY time_of_day
+    )
+    GROUP BY time_of_day
+    ORDER BY count DESC
+    LIMIT 1
+  ''';
 
     final timeResult = await db.rawQuery(timeSql, [artistName, artistName]);
-    if (timeResult.isNotEmpty) {
-      stats['dominant_time'] = timeResult.first['time_of_day'];
-    }
+    final dominantTime = timeResult.isNotEmpty
+        ? timeResult.first['time_of_day'] as String?
+        : null;
 
-    return stats;
+    return ArtistStats(
+      artistName: artistName,
+      totalPlays: row['total_count'] as int? ?? 0,
+      totalDurationSeconds: row['total_duration'] as int? ?? 0,
+      sessions: row['sessions'] as int? ?? 0,
+      dominantTimeOfDay: dominantTime,
+    );
   }
 
   Future<List<PlayLog>> getPlaybackHistory({int? limit, int? offset}) async {
     final db = await _dbProvider.db;
-
-    // History usually only cares about "Hot" logs (recent).
-    // If user scrolls back 5 years, we might need a different strategy,
-    // but typically "History" implies "Recent Logs".
 
     final result = await db.rawQuery(
       '''

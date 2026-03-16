@@ -4,13 +4,15 @@ import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:auto_route/auto_route.dart'; // Import auto_route
-import 'package:music_player/core/usecases/usecase.dart';
-import 'package:music_player/features/onboarding/domain/usecases/cache_first_timer.dart';
-import 'package:music_player/features/onboarding/presentation/cubit/onboarding_cubit.dart';
-import 'package:music_player/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:osserva/core/usecases/usecase.dart';
+import 'package:osserva/features/onboarding/domain/usecases/cache_first_timer.dart';
+import 'package:osserva/features/onboarding/presentation/cubit/onboarding_cubit.dart';
+import 'package:osserva/features/onboarding/presentation/pages/onboarding_page.dart';
 
 class MockCacheFirstTimer extends Mock implements CacheFirstTimer {}
-class MockStackRouter extends Mock implements StackRouter {} // Define MockStackRouter
+
+class MockStackRouter extends Mock
+    implements StackRouter {} // Define MockStackRouter
 
 void main() {
   late MockCacheFirstTimer mockCacheFirstTimer;
@@ -19,7 +21,9 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(NoParams());
-    registerFallbackValue(const PageRouteInfo('')); // Register fallback for AutoRoute
+    registerFallbackValue(
+      const PageRouteInfo(''),
+    ); // Register fallback for AutoRoute
   });
 
   setUp(() {
@@ -27,9 +31,13 @@ void main() {
     mockRouter = MockStackRouter(); // Initialize mockRouter
 
     // Stub the call
-    when(() => mockCacheFirstTimer(any())).thenAnswer((_) async => const Right(null));
-    when(() => mockRouter.push(any())).thenAnswer((_) async => null); // Stub push
-    
+    when(
+      () => mockCacheFirstTimer(any()),
+    ).thenAnswer((_) async => const Right(null));
+    when(
+      () => mockRouter.push(any()),
+    ).thenAnswer((_) async => null); // Stub push
+
     onboardingCubit = OnboardingCubit(cacheFirstTimer: mockCacheFirstTimer);
 
     // Register in GetIt
@@ -40,7 +48,7 @@ void main() {
     }
     getIt.registerSingleton<OnboardingCubit>(onboardingCubit);
   });
-  
+
   tearDown(() {
     GetIt.instance.reset();
     onboardingCubit.close();
@@ -50,7 +58,8 @@ void main() {
     testWidgets('renders first page content initially', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: StackRouterScope( // Wrap with StackRouterScope
+          home: StackRouterScope(
+            // Wrap with StackRouterScope
             controller: mockRouter,
             stateHash: 0,
             child: const OnboardingPage(),
@@ -58,14 +67,18 @@ void main() {
         ),
       );
 
-      expect(find.text('Welcome to Music Player'), findsOneWidget);
-      expect(find.text('Smart Analytics'), findsNothing); // Should be off-screen
+      expect(find.text('Welcome to Osserva'), findsOneWidget);
+      expect(
+        find.text('Smart Analytics'),
+        findsNothing,
+      ); // Should be off-screen
     });
 
     testWidgets('taping Next moves to second page', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: StackRouterScope( // Wrap with StackRouterScope
+          home: StackRouterScope(
+            // Wrap with StackRouterScope
             controller: mockRouter,
             stateHash: 0,
             child: const OnboardingPage(),
@@ -83,7 +96,8 @@ void main() {
     testWidgets('taping Skip triggers completion and caching', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: StackRouterScope( // Wrap with StackRouterScope
+          home: StackRouterScope(
+            // Wrap with StackRouterScope
             controller: mockRouter,
             stateHash: 0,
             child: const OnboardingPage(),
@@ -98,11 +112,14 @@ void main() {
       verify(() => mockCacheFirstTimer(any())).called(1);
       verify(() => mockRouter.push(any())).called(1); // Verify navigation
     });
-    
-    testWidgets('completing flow triggers completion and caching', (tester) async {
+
+    testWidgets('completing flow triggers completion and caching', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: StackRouterScope( // Wrap with StackRouterScope
+          home: StackRouterScope(
+            // Wrap with StackRouterScope
             controller: mockRouter,
             stateHash: 0,
             child: const OnboardingPage(),
@@ -124,7 +141,7 @@ void main() {
       // Tap Done
       await tester.tap(find.byIcon(Icons.check));
       await tester.pumpAndSettle();
-      
+
       verify(() => mockCacheFirstTimer(any())).called(1);
       verify(() => mockRouter.push(any())).called(1); // Verify navigation
     });

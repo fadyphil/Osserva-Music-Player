@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:music_player/features/background-notification-feature/data/datasources/audio_handler.dart';
+import 'package:osserva/features/background_notification/data/datasources/audio_handler.dart';
 
 class MockAudioPlayer extends Mock implements AudioPlayer {}
 
@@ -26,18 +26,23 @@ void main() {
     when(
       () => mockPlayer.sequenceStateStream,
     ).thenAnswer((_) => Stream.empty());
-    when(() => mockPlayer.durationStream)
-        .thenAnswer((_) => Stream.value(Duration.zero)); // Added
-    when(() => mockPlayer.positionStream)
-        .thenAnswer((_) => Stream.value(Duration.zero)); // Added
+    when(
+      () => mockPlayer.durationStream,
+    ).thenAnswer((_) => Stream.value(Duration.zero)); // Added
+    when(
+      () => mockPlayer.positionStream,
+    ).thenAnswer((_) => Stream.value(Duration.zero)); // Added
     // NEW STREAMS
-    when(() => mockPlayer.shuffleModeEnabledStream)
-        .thenAnswer((_) => Stream.value(false));
-    when(() => mockPlayer.loopModeStream)
-        .thenAnswer((_) => Stream.value(LoopMode.off));
+    when(
+      () => mockPlayer.shuffleModeEnabledStream,
+    ).thenAnswer((_) => Stream.value(false));
+    when(
+      () => mockPlayer.loopModeStream,
+    ).thenAnswer((_) => Stream.value(LoopMode.off));
     when(() => mockPlayer.playingStream).thenAnswer((_) => Stream.value(false));
-    when(() => mockPlayer.processingStateStream)
-        .thenAnswer((_) => Stream.value(ProcessingState.idle));
+    when(
+      () => mockPlayer.processingStateStream,
+    ).thenAnswer((_) => Stream.value(ProcessingState.idle));
 
     // PROPERTIES
     when(() => mockPlayer.position).thenReturn(Duration.zero);

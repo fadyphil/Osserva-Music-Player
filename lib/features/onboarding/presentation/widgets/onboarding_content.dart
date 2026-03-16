@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
 
 class OnboardingContent extends StatelessWidget {
   final String title;
@@ -26,11 +26,7 @@ class OnboardingContent extends StatelessWidget {
               color: AppPallete.surface,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              size: 100,
-              color: AppPallete.primaryGreen,
-            ),
+            child: Icon(icon, size: 100, color: AppPallete.primaryGreen),
           ),
           const SizedBox(height: 40),
           Text(

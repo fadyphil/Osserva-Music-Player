@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/di/init_dependencies.dart';
-import 'package:music_player/features/artists/presentation/bloc/artist-details/artist_detail_bloc.dart';
-import 'package:music_player/features/artists/presentation/bloc/artist-details/artist_detail_event.dart';
-import 'package:music_player/features/artists/presentation/bloc/artist-details/artist_detail_state.dart';
-import 'package:music_player/features/local%20music/presentation/widgets/song_list_tile.dart';
+import 'package:osserva/core/di/init_dependencies.dart';
+import 'package:osserva/features/artists/presentation/bloc/artist_details/artist_detail_bloc.dart';
+import 'package:osserva/features/artists/presentation/bloc/artist_details/artist_detail_event.dart';
+import 'package:osserva/features/artists/presentation/bloc/artist_details/artist_detail_state.dart';
+import 'package:osserva/features/local_music/presentation/widgets/song_list_tile.dart';
 
 @RoutePage()
 class ArtistDetailPage extends StatelessWidget {
@@ -64,11 +64,10 @@ class ArtistDetailPage extends StatelessWidget {
                   ),
                   loaded: (songs, analytics) {
                     final int totalSeconds =
-                        analytics?['total_duration'] as int? ?? 0;
+                        analytics?.totalDurationSeconds ?? 0;
                     final int hours = totalSeconds ~/ 3600;
-                    final int sessions = analytics?['sessions'] as int? ?? 0;
-                    final String? dominantTime =
-                        analytics?['dominant_time'] as String?;
+                    final int sessions = analytics?.sessions ?? 0;
+                    final String? dominantTime = analytics?.dominantTimeOfDay;
                     final int songCount = songs.length;
 
                     String description = "Collection of listening memories";
@@ -84,6 +83,7 @@ class ArtistDetailPage extends StatelessWidget {
                             "$sessions sessions with this voice—an evolving relationship.";
                       }
                     }
+                    // ... rest of the widget tree unchanged
 
                     return SliverMainAxisGroup(
                       slivers: [

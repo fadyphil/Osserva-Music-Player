@@ -1,4 +1,4 @@
-import 'package:music_player/features/artists/domain/entities/artist_entity.dart';
+import 'package:osserva/features/artists/domain/entities/artist_entity.dart';
 import 'package:on_audio_query/on_audio_query.dart' as lib;
 
 class ArtistMapper {

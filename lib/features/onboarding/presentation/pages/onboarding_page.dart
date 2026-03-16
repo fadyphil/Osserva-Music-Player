@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/router/app_router.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/onboarding/presentation/cubit/onboarding_cubit.dart';
-import 'package:music_player/features/onboarding/presentation/widgets/onboarding_content.dart';
-import 'package:music_player/core/di/init_dependencies.dart'; // Import serviceLocator
+import 'package:osserva/core/router/app_router.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/onboarding/presentation/cubit/onboarding_cubit.dart';
+import 'package:osserva/features/onboarding/presentation/widgets/onboarding_content.dart';
+import 'package:osserva/core/di/init_dependencies.dart'; // Import serviceLocator
 
 @RoutePage()
 class OnboardingPage extends StatefulWidget {
@@ -22,7 +22,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   final List<Map<String, dynamic>> _onboardingData = [
     {
-      "title": "Welcome to Music Player",
+      "title": "Welcome to Osserva",
       "desc":
           "Experience your local music library like never before with our sleek and modern player.",
       "icon": Icons.music_note_rounded,

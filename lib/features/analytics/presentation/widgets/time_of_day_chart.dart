@@ -13,19 +13,24 @@ class TimeOfDayChart extends StatelessWidget {
       return const SizedBox(
         height: 150,
         child: Center(
-          child: Text('No time data yet', style: TextStyle(color: AppPallete.grey)),
+          child: Text(
+            'No time data yet',
+            style: TextStyle(color: AppPallete.grey),
+          ),
         ),
       );
     }
 
     final morning = distribution['morning'] ?? 0;
     final afternoon = distribution['afternoon'] ?? 0;
+    final evening = distribution['evening'] ?? 0; // ADD
     final night = distribution['night'] ?? 0;
 
     final spots = [
       FlSpot(0, morning.toDouble()),
       FlSpot(1, afternoon.toDouble()),
-      FlSpot(2, night.toDouble()),
+      FlSpot(2, evening.toDouble()), // ADD
+      FlSpot(3, night.toDouble()), // was 2
     ];
 
     return SizedBox(
@@ -40,27 +45,39 @@ class TimeOfDayChart extends StatelessWidget {
                 interval: 1,
                 getTitlesWidget: (value, meta) {
                   switch (value.toInt()) {
-                    case 0: return const _BottomTitle('Morning');
-                    case 1: return const _BottomTitle('Afternoon');
-                    case 2: return const _BottomTitle('Night');
-                    default: return const SizedBox.shrink();
+                    case 0:
+                      return const _BottomTitle('Morning');
+                    case 1:
+                      return const _BottomTitle('Afternoon');
+                    case 2:
+                      return const _BottomTitle('Evening'); // ADD
+                    case 3:
+                      return const _BottomTitle('Night'); // was 2
+                    default:
+                      return const SizedBox.shrink();
                   }
                 },
               ),
             ),
-            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            leftTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
           ),
           borderData: FlBorderData(show: false),
           minX: 0,
-          maxX: 2,
+          maxX: 3, // was 2
           minY: 0,
           lineBarsData: [
             LineChartBarData(
               spots: spots,
               isCurved: true,
-              color: AppPallete.chart1, // Was electricBlue
+              color: AppPallete.chart1,
               barWidth: 4,
               isStrokeCapRound: true,
               dotData: FlDotData(

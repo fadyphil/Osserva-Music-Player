@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/core/di/init_dependencies.dart';
-import 'package:music_player/core/router/app_router.dart';
-import 'package:music_player/core/theme/app_pallete.dart';
-import 'package:music_player/features/playlists/presentation/bloc/playlist_bloc.dart';
+import 'package:osserva/core/di/init_dependencies.dart';
+import 'package:osserva/core/router/app_router.dart';
+import 'package:osserva/core/theme/app_pallete.dart';
+import 'package:osserva/features/playlists/presentation/bloc/playlist_bloc.dart';
 
 @RoutePage()
 class PlaylistListPage extends StatelessWidget {
@@ -13,7 +13,9 @@ class PlaylistListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => serviceLocator<PlaylistBloc>()..add(const PlaylistEvent.loadPlaylists()),
+      create: (_) =>
+          serviceLocator<PlaylistBloc>()
+            ..add(const PlaylistEvent.loadPlaylists()),
       child: Builder(
         builder: (context) {
           return Scaffold(
@@ -32,7 +34,8 @@ class PlaylistListPage extends StatelessWidget {
               builder: (context, state) {
                 return state.map(
                   initial: (_) => const SizedBox.shrink(),
-                  loading: (_) => const Center(child: CircularProgressIndicator()),
+                  loading: (_) =>
+                      const Center(child: CircularProgressIndicator()),
                   failure: (f) => Center(child: Text('Error: ${f.message}')),
                   loaded: (data) {
                     if (data.playlists.isEmpty) {
@@ -57,22 +60,32 @@ class PlaylistListPage extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                               image: playlist.imagePath != null
                                   ? DecorationImage(
-                                      image: NetworkImage(playlist.imagePath!), // Assuming URL or File
+                                      image: NetworkImage(
+                                        playlist.imagePath!,
+                                      ), // Assuming URL or File
                                       fit: BoxFit.cover,
                                     )
                                   : null,
                             ),
                             child: playlist.imagePath == null
-                                ? const Icon(Icons.music_note, color: Colors.white54)
+                                ? const Icon(
+                                    Icons.music_note,
+                                    color: Colors.white54,
+                                  )
                                 : null,
                           ),
-                          title: Text(playlist.name, style: const TextStyle(color: Colors.white)),
+                          title: Text(
+                            playlist.name,
+                            style: const TextStyle(color: Colors.white),
+                          ),
                           subtitle: Text(
                             '${playlist.totalSongs} songs',
                             style: const TextStyle(color: Colors.white54),
                           ),
                           onTap: () {
-                            context.router.push(PlaylistDetailRoute(playlist: playlist));
+                            context.router.push(
+                              PlaylistDetailRoute(playlist: playlist),
+                            );
                           },
                         );
                       },
@@ -82,7 +95,7 @@ class PlaylistListPage extends StatelessWidget {
               },
             ),
           );
-        }
+        },
       ),
     );
   }
@@ -92,25 +105,25 @@ class PlaylistListPage extends StatelessWidget {
     final descCtrl = TextEditingController();
 
     // Use a Builder to get the context with BlocProvider
-    // But showDialog creates a new context branch. 
+    // But showDialog creates a new context branch.
     // We need to access the Bloc from the parent context.
     // However, the dialog context won't have the bloc provider if it's strictly below Scaffold.
     // We should capture the bloc instance before showing dialog.
-    // Wait, `PlaylistListPage` creates the provider. 
+    // Wait, `PlaylistListPage` creates the provider.
     // But `showDialog` is pushed to the root navigator usually.
     // So we need to pass the bloc or use `serviceLocator` (bad for state sync, but we are using BlocProvider).
     // Better: Capture bloc context.
-    
+
     // Actually, `PlaylistBloc` is created in `build`.
     // We can't easily access it inside `showDialog` unless we pass it.
     // Or we rely on `serviceLocator` if we registered it as Singleton (we registered Factory).
     // So we MUST pass the bloc or wrap the dialog in BlocProvider.value.
-    
+
     // But wait, the context passed to `_showCreatePlaylistDialog` is from `build` (inside BlocProvider if we moved the method inside).
     // But `showCreatePlaylistDialog` is outside `build`.
     // The `context` passed to the method HAS the bloc.
-    // But `showDialog` builds a new tree. 
-    
+    // But `showDialog` builds a new tree.
+
     // Solution:
     final bloc = context.read<PlaylistBloc>();
 
@@ -118,7 +131,10 @@ class PlaylistListPage extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('New Playlist', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'New Playlist',
+          style: TextStyle(color: Colors.white),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -148,10 +164,12 @@ class PlaylistListPage extends StatelessWidget {
           TextButton(
             onPressed: () {
               if (nameCtrl.text.isNotEmpty) {
-                bloc.add(PlaylistEvent.createPlaylist(
-                  name: nameCtrl.text,
-                  description: descCtrl.text,
-                ));
+                bloc.add(
+                  PlaylistEvent.createPlaylist(
+                    name: nameCtrl.text,
+                    description: descCtrl.text,
+                  ),
+                );
                 Navigator.pop(ctx);
               }
             },

@@ -1,45 +1,53 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-
-// Simple data model to hold our mock activity data
-class DailyActivity {
-  final String date;
-  final String day;
-  final int plays;
-
-  DailyActivity(this.date, this.day, this.plays);
-}
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
 
 class RecentActivityCard extends StatelessWidget {
-  const RecentActivityCard({super.key});
+  final List<PlayLog> logs;
+
+  const RecentActivityCard({super.key, required this.logs});
+
+  List<_DayActivity> _buildLast7Days() {
+    // Group logs by date key
+    final Map<String, int> dateMap = {};
+    for (final log in logs) {
+      final t = log.timestamp;
+      final key =
+          '${t.year}-${t.month.toString().padLeft(2, '0')}-${t.day.toString().padLeft(2, '0')}';
+      dateMap[key] = (dateMap[key] ?? 0) + 1;
+    }
+
+    final today = DateTime.now();
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    return List.generate(7, (i) {
+      final date = today.subtract(Duration(days: 6 - i));
+      final key =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      return _DayActivity(
+        dateLabel: date.day.toString(),
+        dayName: dayNames[date.weekday - 1],
+        plays: dateMap[key] ?? 0,
+        isToday: i == 6,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Mock data based on Image 2
-    final List<DailyActivity> activityData = [
-      DailyActivity('12', 'Mon', 45),
-      DailyActivity('13', 'Tue', 32),
-      DailyActivity('14', 'Wed', 58),
-      DailyActivity('15', 'Thu', 41),
-      DailyActivity('16', 'Fri', 65),
-      DailyActivity('17', 'Sat', 82),
-      DailyActivity('18', 'Sun', 74),
-    ];
-
-    // Find the maximum plays to calculate the 100% width of the bars
-    final int maxPlays = activityData.map((e) => e.plays).reduce(math.max);
+    final days = _buildLast7Days();
+    final maxPlays = days.map((d) => d.plays).reduce(math.max);
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF16181D), // Dark card background
+        color: const Color(0xFF16181D),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             children: [
               const Icon(
@@ -56,98 +64,118 @@ class RecentActivityCard extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              const Spacer(),
+              Text(
+                'Last 7 days',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontSize: 11,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 24),
-
-          // Activity List
-          ...activityData.map((data) => _buildActivityRow(data, maxPlays)),
+          const SizedBox(height: 20),
+          if (maxPlays == 0)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  'No plays in the last 7 days',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            )
+          else
+            ...days.map((day) => _buildDayRow(day, maxPlays)),
         ],
       ),
     );
   }
 
-  Widget _buildActivityRow(DailyActivity data, int maxPlays) {
-    // Prevent division by zero; if maxPlays is 0, percentage is 0.
-    final double percentage = maxPlays > 0 ? (data.plays / maxPlays) : 0.0;
+  Widget _buildDayRow(_DayActivity day, int maxPlays) {
+    final pct = maxPlays > 0 ? day.plays / maxPlays : 0.0;
+    final barColor = day.isToday
+        ? Colors.orangeAccent
+        : Colors.orangeAccent.withValues(alpha: 0.6);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         children: [
-          // Date & Day column (Fixed width for alignment)
           SizedBox(
-            width: 50,
+            width: 48,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  data.day,
+                  day.dayName,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 12,
+                    color: day.isToday
+                        ? Colors.orangeAccent
+                        : Colors.white.withValues(alpha: 0.5),
+                    fontSize: 11,
                   ),
                 ),
                 Text(
-                  data.date,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
+                  day.dateLabel,
+                  style: TextStyle(
+                    color: day.isToday
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.8),
+                    fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
           ),
-
-          const SizedBox(width: 16),
-
-          // Bar Graph Track
+          const SizedBox(width: 14),
           Expanded(
             child: Stack(
               alignment: Alignment.centerLeft,
               children: [
-                // Background track
                 Container(
-                  height: 8,
+                  height: 7,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
-                // Filled bar
-                FractionallySizedBox(
-                  widthFactor: percentage,
-                  child: Container(
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: Colors.orangeAccent,
-                      borderRadius: BorderRadius.circular(4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.orangeAccent.withValues(alpha: 0.4),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                if (day.plays > 0)
+                  FractionallySizedBox(
+                    widthFactor: pct,
+                    child: Container(
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: barColor,
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: barColor.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
-
-          const SizedBox(width: 16),
-
-          // Play Count column (Fixed width for alignment)
+          const SizedBox(width: 12),
           SizedBox(
-            width: 55,
+            width: 52,
             child: Text(
-              '${data.plays} plays',
+              day.plays > 0 ? '${day.plays} plays' : '—',
               textAlign: TextAlign.right,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 12,
+                color: day.plays > 0
+                    ? Colors.white.withValues(alpha: 0.6)
+                    : Colors.white.withValues(alpha: 0.2),
+                fontSize: 11,
               ),
             ),
           ),
@@ -155,4 +183,18 @@ class RecentActivityCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DayActivity {
+  final String dateLabel;
+  final String dayName;
+  final int plays;
+  final bool isToday;
+
+  const _DayActivity({
+    required this.dateLabel,
+    required this.dayName,
+    required this.plays,
+    required this.isToday,
+  });
 }

@@ -53,8 +53,8 @@ The feature is driven by `ProfileBloc`.
 ```dart
 // IMPORTS
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/features/profile/presentation/bloc/profile_bloc.dart';
-import 'package:music_player/features/profile/presentation/bloc/profile_event.dart';
+import 'package:osserva/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:osserva/features/profile/presentation/bloc/profile_event.dart';
 
 // LOGIC
 void triggerCacheClear(BuildContext context) {

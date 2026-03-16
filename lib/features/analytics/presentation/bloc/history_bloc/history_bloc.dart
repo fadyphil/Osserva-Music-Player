@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:music_player/features/analytics/domain/entities/play_log.dart';
-import 'package:music_player/features/analytics/domain/usecases/get_playback_history.dart';
-import 'package:music_player/features/analytics/domain/usecases/watch_playback_history.dart';
+import 'package:osserva/features/analytics/domain/entities/play_log.dart';
+import 'package:osserva/features/analytics/domain/usecases/get_playback_history.dart';
+import 'package:osserva/features/analytics/domain/usecases/watch_playback_history.dart';
 
 part 'history_event.dart';
 part 'history_state.dart';
@@ -17,9 +17,9 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
   HistoryBloc({
     required GetPlaybackHistory getPlaybackHistory,
     required WatchPlaybackHistory watchPlaybackHistory,
-  })  : _getPlaybackHistory = getPlaybackHistory,
-        _watchPlaybackHistory = watchPlaybackHistory,
-        super(const HistoryState.initial()) {
+  }) : _getPlaybackHistory = getPlaybackHistory,
+       _watchPlaybackHistory = watchPlaybackHistory,
+       super(const HistoryState.initial()) {
     on<_FetchRecentHistory>(_onFetchRecentHistory);
     on<_FetchAllHistory>(_onFetchAllHistory);
 
@@ -41,19 +41,20 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
     if (state is! _Loaded) {
       emit(const HistoryState.loading());
     }
-    final result = await _getPlaybackHistory(const GetPlaybackHistoryParams(limit: 10));
-
-    result.fold(
-      (failure) => emit(HistoryState.failure(failure.message)),
-      (logs) {
-         // Preserve existing allHistory if present
-         final currentAll = state.maybeMap(
-           loaded: (s) => s.allHistory,
-           orElse: () => <PlayLog>[],
-         );
-         emit(HistoryState.loaded(recentSongs: logs, allHistory: currentAll));
-      },
+    final result = await _getPlaybackHistory(
+      const GetPlaybackHistoryParams(limit: 10),
     );
+
+    result.fold((failure) => emit(HistoryState.failure(failure.message)), (
+      logs,
+    ) {
+      // Preserve existing allHistory if present
+      final currentAll = state.maybeMap(
+        loaded: (s) => s.allHistory,
+        orElse: () => <PlayLog>[],
+      );
+      emit(HistoryState.loaded(recentSongs: logs, allHistory: currentAll));
+    });
   }
 
   Future<void> _onFetchAllHistory(
@@ -74,7 +75,9 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
 
     result.fold(
       (failure) => emit(HistoryState.failure(failure.message)),
-      (logs) => emit(HistoryState.loaded(recentSongs: currentRecent, allHistory: logs)),
+      (logs) => emit(
+        HistoryState.loaded(recentSongs: currentRecent, allHistory: logs),
+      ),
     );
   }
 }

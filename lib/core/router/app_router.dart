@@ -1,28 +1,30 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:music_player/features/favorites/presentation/pages/favorites_page.dart';
-import 'package:music_player/features/home/presentation/pages/home_page.dart';
-import 'package:music_player/features/home/presentation/pages/home_dashboard_page.dart';
-import 'package:music_player/features/home/presentation/pages/home_tab_shell_page.dart';
-import 'package:music_player/features/local%20music/presentation/pages/song_list_page.dart';
-import 'package:music_player/features/onboarding/presentation/pages/onboarding_page.dart';
-import 'package:music_player/features/onboarding/presentation/pages/user_registration_page.dart';
-import 'package:music_player/features/playlists/presentation/pages/playlist_detail_page.dart';
-import 'package:music_player/features/playlists/presentation/pages/playlist_list_page.dart';
-import 'package:music_player/features/profile/presentation/pages/profile_page.dart';
-import 'package:music_player/features/splash/presentation/pages/splash_page.dart';
-import 'package:music_player/features/artists/presentation/pages/artists_page.dart';
-import 'package:music_player/features/artists/presentation/pages/artist_detail_page.dart';
-import 'package:music_player/features/artists/presentation/pages/artists_tab_shell_page.dart';
-import 'package:music_player/features/library/presentation/pages/library_page.dart';
-import 'package:music_player/features/library/presentation/pages/library_tab_shell_page.dart';
+import 'package:osserva/features/analytics/presentation/widgets/analytics_dashboard_page.dart';
+import 'package:osserva/features/favorites/presentation/pages/favorites_page.dart';
+import 'package:osserva/features/home/presentation/pages/home_page.dart';
+import 'package:osserva/features/home/presentation/pages/home_dashboard_page.dart';
+import 'package:osserva/features/home/presentation/pages/home_tab_shell_page.dart';
+import 'package:osserva/features/library/presentation/pages/library_page.dart';
+import 'package:osserva/features/local_music/domain/entities/song_entity.dart';
+import 'package:osserva/features/local_music/presentation/pages/song_list_page.dart';
+import 'package:osserva/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:osserva/features/onboarding/presentation/pages/user_registration_page.dart';
+import 'package:osserva/features/playlists/presentation/pages/playlist_detail_page.dart';
+import 'package:osserva/features/playlists/presentation/pages/playlist_list_page.dart';
+import 'package:osserva/features/profile/presentation/pages/profile_page.dart';
+import 'package:osserva/features/music_player/presentation/pages/music_player_page.dart';
+import 'package:osserva/features/splash/presentation/pages/splash_page.dart';
+import 'package:osserva/features/artists/presentation/pages/artists_page.dart';
+import 'package:osserva/features/artists/presentation/pages/artist_detail_page.dart';
+import 'package:osserva/features/artists/presentation/pages/artists_tab_shell_page.dart';
+import 'package:osserva/features/library/presentation/pages/library_tab_shell_page.dart';
 
 // You will need to import your page widgets here.
 // Since I don't know your exact package name, I'm assuming relative imports or you will auto-import them.// Note: "local music" folder has a space, double check folder name
-import '../../features/analytics/presentation/pages/analytics_dashboard_page.dart';
 import '../../features/analytics/presentation/pages/history_page.dart';
-import 'package:music_player/core/router/guards/onboarding_guard.dart'; // Import the guard
-import 'package:music_player/features/playlists/domain/entities/playlist_entity.dart'; // Import Entity
+import 'package:osserva/core/router/guards/onboarding_guard.dart'; // Import the guard
+import 'package:osserva/features/playlists/domain/entities/playlist_entity.dart'; // Import Entity
 
 part 'app_router.gr.dart'; // This file will be generated
 
@@ -79,8 +81,11 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: AnalyticsDashboardRoute.page),
 
         // TAB 3: Profile
-    AutoRoute(page: ProfileRoute.page),
-  ],
-),
-];
+        AutoRoute(page: ProfileRoute.page),
+      ],
+    ),
+
+    // 4. Full-Screen Player (sits ABOVE the shell so it overlays everything)
+    AutoRoute(page: MusicPlayerRoute.page),
+  ];
 }
