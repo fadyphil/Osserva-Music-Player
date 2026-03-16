@@ -28,8 +28,8 @@ To control the player from anywhere in the app, dispatch events to the `MusicPla
 ```dart
 // IMPORTS
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_bloc.dart';
-import 'package:music_player/features/music_player/presentation/bloc/music_player_event.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_bloc.dart';
+import 'package:osserva/features/music_player/presentation/bloc/music_player_event.dart';
 
 // LOGIC
 void togglePlayback(BuildContext context) {

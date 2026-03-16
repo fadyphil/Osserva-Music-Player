@@ -37,7 +37,7 @@ The service must be initialized early in the app lifecycle (typically in `main.d
 ```dart
 // IMPORTS
 import 'package:audio_service/audio_service.dart';
-import 'package:music_player/features/background-notification-feature/data/datasources/audio_handler.dart';
+import 'package:osserva/features/background-notification-feature/data/datasources/audio_handler.dart';
 
 // LOGIC
 Future<AudioHandler> initAudioService() async {

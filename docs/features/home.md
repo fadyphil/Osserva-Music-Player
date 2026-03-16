@@ -27,8 +27,8 @@ The `HomeDashboardPage` uses a `CustomScrollView` to lazily load sections.
 ```dart
 // IMPORTS
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/features/home/presentation/bloc/home_bloc/home_bloc.dart';
-import 'package:music_player/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
+import 'package:osserva/features/home/presentation/bloc/home_bloc/home_bloc.dart';
+import 'package:osserva/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
 
 // LOGIC
 Widget buildDashboard() {

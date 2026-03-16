@@ -25,8 +25,8 @@ The artist list is loaded automatically when the page is built via the `BlocProv
 ```dart
 // IMPORTS
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_player/features/artists/presentation/bloc/artists/artists_bloc.dart';
-import 'package:music_player/features/artists/presentation/bloc/artists/artists_event.dart';
+import 'package:osserva/features/artists/presentation/bloc/artists/artists_bloc.dart';
+import 'package:osserva/features/artists/presentation/bloc/artists/artists_event.dart';
 
 // LOGIC
 Widget buildPage() {
