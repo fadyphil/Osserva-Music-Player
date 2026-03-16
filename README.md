@@ -25,6 +25,7 @@ Play counts, activity heatmaps, time-of-day distributions, per-artist breakdowns
   <img src="assets/screenshots/library-real-osserva.jpg" width="200" />
   <img src="assets/screenshots/real-current-playing-osserva.jpg" width="200" />
   <img src="assets/screenshots/summary-card-activity-analytics-osserva.jpg" width="200" />
+  <img src="assets/screenshots/listening-tren-genre-density-osserva.jpg" width="200" />
   <img src="assets/screenshots/top-genres-osserva.jpg" width="200" />
   <img src="assets/screenshots/top-songs-seeded-osserva.jpg" width="200" />
   <img src="assets/screenshots/top-artists-seeded-osserva.jpg" width="200" />
