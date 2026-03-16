@@ -35,7 +35,7 @@ Future<void> initDependencies() async {
   final audioHandler = await AudioService.init(
     builder: () => MusicPlayerHandler(player: audioPlayer),
     config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.example.music_player.channel.audio',
+      androidNotificationChannelId: 'com.osserva.app.channel.audio',
       androidNotificationChannelName: 'Music Playback',
       androidNotificationOngoing: true,
       androidShowNotificationBadge: false,

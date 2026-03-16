@@ -1,4 +1,4 @@
-package com.example.music_player
+package com.osserva.app
 
 import io.flutter.embedding.android.FlutterActivity
 import com.ryanheise.audioservice.AudioServiceActivity
