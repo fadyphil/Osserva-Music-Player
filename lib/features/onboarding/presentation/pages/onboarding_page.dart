@@ -22,7 +22,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   final List<Map<String, dynamic>> _onboardingData = [
     {
-      "title": "Welcome to Music Player",
+      "title": "Welcome to Osserva",
       "desc":
           "Experience your local music library like never before with our sleek and modern player.",
       "icon": Icons.music_note_rounded,

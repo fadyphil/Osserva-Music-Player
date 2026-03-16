@@ -9,7 +9,7 @@ tags: [feature, audio, background, notification, android, ios]
 > **Context/Prerequisite:** This feature relies on `audio_service` for OS integration and `just_audio` for playback. It requires platform-specific configuration in `AndroidManifest.xml` and `Info.plist`.
 
 ## Overview
-The **Background Notification Feature** is the engine room of the Music Player application. It allows audio to continue playing when the app is minimized or the screen is locked. It also provides the "Now Playing" notification with interactive controls (Play/Pause, Skip, Seek) that integrate directly with the operating system's media session (Android Auto, Lock Screen, Control Center).
+The **Background Notification Feature** is the engine room of the Osserva application. It allows audio to continue playing when the app is minimized or the screen is locked. It also provides the "Now Playing" notification with interactive controls (Play/Pause, Skip, Seek) that integrate directly with the operating system's media session (Android Auto, Lock Screen, Control Center).
 
 This feature acts as the **Single Source of Truth** for the playback state. The UI (Flutter widgets) does not manage the player directly; instead, it listens to the state broadcast by this background service.
 

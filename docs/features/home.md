@@ -6,7 +6,7 @@ tags: [feature, ui, dashboard, aggregation]
 
 # Home Dashboard Feature
 
-> **Context:** The Home feature acts as the "Grand Central Station" of the app, aggregating data from multiple sources (Profile, History, Music Player).
+> **Context:** The Home feature acts as the "Grand Central Station" of the app, aggregating data from multiple sources (Profile, History, Osserva).
 
 ## Overview
 The **Home Dashboard** is the first screen the user sees after onboarding. It provides a personalized greeting, quick access to recently played tracks ("Quick Resume"), and a list of playback history.

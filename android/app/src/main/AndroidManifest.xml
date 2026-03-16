@@ -24,7 +24,7 @@
 
     <!-- 2. THE APPLICATION TAG STARTS HERE -->
     <application
-        android:label="AudioGraphy"
+        android:label="Osserva"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:enableOnBackInvokedCallback="true"> 

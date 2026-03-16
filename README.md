@@ -3,14 +3,14 @@
 > **Clean Architecture** and **BLoC**. Some features may be incomplete.
 
 ---
-title: Music Player
+title: Osserva
 description: A production-grade Flutter application demonstrating Feature-First Clean Architecture, BLoC, and Offline-First principles.
 tags: [flutter, clean-architecture, bloc, audio, sqlite]
 ---
 
-# Music Player 🎵
+# Osserva 🎵
 
-> **Status:** Active Development (Beta)  
+> **Status:** Release Candidate (v1.0.0)  
 > **Architecture:** Feature-First Clean Architecture (DDD)  
 > **State Management:** BLoC (Business Logic Component)
 

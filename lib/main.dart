@@ -21,7 +21,7 @@ void main() async {
 
   if (Platform.isAndroid) {
     await MediaStore.ensureInitialized();
-    MediaStore.appFolder = "AudioGraphy";
+    MediaStore.appFolder = "Osserva";
   }
 
   JustAudioMediaKit.ensureInitialized();
@@ -79,7 +79,7 @@ class _MyAppState extends State<MyApp> {
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        title: 'AudioGraphy',
+        title: 'Osserva',
         theme: AppTheme.darkThemeMode,
         routerConfig: serviceLocator<AppRouter>().config(
           deepLinkBuilder: (platformDeepLink) {

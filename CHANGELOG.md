@@ -1,8 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.0] - 2026-03-16
 
 ### Added
+- **Rebranded application to Osserva** (formerly AudioGraphy/Music Player)
+- Updated launcher icons and splash screen assets with new high-resolution "Osserva" branding
 - Replaced `MusicPlayerSheet` with full-screen `MusicPlayerRoute` overlay
 - Added proper loop track wraparound detection in `AudioAnalyticsTracker` for LoopMode.one
 

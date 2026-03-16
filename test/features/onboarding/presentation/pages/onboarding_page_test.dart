@@ -58,7 +58,7 @@ void main() {
         ),
       );
 
-      expect(find.text('Welcome to Music Player'), findsOneWidget);
+      expect(find.text('Welcome to Osserva'), findsOneWidget);
       expect(find.text('Smart Analytics'), findsNothing); // Should be off-screen
     });
 

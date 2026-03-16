@@ -1,15 +1,15 @@
 ---
-title: Music Player Feature
+title: Osserva Feature
 description: Documentation for the core playback engine, queue management, and UI controls.
 tags: [feature, audio, bloc, state-management]
 ---
 
-# Music Player Feature
+# Osserva Feature
 
 > **Context:** This feature manages the foreground UI and BLoC state for audio playback. It interacts with the `Background Audio` service.
 
 ## Overview
-The **Music Player** feature serves as the visual interface for the audio engine. It orchestrates user intents (Play, Pause, Seek) and visualizes the current playback state (Progress, Metadata, Queue).
+The **Osserva** feature serves as the visual interface for the audio engine. It orchestrates user intents (Play, Pause, Seek) and visualizes the current playback state (Progress, Metadata, Queue).
 
 ## Architecture
 
