@@ -29,12 +29,15 @@ Play counts, activity heatmaps, time-of-day distributions, per-artist breakdowns
   <img src="assets/screenshots/top-genres-osserva.jpg" width="200" />
   <img src="assets/screenshots/top-songs-seeded-osserva.jpg" width="200" />
   <img src="assets/screenshots/top-artists-seeded-osserva.jpg" width="200" />
+  <img src="assets/screenshots/os-widget.jpg" width="400" />
 </p>
 
 ## Features
 
 ### Playback
 - Seamless background playback with lock-screen and notification controls
+- **Android Home Screen Widget:** Real-time state synchronization (title, artist, album art, play/pause state)
+- **Cold Start Support:** Start playback directly from the widget even if the app is closed
 - Full-screen player with queue manager and sleep timer
 - Android 13+ permission handling (`READ_MEDIA_AUDIO`)
 
@@ -82,6 +85,7 @@ Each feature owns its own `data`, `domain`, and `presentation` layers. Cross-fea
 | Dependency Injection | `get_it` | Service locator; features register their own modules |
 | Navigation | `auto_route` | Strongly-typed, declarative routing |
 | Audio Playback | `just_audio` + `audio_service` | Core engine + background service handler |
+| OS Widget | `home_widget` | Bridge for Android Home Screen Widget state |
 | Media Querying | `on_audio_query` (forked) | Optimized local media retrieval |
 | Database | `sqflite` | SQLite for analytics (star schema, daily rollups) |
 | Error Handling | `fpdart` | `Either` types throughout the domain layer |
