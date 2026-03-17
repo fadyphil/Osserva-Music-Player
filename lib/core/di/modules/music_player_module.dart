@@ -8,5 +8,6 @@ void registerMusicPlayerDependencies(GetIt sl) {
   sl.registerLazySingleton<AudioPlayerRepository>(
     () => AudioPlayerRepositoryImpl(sl<AudioHandler>()),
   );
-  sl.registerFactory(() => MusicPlayerBloc(sl(), sl(), sl()));
+  // registerFactory → registerLazySingleton
+  sl.registerLazySingleton(() => MusicPlayerBloc(sl(), sl(), sl()));
 }

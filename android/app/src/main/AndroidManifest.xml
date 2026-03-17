@@ -52,6 +52,12 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+                <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="audiography" android:host="widget"/>
+    </intent-filter>
         </activity>
 
                 <!-- 3. AUDIO SERVICE CONFIGURATION -->
@@ -64,6 +70,20 @@
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
+
+<receiver
+    android:name=".MusicPlayerWidget"
+    android:exported="true">
+    <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="com.osserva.app.WIDGET_PLAY_PAUSE" />
+        <action android:name="com.osserva.app.WIDGET_NEXT" />
+        <action android:name="com.osserva.app.WIDGET_PREV" />
+    </intent-filter>
+    <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/music_widget_info" />
+</receiver>
 
         <!-- The Receiver that handles Headphone buttons / Notification clicks -->
         <receiver android:name="com.ryanheise.audioservice.MediaButtonReceiver"

@@ -65,7 +65,9 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => serviceLocator<MusicPlayerBloc>()),
+        // BlocProvider.value → GetIt owns the instance, BlocProvider just exposes it
+        BlocProvider.value(value: serviceLocator<MusicPlayerBloc>()),
+        // BlocProvider(create: (_) => serviceLocator<MusicPlayerBloc>()),
         BlocProvider(
           create: (_) =>
               serviceLocator<ProfileBloc>()
