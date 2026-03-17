@@ -1,53 +1,88 @@
 ---
 title: Home Dashboard Feature
-description: Documentation for the main application dashboard and aggregation logic.
-tags: [feature, ui, dashboard, aggregation]
+description: Main shell, bottom navigation, greeting logic, and quick-resume grid.
+tags: [feature, home, dashboard, navigation, bloc]
 ---
 
 # Home Dashboard Feature
 
-> **Context:** The Home feature acts as the "Grand Central Station" of the app, aggregating data from multiple sources (Profile, History, Osserva).
+> **Prerequisites:** `MusicRepository` must be initialized — `HomeBloc` queries the local
+> song count. `HistoryBloc` (from `analytics`) must be available for the recently-played list.
 
 ## Overview
-The **Home Dashboard** is the first screen the user sees after onboarding. It provides a personalized greeting, quick access to recently played tracks ("Quick Resume"), and a list of playback history.
+
+The Home feature is the main application shell. It hosts the bottom navigation bar, renders
+the `HomeDashboardPage` as the first tab, and provides a personalized greeting and
+quick-resume grid. `HomeBloc` has no repository of its own — it is registered inline in
+`initDependencies()` with only `MusicRepository` injected.
+
+---
 
 ## Architecture
 
-This feature uses **MultiBlocProvider** to coordinate states from different domains:
-1.  **`HomeBloc`:** Manages Greeting logic (Morning/Afternoon/Night) and aggregate track counts.
-2.  **`HistoryBloc`:** Fetches playback history from the `analytics` feature.
-3.  **`MusicPlayerBloc`:** Receives "Play" commands from the dashboard widgets.
-
-## Usage Guide (How-To)
-
-### Dashboard Layout
-The `HomeDashboardPage` uses a `CustomScrollView` to lazily load sections.
-
-### Code Example: Coordinating Blocs
-```dart
-// IMPORTS
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:osserva/features/home/presentation/bloc/home_bloc/home_bloc.dart';
-import 'package:osserva/features/analytics/presentation/bloc/history_bloc/history_bloc.dart';
-
-// LOGIC
-Widget buildDashboard() {
-  return MultiBlocProvider(
-    providers: [
-      // 1. Load Greetings
-      BlocProvider(create: (_) => serviceLocator<HomeBloc>()..add(const HomeEvent.loadHomeData())),
-      // 2. Load History
-      BlocProvider(create: (_) => serviceLocator<HistoryBloc>()..add(const HistoryEvent.fetchRecentHistory())),
-    ],
-    child: const HomeBody(), // Consumes states
-  );
-}
+```
+home/
+├── domain/
+│   └── entities/
+│       └── home_tab.dart
+└── presentation/
+    ├── bloc/
+    │   └── home_bloc/
+    │       └── home_bloc.dart
+    ├── pages/
+    │   ├── home_page.dart           # Bottom nav bar shell
+    │   ├── home_dashboard_page.dart # Dashboard content (greeting, grid, history)
+    │   └── home_tab_shell_page.dart # AutoRoute shell for Tab 1 nested stack
+    └── widgets/
+        ├── home_header.dart
+        ├── quick_resume_grid.dart
+        ├── recently_played_list.dart
+        ├── pulse_bottom_nav_bar.dart
+        ├── simple_animated_nav_bar.dart
+        ├── prism_knob_navigation.dart
+        └── neural_string_navigation.dart
 ```
 
-## Reference: UI Components
+---
 
-| Component | Role |
+## `HomeBloc`
+
+Registered **inline** in `initDependencies()` — no module file:
+
+```dart
+serviceLocator.registerFactory(
+  () => HomeBloc(musicRepository: serviceLocator()),
+);
+```
+
+Responsibilities: time-of-day greeting logic and total song count.
+
+---
+
+## Navigation Bar
+
+The active navigation widget is determined by `UserEntity.preferredNavBar` from
+`ProfileBloc`. The user can switch styles from the Profile page. Three implementations
+are available:
+
+| `NavBarStyle` | Widget |
 | :--- | :--- |
-| `HomeHeader` | Displays dynamic greeting (e.g., "Good Morning, User") and track stats. |
-| `QuickResumeGrid` | A 2x2 grid of the 4 most recent tracks for one-tap playback. |
-| `RecentlyPlayedList` | A horizontal list of the last 10 tracks. |
+| `simple` | `SimpleAnimatedNavBar` |
+| `prism` | `PrismKnobNavigation` |
+| `neural` | `NeuralStringNavigation` |
+
+The nav bar must be wrapped in `SafeArea` or use `MediaQuery.of(context).padding.bottom` to
+avoid being obscured by the system gesture bar on Android.
+
+---
+
+## Dashboard Layout
+
+`HomeDashboardPage` uses `MultiBlocProvider` to wire `HomeBloc` and `HistoryBloc` together.
+The page uses a `CustomScrollView` with `SliverAppBar` for a collapsible header.
+
+| Widget | Data Source |
+| :--- | :--- |
+| `HomeHeader` | `HomeBloc` — greeting string and total song count. |
+| `QuickResumeGrid` | `HistoryBloc` — most recent 4 tracks for one-tap resume. |
+| `RecentlyPlayedList` | `HistoryBloc` — last 10 played tracks as a horizontal list. |

@@ -1,53 +1,59 @@
 ---
 title: Splash Screen Feature
-description: Documentation for the application launch sequence and routing logic.
-tags: [feature, ui, splash, routing]
+description: Cold-start experience, native splash removal, and onboarding routing decision.
+tags: [feature, splash, routing, flutter_native_splash]
 ---
 
 # Splash Screen Feature
 
-> **Context:** The Splash feature handles the initial "Cold Start" experience, including native splash removal and routing decisions.
+> **Context:** The Splash screen is the `initial: true` route in `AppRouter`. It runs
+> synchronously with DI initialization and hands routing control to either `OnboardingRoute`
+> or `HomeRoute` (which is then intercepted by `OnboardingGuard`).
 
 ## Overview
-The **Splash Screen** is a transient UI that displays branding while the app initializes essential services (DI, Database). Once initialization is complete, it decides whether to route the user to `Onboarding` (first run) or `Home` (returning user).
+
+`SplashPage` displays the app logo and branding during the brief window between process
+launch and the first navigable screen. It removes the native white splash via
+`FlutterNativeSplash.remove()`, plays an entrance animation, then routes based on the
+result of `CheckIfUserIsFirstTimer`.
+
+---
 
 ## Architecture
 
-*   **Native Integration:** Uses `flutter_native_splash` to show a static image immediately upon process launch, which is then programmatically removed.
-*   **Animation:** Uses `flutter_animate` to sequence logo fade-ins and scale effects.
-*   **Routing:** Uses `AutoRouter` to replace the navigation stack.
+```
+splash/
+└── presentation/
+    └── pages/
+        └── splash_page.dart
+```
 
-## Usage Guide (How-To)
+The splash feature has no data or domain layers. All routing logic is delegated to
+`OnboardingGuard` — `SplashPage` only needs to call `router.replace(HomeRoute())` and let
+the guard handle the redirect.
 
-### Routing Logic
-The routing decision is passed into the `SplashPage` constructor via `AppRouter`.
+---
 
-### Code Example: Navigation Decision
+## Routing Logic
+
 ```dart
-// IMPORTS
-import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:auto_route/auto_route.dart';
-
-// LOGIC
 void navigateNext(BuildContext context, bool isFirstRun) async {
-  // 1. Remove the native white screen
-  FlutterNativeSplash.remove();
-
-  // 2. Artificial delay for branding animation
-  await Future.delayed(const Duration(seconds: 2));
-
-  // 3. Route
+  FlutterNativeSplash.remove();         // Remove native static screen
+  await Future.delayed(const Duration(seconds: 2));  // Branding animation
   if (isFirstRun) {
     context.router.replace(const OnboardingRoute());
   } else {
     context.router.replace(const HomeRoute());
+    // OnboardingGuard on HomeRoute will verify and redirect if needed.
   }
 }
 ```
 
-## Reference: Configuration
+---
 
-The native splash screen is configured in `pubspec.yaml`:
+## Native Splash Configuration
+
+Configured in `pubspec.yaml`:
 
 ```yaml
 flutter_native_splash:
@@ -57,3 +63,6 @@ flutter_native_splash:
     image: assets/images/splash.png
     icon_background_color: "#121212"
 ```
+
+Run `dart run flutter_native_splash:create` after any change to regenerate the native
+drawable and launch screen files.

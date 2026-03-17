@@ -1,66 +1,151 @@
 ---
-title: User Profile Management
-description: How to manage your user identity, application settings, and cache.
-tags: [feature, profile, settings, user-guide]
+title: Profile Feature
+description: User identity, navigation preferences, achievements, all-time stats, and cache management.
+tags: [feature, profile, settings, shared_preferences, bloc]
 ---
 
-# User Profile Management
+# Profile Feature
 
-> **Context:** The User Profile feature allows you to view and modify your personal information and application-related settings.
+> **Prerequisites:** The `analytics` feature must be initialized — `ProfileBloc` calls
+> `GetGeneralStats(TimeFrame.all)` and `ClearAnalytics` directly.
 
 ## Overview
-Your profile page is where you can update your username, email, profile picture, and manage data like cached information and navigation bar styles.
 
-## Accessing Your Profile
+The Profile page surfaces the user's listening identity, all-time stats, achievements,
+navigation layout preferences, and app information. `ProfileBloc` loads all three data
+sources (user profile, achievements, general stats) in a single event. Cache clearing
+wipes both the profile `SharedPreferences` key and the entire analytics database.
 
-The Profile page is accessible via the main navigation (e.g., a dedicated tab in the Home screen).
+---
 
-## Managing Your Identity
+## Architecture
 
-### Updating Profile Details
-1.  On the Profile page, tap the **Edit (Pencil)** icon usually found near your profile picture or details.
-2.  **Avatar:** Tap the circular avatar to change your profile picture from your device's gallery.
-3.  **Username/Email:** Update your Codename (username) and Frequency (email) in the respective fields.
-4.  Tap **Save** to apply changes.
-
-## Application Settings
-
-### Change Navigation Bar Style
-You can customize the appearance of the bottom navigation bar:
-1.  Scroll down to the "Navigation Bar Style" section.
-2.  Tap on the various style options (e.g., Simple, Prism, Neural) to preview them.
-3.  Your selection will be applied instantly.
-
-### Clear Cache
-This action will remove all locally stored application data, including:
--   User profile information.
--   Analytics data.
--   Playlist and Favorites data.
--   **Warning:** This is an irreversible action and will effectively reset the application to its first-run state, requiring you to go through the onboarding process again.
-1.  Tap **Clear Cache**.
-2.  Confirm your decision in the prompt.
-3.  The application will reset and navigate you back to the onboarding screen.
-
-## Technical Details (Reference)
-
-### Data Persistence
-User profile information and navigation preferences are stored locally using `shared_preferences`.
-
-### State Management
-The feature is driven by `ProfileBloc`.
-
-### Code Example: Clearing Cache
-```dart
-// IMPORTS
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:osserva/features/profile/presentation/bloc/profile_bloc.dart';
-import 'package:osserva/features/profile/presentation/bloc/profile_event.dart';
-
-// LOGIC
-void triggerCacheClear(BuildContext context) {
-  // Dispatches the event to wipe all local data
-  context.read<ProfileBloc>().add(
-    const ProfileEvent.clearCache(),
-  );
-}
 ```
+profile/
+├── data/
+│   ├── datasources/
+│   │   └── profile_local_datasource.dart    # SharedPreferences wrapper
+│   ├── failures/
+│   ├── models/
+│   └── repositories/
+│       └── profile_repository_impl.dart
+├── domain/
+│   ├── entities/
+│   │   ├── user_entity.dart                 # Freezed: id, username, email, avatarUrl, preferredNavBar
+│   │   └── achievement_entity.dart          # Freezed: id, title, description, isUnlocked, progress
+│   ├── repositories/
+│   │   └── profile_repository.dart
+│   └── usecases/
+│       ├── get_user_profile.dart
+│       ├── update_user_profile.dart
+│       ├── clear_cache.dart
+│       └── get_achievements.dart
+└── presentation/
+    ├── bloc/
+    │   └── profile_bloc.dart
+    └── pages/
+        └── profile_page.dart
+```
+
+---
+
+## Data Persistence
+
+User profile data is stored as a JSON string under `SharedPreferences` key
+`cached_user_profile`. If the key is absent or the stored JSON is malformed (schema change),
+`getUserProfile()` returns a default user (`username: 'Music Lover'`, empty avatar,
+`preferredNavBar: NavBarStyle.simple`) rather than throwing.
+
+`clearCache()` removes both `cached_user_profile` and `is_first_timer` from
+`SharedPreferences`. This resets the app to a fresh-install state and redirects the user
+through onboarding.
+
+---
+
+## `ProfileBloc`
+
+### Loading
+
+`_onLoadProfile` runs three sequential `Either` folds (user → achievements → stats). If any
+step fails, an error state is emitted immediately without running subsequent steps.
+
+```dart
+// Simplified:
+userResult.fold(
+  (f) => emit(ProfileState.error(f.message)),
+  (user) => achievementsResult.fold(
+    (f) => emit(ProfileState.error(f.message)),
+    (achievements) => statsResult.fold(
+      (f) => emit(ProfileState.error(f.message)),
+      (stats) => emit(ProfileState.loaded(user, achievements, stats)),
+    ),
+  ),
+);
+```
+
+### Cache Clear
+
+`_onClearCache` calls `ClearCache` (profile SharedPreferences) and `ClearAnalytics`
+(analytics SQLite) sequentially. Either failure emits an error state. On success, emits
+`ProfileState.cacheCleared()`, which `profile_page.dart` listens to and responds by
+calling `context.router.replaceAll([OnboardingRoute()])`.
+
+### Nav Bar Style Change
+
+`_onChangeNavBarStyle` reads the current `loaded` state, produces an updated `UserEntity`
+with the new `NavBarStyle`, and dispatches `updateProfile` which persists and reloads.
+
+---
+
+## Reference: States
+
+| State | Description |
+| :--- | :--- |
+| `initial` | Not loaded. |
+| `loading` | All three queries in progress. |
+| `loaded` | `user`, `achievements`, `listeningStats`. |
+| `cacheCleared` | Emitted after successful cache wipe — triggers navigation to onboarding. |
+| `error` | Error message string. |
+
+## Reference: Use Cases
+
+| Use Case | Params | Returns |
+| :--- | :--- | :--- |
+| `GetUserProfile` | `NoParams` | `Either<Failure, UserEntity>` |
+| `UpdateUserProfile` | `UserEntity` | `Either<Failure, UserEntity>` |
+| `ClearCache` | `NoParams` | `Either<Failure, void>` — removes `cached_user_profile` + `is_first_timer`. |
+| `GetAchievements` | `NoParams` | `Either<Failure, List<AchievementEntity>>` |
+
+`ProfileBloc` also directly uses `ClearAnalytics` and `GetGeneralStats` from the
+`analytics` feature. Both are registered in `analytics_module.dart` as lazy singletons and
+injected into `ProfileBloc` via `profile_module.dart`.
+
+---
+
+## Achievements
+
+Achievements are currently computed statically in `ProfileLocalDataSourceImpl.getAchievements()`.
+Four achievements are defined: Early Bird, Night Owl, Marathoner, Explorer. In a future
+version these will be computed dynamically from the analytics database.
+
+---
+
+## About Section
+
+The Profile page includes an About section (`_AboutSection`) at the bottom of the scroll
+view showing the app name, version, license (MIT), and privacy statement. See
+`profile_page.dart` for the widget implementation.
+
+---
+
+## Navigation Bar Styles
+
+`NavBarStyle` enum values control which navigation widget is rendered in `home_page.dart`:
+
+| Value | Description |
+| :--- | :--- |
+| `simple` | Standard bottom nav bar. Labelled "Default" in the UI. |
+| `prism` | Custom prism knob nav bar widget. |
+| `neural` | Custom neural string nav bar widget. |
+
+The selected style is persisted via `UpdateUserProfile` and restored on every app launch.

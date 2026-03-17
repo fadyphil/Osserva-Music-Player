@@ -1,60 +1,190 @@
 ---
-title: Local Music Management
-description: How to scan, search, and sort your local music files.
-tags: [feature, local-music, user-guide]
+title: Local Music Feature
+description: Local media scanning, song management, metadata editing, and deletion.
+tags: [feature, local-music, on_audio_query, media_store, metadata]
 ---
 
-# Local Music Management
+# Local Music Feature
 
-> **Context/Prerequisite:** Ensure you have granted storage permissions to the application. Without permissions, the app cannot access your local audio files.
+> **Prerequisites:** Android audio permission must be granted before `getLocalSongs` is
+> called. The `Library` feature handles permission gating. On Android 13+, the required
+> permission is `READ_MEDIA_AUDIO` (`Permission.audio`); on older versions it is
+> `READ_EXTERNAL_STORAGE` (`Permission.storage`).
 
 ## Overview
-The Local Music feature allows you to browse and play audio files stored directly on your device. It provides tools for searching, sorting, and quick actions to manage your songs.
 
-## Scanning for Songs
+The Local Music feature is the media foundation of Osserva. It scans the device for
+compatible audio files, exposes them as `SongEntity` objects, and provides use cases for
+deletion and metadata editing. All other features that display or play songs consume data
+from this feature's `MusicRepository`.
 
-Upon granting permissions, the app automatically scans designated directories (e.g., your device's Music and Downloads folders) for compatible audio files. The first scan may take a moment depending on the size of your library.
+---
 
-## Browsing the Song List
+## Architecture
 
-The main screen of the application displays your scanned music library. Each entry represents a song, showing its title, artist, and album art (if available).
+```
+local_music/
+├── data/
+│   ├── datasource/
+│   │   └── local_music_datasource.dart      # Platform-specific media access
+│   ├── failures/
+│   │   ├── music_failures.dart
+│   │   └── music_failures.freezed.dart
+│   ├── models/
+│   │   └── song_model.dart                  # on_audio_query SongModel → SongEntity mapper
+│   └── repositories/
+│       └── music_repository_impl.dart
+├── domain/
+│   ├── entities/
+│   │   └── song_entity.dart                 # Freezed: id, title, artist, album, path, duration…
+│   ├── repositories/
+│   │   └── music_repository.dart
+│   └── usecases/
+│       ├── get_local_songs_use_case.dart
+│       ├── get_song_by_id_use_case.dart
+│       ├── delete_song.dart
+│       └── edit_song_metadata.dart
+└── presentation/
+    ├── managers/
+    │   ├── local_music_bloc.dart
+    │   ├── local_music_event.dart
+    │   └── local_music_state.dart
+    ├── pages/
+    │   └── song_list_page.dart
+    └── widgets/
+        ├── song_list_tile.dart
+        ├── song_artwork.dart
+        ├── edit_song_metadata_sheet.dart
+        └── song_options_sheet.dart
+```
 
-## Searching for Songs
+---
 
-### Steps
-1. Tap the **Search bar** at the top of the screen.
-2. Type in keywords related to the song title or artist.
-3. The list will filter in real-time as you type.
-4. To clear the search, tap the **X** icon in the search bar.
+## Media Scanning
 
-## Sorting Your Music
+`LocalMusicDatasourceImpl.getLocalMusic()` uses platform-specific paths:
 
-### Steps
-1. Tap the **Sort By** button (often displaying the current sort order, e.g., "Last Added").
-2. A bottom sheet will appear with various sorting options:
-   - **Title (A-Z/Z-A):** Sorts alphabetically by song title.
-   - **Artist (A-Z):** Sorts alphabetically by artist name.
-   - **Last Added:** Sorts by the most recently added songs (default).
-   - **Duration:** Sorts by song length.
-   - **Most Played:** Sorts by your most frequently played songs (requires Analytics enabled).
-3. Select your preferred sorting option. The list will update automatically.
+| Platform | Implementation |
+| :--- | :--- |
+| **Android** | `OnAudioQuery.querySongs()` with `UriType.EXTERNAL`, sorted descending by `DATE_ADDED`. |
+| **macOS / Windows** | `OnAudioQuery.querySongs()` without URI filtering. |
+| **Linux** | Manual directory scan of `~/Music` and `~/Downloads` using `dart:io`. Parses `"Artist - Title.ext"` filename convention for metadata. |
 
-## Quick Actions (Swipe Gestures)
+### Filtering Rules
 
-Each song tile supports swipe gestures for quick actions:
+After querying, songs are filtered to remove noise:
 
-### Add to Queue (Left Swipe)
-1. **Swipe left** on a song tile.
-2. Tap the **Queue** button (playlist_add icon).
-3. The song will be added to the current playback queue. A confirmation message will appear.
+- **All platforms:** `duration > 5000ms` (5 seconds) — removes notification sounds and short clips.
+- **Android:** `isMusic == true || isPodcast == true` — removes ringtones, alarms, and notifications.
+- **Desktop:** All files passing the duration check are included (system cannot classify `isMusic` reliably).
 
-### Add to Playlist (Right Swipe)
-1. **Swipe right** on a song tile.
-2. Tap the **Playlist** button (add_box icon).
-3. A modal sheet will appear, listing your existing playlists.
-4. Select a playlist to add the song to it. You can also create a new playlist from this sheet.
+### Supported Formats
 
-## Related Features
-- **Osserva:** For playback controls and current song information.
-- **Playlists:** For custom song collections.
-- **Favorites:** For bookmarking your most liked songs.
+`.mp3`, `.m4a`, `.wav`, `.ogg`, `.flac`
+
+---
+
+## `LocalMusicBloc`
+
+`LocalMusicBloc` is registered as `registerFactory`. It manages searching, sorting, and
+play count display alongside the core song list.
+
+On `getLocalSongs`, two queries run in parallel using Dart 3 record `.wait`:
+
+```dart
+final (songsResult, countsResult) = await (
+  _getLocalSongsUseCase(NoParams()),
+  _getAllSongPlayCountsUseCase(NoParams()),
+).wait;
+```
+
+Play counts from the analytics database are merged into the loaded state so the
+`mostPlayed` sort option has data immediately.
+
+### `LocalMusicState` Variants
+
+| Variant | Description |
+| :--- | :--- |
+| `initial` | No data loaded yet. |
+| `loading` | Scan in progress. |
+| `loaded` | `allSongs`, `processedSongs` (filtered+sorted), `playCounts`, `searchQuery`, `sortOption`. |
+| `failure` | `Failure` object from the repository. |
+
+### Search
+
+`SearchSongs` is handled with a 300ms `debounce` transformer from `stream_transform`.
+Filtering is case-insensitive and matches both `song.title` and `song.artist`.
+
+### Sort
+
+`_pendingSort` is stored on the BLoC instance so a `SortSongs` event dispatched before the
+initial load completes is honoured when `_onGetLocalSongs` finishes. Sort is applied to
+`processedSongs`; `allSongs` is never mutated.
+
+---
+
+## Song Deletion
+
+`DeleteSong` calls `LocalMusicDatasourceImpl.deleteSong`, which uses platform-specific
+deletion:
+
+| Platform | Method |
+| :--- | :--- |
+| **Android** | `MediaStore.deleteFileUsingUri(uriString)` triggers the native system permission dialog (Android 11+). Falls back to `File.delete()` for files owned by the app. |
+| **Desktop** | `File.delete()` directly. |
+
+After a successful deletion, the BLoC re-dispatches `GetLocalSongs` to refresh the list.
+The `DeleteSong` use case also cleans up the song's analytics logs and removes it from all
+playlists.
+
+---
+
+## Metadata Editing
+
+`EditSongMetadata` calls `LocalMusicDatasourceImpl.editSongMetadata`, which uses the
+`audiotags` package to read and write ID3/MP4 tags.
+
+> **Unsupported formats:** `.opus` and `.wav` files are silently skipped — `editSongMetadata`
+> returns `false` without throwing. The caller receives a failure and should surface this to
+> the user.
+
+The edit is a **partial update**: existing tags are read first, and only supplied fields are
+overwritten. Artwork is handled separately — if `artworkBytes` is provided, it replaces the
+existing cover; if null, the existing artwork is preserved.
+
+After writing tags, `OnAudioQuery.scanMedia(path)` is called on Android to force the
+`MediaStore` to re-index the updated file.
+
+### `EditSongMetadataParams`
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `song` | `SongEntity` | The song to edit (provides `path` for file access). |
+| `title` | `String?` | New title; `null` preserves existing. |
+| `artist` | `String?` | New artist; `null` preserves existing. |
+| `album` | `String?` | New album; `null` preserves existing. |
+| `genre` | `String?` | New genre; `null` preserves existing. |
+| `year` | `String?` | Release year as string; parsed to `int`. `null` preserves existing. |
+| `artworkBytes` | `Uint8List?` | New cover art bytes; `null` preserves existing artwork. |
+
+---
+
+## Reference: Use Cases
+
+| Use Case | Params | Returns |
+| :--- | :--- | :--- |
+| `GetLocalSongsUseCase` | `NoParams` | `Either<Failure, List<SongEntity>>` |
+| `GetSongByIdUseCase` | `int songId` | `Either<Failure, SongEntity>` |
+| `DeleteSong` | `SongEntity` | `Either<Failure, bool>` |
+| `EditSongMetadata` | `EditSongMetadataParams` | `Either<Failure, bool>` |
+
+---
+
+## Troubleshooting
+
+| Symptom | Probable Cause | Fix |
+| :--- | :--- | :--- |
+| Song list is empty on Android | Permission not granted | Verify `LibraryPage._checkPermissionAndFetch()` is called and permission is accepted. |
+| Deleted song reappears after restart | `MediaStore` not updated | Confirm `_onAudioQuery.scanMedia(path)` is called after file deletion on Android. |
+| Metadata edit has no effect on `.opus` files | Format not supported by `audiotags` | The datasource explicitly returns `false` for `.opus` and `.wav`. Inform the user in the UI. |
+| `GetSongByIdUseCase` returns failure | `queryAudiosFrom` uses `ALBUM_ID` not `AUDIO_ID` | This is a known issue in the current datasource. Cross-reference the ID type being passed — the current implementation queries by `ALBUM_ID`. |

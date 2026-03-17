@@ -1,57 +1,92 @@
 ---
 title: Artists Feature
-description: Documentation for the Artist listing and navigation feature.
-tags: [feature, ui, artists, browsing]
+description: Artist list, per-artist song browsing, and analytics drill-down.
+tags: [feature, artists, on_audio_query, analytics]
 ---
 
 # Artists Feature
 
-> **Context:** This feature is a simple presentation layer that aggregates songs by Artist metadata.
+> **Prerequisites:** `on_audio_query` must have audio permission before `GetArtists` is
+> called. The `analytics` feature must be initialized for per-artist stats to load.
 
 ## Overview
-The **Artists** feature provides a list view of all unique artists found in the local music library. Tapping on an artist navigates to a filtered view of their songs.
+
+The Artists feature provides a paginated list of all unique artists in the local library and
+a detail screen for each artist showing their songs and play statistics. It owns its own data
+layer — it does not delegate to `local_music` for artist queries.
+
+---
 
 ## Architecture
 
-*   **Presentation:** `ArtistsBloc` loads data from the `local_music` repository.
-*   **UI:** `ArtistsPage` displays a `ListView` of `ArtistCard` widgets.
-
-## Usage Guide (How-To)
-
-### Loading Artists
-The artist list is loaded automatically when the page is built via the `BlocProvider`.
-
-### Code Example: Artist Page Structure
-```dart
-// IMPORTS
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:osserva/features/artists/presentation/bloc/artists/artists_bloc.dart';
-import 'package:osserva/features/artists/presentation/bloc/artists/artists_event.dart';
-
-// LOGIC
-Widget buildPage() {
-  return BlocProvider(
-    // Trigger load on creation
-    create: (_) => serviceLocator<ArtistsBloc>()..add(const ArtistsEvent.loadArtists()),
-    child: BlocBuilder<ArtistsBloc, ArtistsState>(
-      builder: (context, state) {
-        return state.when(
-          loading: () => const CircularProgressIndicator(),
-          loaded: (artists) => ListView.builder(
-            itemCount: artists.length,
-            itemBuilder: (context, index) => ArtistCard(artist: artists[index]),
-          ),
-          initial: () => const SizedBox(),
-          error: (msg) => Text(msg),
-        );
-      },
-    ),
-  );
-}
+```
+artists/
+├── data/
+│   ├── datasources/
+│   │   └── artist_local_datasource.dart    # OnAudioQuery artist + song queries
+│   ├── models/
+│   │   └── artist_mapper.dart
+│   └── repositories/
+│       └── artist_repository_impl.dart
+├── domain/
+│   ├── entities/
+│   │   └── artist_entity.dart              # Freezed: id, name, numberOfTracks, numberOfAlbums
+│   ├── failures/
+│   │   └── artist_failure.dart
+│   ├── repositories/
+│   │   └── artist_repository.dart
+│   └── usecases/
+│       ├── get_artists.dart
+│       ├── get_artist_songs.dart
+│       └── get_artist_analytics_stats.dart
+└── presentation/
+    ├── bloc/
+    │   ├── artists/
+    │   │   └── artists_bloc.dart           # Drives artist list page
+    │   └── artist_details/
+    │       └── artist_detail_bloc.dart     # Drives artist detail page
+    ├── pages/
+    │   ├── artists_page.dart
+    │   ├── artist_detail_page.dart
+    │   └── artists_tab_shell_page.dart
+    └── widgets/
+        └── artist_card.dart
 ```
 
-## Reference: UI Components
+---
 
-| Component | Description |
-| :--- | :--- |
-| `ArtistCard` | A list tile displaying the artist name and song count. |
+## Data Source
+
+`ArtistLocalDataSourceImpl` uses `on_audio_query` on Android/iOS and a manual
+`~/Music` + `~/Downloads` directory scan on Linux.
+
+- **`getArtists()`** — queries with `ArtistSortType.ARTIST`, `OrderType.ASC_OR_SMALLER`.
+- **`getArtistSongs(artistId)`** — uses `queryAudiosFrom(AudiosFromType.ARTIST_ID, artistId)`.
+- **`getArtistStats()`** — returns `{}` (stats are fetched via `GetArtistAnalyticsStats`,
+  which queries the analytics database, not the media store).
+
+---
+
+## Reference: Use Cases
+
+| Use Case | Params | Returns |
+| :--- | :--- | :--- |
+| `GetArtists` | `NoParams` | `Either<ArtistFailure, List<ArtistEntity>>` |
+| `GetArtistSongs` | `artistName: String` (or `artistId: int`) | `Either<ArtistFailure, List<SongEntity>>` |
+| `GetArtistAnalyticsStats` | `artistName: String` | `Either<Failure, ArtistStats>` from analytics DB |
+
+## Reference: BLoC Registration
+
+Both BLoCs are registered as `registerFactory`:
+
+```
+sl.registerFactory(() => ArtistsBloc(sl(), sl()));         // GetArtists, GetArtistSongs
+sl.registerFactory(() => ArtistDetailBloc(sl(), sl()));    // GetArtistSongs, GetArtistAnalyticsStats
+```
+
+## Known Limitation
+
+Artist name matching between the media store and the analytics database is exact and
+case-sensitive. Tracks with featured artist notation (e.g., `"Song - Artist ft. Other"`)
+are attributed to the full raw metadata string rather than the primary artist. Collaboration
+normalisation is a planned improvement.
