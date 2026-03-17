@@ -18,6 +18,18 @@ Osserva is an offline Android music player built around one idea: your listening
 Play counts, activity heatmaps, time-of-day distributions, per-artist breakdowns — all computed locally, all stored on your device.
 
 ---
+## Screenshots
+
+<p float="left">
+  <img src="assets/screenshots/home-seeded-osserva.jpg" width="200" />
+  <img src="assets/screenshots/library-real-osserva.jpg" width="200" />
+  <img src="assets/screenshots/real-current-playing-osserva.jpg" width="200" />
+  <img src="assets/screenshots/summary-card-activity-analytics-osserva.jpg" width="200" />
+  <img src="assets/screenshots/listening-tren-genre-density-osserva.jpg" width="200" />
+  <img src="assets/screenshots/top-genres-osserva.jpg" width="200" />
+  <img src="assets/screenshots/top-songs-seeded-osserva.jpg" width="200" />
+  <img src="assets/screenshots/top-artists-seeded-osserva.jpg" width="200" />
+</p>
 
 ## Features
 
