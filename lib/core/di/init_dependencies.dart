@@ -11,6 +11,7 @@ import 'package:osserva/core/di/modules/onboarding_module.dart';
 import 'package:osserva/core/di/modules/playlists_module.dart';
 import 'package:osserva/core/di/modules/profile_module.dart';
 import 'package:osserva/core/router/app_router.dart';
+import 'package:osserva/core/services/widget_sync_service.dart';
 import 'package:osserva/features/analytics/data/datasources/audio_analytics_tracker.dart';
 import 'package:osserva/features/background_notification/data/datasources/audio_handler.dart';
 import 'package:osserva/features/home/presentation/bloc/home_bloc/home_bloc.dart';
@@ -32,19 +33,8 @@ Future<void> initDependencies() async {
   serviceLocator.registerSingleton<AudioPlayer>(audioPlayer);
   serviceLocator.registerSingleton<AppRouter>(AppRouter());
 
-  final audioHandler = await AudioService.init(
-    builder: () => MusicPlayerHandler(player: audioPlayer),
-    config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.osserva.app.channel.audio',
-      androidNotificationChannelName: 'Music Playback',
-      androidNotificationOngoing: true,
-      androidShowNotificationBadge: false,
-    ),
-  );
-  serviceLocator.registerSingleton<AudioHandler>(audioHandler);
-
   // =========================================================
-  // 2. Features
+  // 2. Features (Must register before AudioHandler if it depends on them)
   // =========================================================
   registerLocalMusicDependencies(serviceLocator);
   registerMusicPlayerDependencies(serviceLocator);
@@ -55,13 +45,36 @@ Future<void> initDependencies() async {
   registerFavoritesDependencies(serviceLocator);
   registerArtistsDependencies(serviceLocator);
 
+  final audioHandler = await AudioService.init(
+    builder:
+        () => MusicPlayerHandler(
+          player: audioPlayer,
+          getLocalSongsUseCase: serviceLocator(),
+        ),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.osserva.app.channel.audio',
+      androidNotificationChannelName: 'Music Playback',
+      androidNotificationOngoing: true,
+      androidShowNotificationBadge: false,
+    ),
+  );
+  serviceLocator.registerSingleton<AudioHandler>(audioHandler);
+
   // Home has no repository — registered inline, no module needed
   serviceLocator.registerFactory(
     () => HomeBloc(musicRepository: serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton<WidgetSyncService>(
+    () => WidgetSyncService(
+      playerBloc: serviceLocator(),
+      audioQuery: serviceLocator(),
+    ),
   );
 
   // =========================================================
   // 3. Post-registration init
   // =========================================================
   serviceLocator<AudioAnalyticsTracker>().init();
+  serviceLocator<WidgetSyncService>().init();
 }

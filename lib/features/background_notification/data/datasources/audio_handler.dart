@@ -3,19 +3,25 @@ import 'dart:developer';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:osserva/core/usecases/usecase.dart';
+import 'package:osserva/features/local_music/domain/usecases/get_local_songs_use_case.dart';
 
 // This class isolates the "Background Service" logic from the rest of the app.
 // It is the Single Source of Truth for the OS.
 class MusicPlayerHandler extends BaseAudioHandler
     with QueueHandler, SeekHandler {
   final AudioPlayer _player;
+  final GetLocalSongsUseCase _getLocalSongsUseCase;
 
   /// the [_subscriptions] variable to manage add/dispose of streams
   /// it holds a  list of subscriptions
   final _subscriptions = <StreamSubscription>[];
 
-  MusicPlayerHandler({AudioPlayer? player})
-    : _player = player ?? AudioPlayer() {
+  MusicPlayerHandler({
+    required AudioPlayer player,
+    required GetLocalSongsUseCase getLocalSongsUseCase,
+  }) : _player = player,
+       _getLocalSongsUseCase = getLocalSongsUseCase {
     _init();
   }
 
@@ -257,7 +263,39 @@ class MusicPlayerHandler extends BaseAudioHandler
   }
 
   @override
-  Future<void> play() => _player.play();
+  Future<void> play() async {
+    if (_player.sequence.isEmpty) {
+      final result = await _getLocalSongsUseCase.call(NoParams());
+      await result.fold(
+        (failure) async => log("Failed to load library on play: $failure"),
+          (songs) async {
+            if (songs.isNotEmpty) {
+              final items = songs.asMap().entries.map(
+                (entry) {
+                  final index = entry.key;
+                  final s = entry.value;
+                  return MediaItem(
+                    id: s.id.toString(),
+                    album: s.album,
+                    title: s.title,
+                    artist: s.artist,
+                    duration: Duration(milliseconds: s.duration.toInt()),
+                    artUri: s.albumId != null
+                        ? Uri.parse(
+                            "content://media/external/audio/albumart/${s.albumId}",
+                          )
+                        : null,
+                    extras: {'url': s.path, 'uniqueId': '${s.id}_$index'},
+                  );
+                },
+              ).toList();
+              await setQueueItems(items: items, initialIndex: 0);
+            }
+          },
+      );
+    }
+    return _player.play();
+  }
 
   @override
   Future<void> pause() => _player.pause();
