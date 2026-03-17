@@ -264,7 +264,7 @@ class MusicPlayerHandler extends BaseAudioHandler
 
   @override
   Future<void> play() async {
-    if (_player.sequence == null || _player.sequence!.isEmpty) {
+    if (_player.sequence.isEmpty) {
       final result = await _getLocalSongsUseCase.call(NoParams());
       await result.fold(
         (failure) async => log("Failed to load library on play: $failure"),

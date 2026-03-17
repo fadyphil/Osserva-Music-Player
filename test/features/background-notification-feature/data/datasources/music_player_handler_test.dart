@@ -3,14 +3,18 @@ import 'package:mocktail/mocktail.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:osserva/features/background_notification/data/datasources/audio_handler.dart';
+import 'package:osserva/features/local_music/domain/usecases/get_local_songs_use_case.dart';
 
 class MockAudioPlayer extends Mock implements AudioPlayer {}
+
+class MockGetLocalSongsUseCase extends Mock implements GetLocalSongsUseCase {}
 
 class FakeAudioSource extends Fake implements AudioSource {}
 
 void main() {
   late MusicPlayerHandler handler;
   late MockAudioPlayer mockPlayer;
+  late MockGetLocalSongsUseCase mockGetLocalSongsUseCase;
 
   setUpAll(() {
     registerFallbackValue(FakeAudioSource());
@@ -19,6 +23,7 @@ void main() {
 
   setUp(() {
     mockPlayer = MockAudioPlayer();
+    mockGetLocalSongsUseCase = MockGetLocalSongsUseCase();
     // Helper to allow void callbacks
     when(
       () => mockPlayer.playbackEventStream,
@@ -63,7 +68,10 @@ void main() {
       ),
     ).thenAnswer((_) async => null);
 
-    handler = MusicPlayerHandler(player: mockPlayer);
+    handler = MusicPlayerHandler(
+      player: mockPlayer,
+      getLocalSongsUseCase: mockGetLocalSongsUseCase,
+    );
   });
 
   group('MusicPlayerHandler', () {

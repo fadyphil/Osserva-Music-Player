@@ -36,10 +36,26 @@ class MusicPlayerWidget : HomeWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         when (intent.action) {
-            ACTION_PLAY_PAUSE -> dispatchMediaKey(context, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
-            ACTION_NEXT       -> dispatchMediaKey(context, KeyEvent.KEYCODE_MEDIA_NEXT)
-            ACTION_PREV       -> dispatchMediaKey(context, KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            ACTION_PLAY_PAUSE -> sendMediaButton(context, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
+            ACTION_NEXT       -> sendMediaButton(context, KeyEvent.KEYCODE_MEDIA_NEXT)
+            ACTION_PREV       -> sendMediaButton(context, KeyEvent.KEYCODE_MEDIA_PREVIOUS)
         }
+    }
+
+    private fun sendMediaButton(context: Context, keyCode: Int) {
+        val eventTime = SystemClock.uptimeMillis()
+        
+        // ACTION_DOWN
+        val downIntent = Intent(Intent.ACTION_MEDIA_BUTTON)
+        downIntent.setClassName(context.packageName, "com.ryanheise.audioservice.MediaButtonReceiver")
+        downIntent.putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0))
+        context.sendBroadcast(downIntent)
+
+        // ACTION_UP
+        val upIntent = Intent(Intent.ACTION_MEDIA_BUTTON)
+        upIntent.setClassName(context.packageName, "com.ryanheise.audioservice.MediaButtonReceiver")
+        upIntent.putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, keyCode, 0))
+        context.sendBroadcast(upIntent)
     }
 
     private fun updateWidget(
@@ -121,12 +137,5 @@ class MusicPlayerWidget : HomeWidgetProvider() {
             Uri.parse("audiography://widget/shuffle")
         )
         return intent
-    }
-
-    private fun dispatchMediaKey(context: Context, keyCode: Int) {
-        val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val eventTime = SystemClock.uptimeMillis()
-        am.dispatchMediaKeyEvent(KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0))
-        am.dispatchMediaKeyEvent(KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, keyCode, 0))
     }
 }
