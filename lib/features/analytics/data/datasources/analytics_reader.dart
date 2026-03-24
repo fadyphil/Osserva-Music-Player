@@ -247,10 +247,18 @@ class AnalyticsReader {
       }
     }
 
+    final topSongs = await getTopSongs(timeFrame, 1);
+    final topTrackName = topSongs.isNotEmpty ? topSongs.first.title : null;
+
+    final topGenres = await getTopGenres(timeFrame, 1);
+    final topGenreName = topGenres.isNotEmpty ? topGenres.first.title : null;
+
     return ListeningStats(
       totalMinutes: totalSeconds ~/ 60,
       totalSongsPlayed: totalCount,
       timeOfDayDistribution: distributionMap,
+      topTrack: topTrackName,
+      topGenre: topGenreName,
     );
   }
 

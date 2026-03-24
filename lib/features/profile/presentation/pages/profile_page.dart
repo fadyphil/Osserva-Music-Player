@@ -50,7 +50,13 @@ class _ProfilePageState extends State<ProfilePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.menu),
-            onPressed: () {}, // Drawer or menu action
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Menu coming soon'),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -506,14 +512,12 @@ class _AllTimeStatsGrid extends StatelessWidget {
         _StatBox(
           icon: Icons.trending_up,
           label: "Top Track",
-          value: "Terminal Dreams", // Need a stats.topTrack field
-          subValue: "165 plays",
+          value: stats.topTrack ?? "None",
         ),
         _StatBox(
           icon: Icons.bookmark_outline,
           label: "Top Genre",
-          value: "Electronic", // Need a stats.topGenre field
-          subValue: "342 plays",
+          value: stats.topGenre ?? "None",
         ),
       ],
     );
@@ -524,13 +528,11 @@ class _StatBox extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  final String? subValue;
 
   const _StatBox({
     required this.icon,
     required this.label,
     required this.value,
-    this.subValue,
   });
 
   @override
@@ -569,16 +571,6 @@ class _StatBox extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              if (subValue != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  subValue!,
-                  style: TextStyle(
-                    color: AppPallete.grey.withValues(alpha: 0.6),
-                    fontSize: 11,
-                  ),
-                ),
-              ],
             ],
           ),
         ],
