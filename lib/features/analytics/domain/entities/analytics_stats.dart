@@ -27,6 +27,8 @@ abstract class ListeningStats with _$ListeningStats {
     @JsonKey(name: 'total_duration') required int totalMinutes,
     @JsonKey(name: 'total_count') required int totalSongsPlayed,
     @Default({}) Map<String, int> timeOfDayDistribution,
+    String? topTrack,
+    String? topGenre,
   }) = _ListeningStats;
 
   factory ListeningStats.fromJson(Map<String, dynamic> json) =>

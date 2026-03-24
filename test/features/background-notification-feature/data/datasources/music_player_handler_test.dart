@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:osserva/core/usecases/usecase.dart';
 import 'package:osserva/features/background_notification/data/datasources/audio_handler.dart';
 import 'package:osserva/features/local_music/domain/usecases/get_local_songs_use_case.dart';
 
@@ -11,6 +13,8 @@ class MockGetLocalSongsUseCase extends Mock implements GetLocalSongsUseCase {}
 
 class FakeAudioSource extends Fake implements AudioSource {}
 
+class FakeNoParams extends Fake implements NoParams {}
+
 void main() {
   late MusicPlayerHandler handler;
   late MockAudioPlayer mockPlayer;
@@ -19,6 +23,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(FakeAudioSource());
     registerFallbackValue(LoopMode.off);
+    registerFallbackValue(FakeNoParams());
   });
 
   setUp(() {
@@ -59,6 +64,9 @@ void main() {
     when(() => mockPlayer.loopMode).thenReturn(LoopMode.off);
     when(() => mockPlayer.currentIndex).thenReturn(0);
     when(() => mockPlayer.duration).thenReturn(null);
+    when(() => mockPlayer.sequence).thenReturn([]);
+
+    when(() => mockGetLocalSongsUseCase.call(any())).thenAnswer((_) async => const Right([]));
 
     when(
       () => mockPlayer.setAudioSources(
